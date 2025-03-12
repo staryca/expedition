@@ -1,0 +1,42 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+    Сьпіс усіх экспедыцый
+{% endblock %}
+
+{% block body %}
+    <div class="container py-5">
+        <h1 class="h2">Сьпіс экспедыцый</h1>
+        <div class="row">
+            <div class="list-group">
+                {% for expedition in expeditions %}
+                    <a href="{{ path('expedition_show', {id: expedition.id}) }}" class="list-group-item list-group-item-action">
+                        <b>{{ expedition.name }}</b>
+                        {% if expedition.startDate %}
+                            ({{ expedition.startDate|format_datetime(pattern: 'dd.MM') }}
+                            - {{ expedition.endDate|format_datetime(pattern: 'dd.MM') }})
+                        {% endif %}
+
+                        -
+                        {% if expedition.reports|length == 0 and expedition.subjects|length == 0 %}
+                            <small>няма</small>
+                        {% else %}
+                            {% if expedition.reports|length %}
+                                <small>{{ expedition.reports|length }} справаздач</small>
+                            {% endif %}
+
+                            {% if expedition.reports|length and expedition.subjects|length %}
+                                |
+                            {% endif %}
+
+                            {% if expedition.subjects|length %}
+                                <small>{{ expedition.subjects|length }} прадметаў</small>
+                            {% endif %}
+
+                        {% endif %}
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

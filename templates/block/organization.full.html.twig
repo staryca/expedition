@@ -1,0 +1,13 @@
+<b>{{ organization.name }}</b>
+{% if organization.description %}
+    | {{ organization.description }}
+{% endif %}
+{% if organization.geoPoint %}
+    | <i>{{ organization.geoPoint.getLongBeName() }}</i>
+    {% if isLink is defined and not isLink %}
+        <a href="{{ path('place_item', {id: organization.geoPoint.id}) }}">
+            <i class="bi bi-box-arrow-in-right"></i>
+        </a>
+    {% endif %}
+{% endif %}
+| <small>{{ organization.organizationInformants|length }} удзельнікаў</small>

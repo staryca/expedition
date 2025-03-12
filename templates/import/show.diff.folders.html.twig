@@ -1,0 +1,38 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+{% endblock %}
+
+{% block body %}
+    <table class="table table-striped table-hover">
+        <thead>
+            <tr>
+                <th scope="col">Усё карэктна</th>
+                <th scope="col">На дыске, няма ў справаздачах</th>
+                <th scope="col">Справаздача, няма на дыске</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for folderInfo in foldersInfo.getFoldersForTable() %}
+                <tr>
+                    <td>
+                        {% if folderInfo.type == constant('App\\Dto\\FoldersDto::FOLDER_OK') %}
+                            {% include('import/show.folder.info.html.twig') %}
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if folderInfo.type == constant('App\\Dto\\FoldersDto::FOLDER_NEW') %}
+                            {% include('import/show.folder.info.html.twig') %}
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if folderInfo.type == constant('App\\Dto\\FoldersDto::FOLDER_ABSENT') %}
+                            {% include('import/show.folder.info.html.twig') %}
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+{% endblock %}

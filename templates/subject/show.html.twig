@@ -1,0 +1,144 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+    {{ subject.getTypeName() }} {{ subject.name }} {% if subject.model %}({{ subject.model }}){% endif %}
+{% endblock %}
+
+{% block body %}
+    <div class="container py-5">
+        <h1 class="h2">
+            {{ subject.getTypeName() }} {{ subject.name }} {% if subject.model %}({{ subject.model }}){% endif %}
+            з экспедыцыі {{ subject.expedition.name }}
+        </h1>
+        <p class="text-end">
+            <small><a href="{{ path('expedition_show', {id: subject.expedition.id}) }}">Усе прадметы</a></small>
+        </p>
+        {% if subject.notes %}<p>Заўвагі: {{ subject.notes }}</p>{% endif %}
+        {% if subject.digit %}<p>Алічбавана: {{ subject.digit }}</p>{% endif %}
+
+        <div class="row">
+            {% if subject.files|length %}
+                <h5>Файлы</h5>
+                <ul class="list-group">
+                    {% set geoPlace = null %}
+                    {% for file in subject.files %}
+                        <li class="list-group-item">
+                            {{ file.filename }} {% if file.comment %}({{ file.comment }}){% endif %}
+
+                            <table class="table">
+                                <thead>
+                                <tr>
+                                    <th scope="col">Пачатак</th>
+                                    <th scope="col">Інфарманты</th>
+                                    <th scope="col">Апісаньне</th>
+                                    <th scope="col">Заўвагі</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+
+                                {% for marker in file.fileMarkers %}
+                                    {% set reportBlock = null %}
+                                    {% if marker.reportBlock %}
+                                        {% set reportBlock = marker.reportBlock %}
+                                    {% elseif file.reportBlock %}
+                                        {% set reportBlock = file.reportBlock %}
+                                    {% endif %}
+
+                                    {% if reportBlock %}
+                                        {% set reportPlace = reportBlock.getReport().getGeoPlace() %}
+                                        {% if reportPlace != geoPlace or (reportPlace == null and geoPlace == null) %}
+                                            <tr>
+                                                <th class="table-info text-center" scope="row" colspan="4">
+                                                    {% if reportBlock.getReport().dateAction %}
+                                                        {{ reportBlock.getReport().getTextDateAction() }},
+                                                    {% endif %}
+
+                                                    {% if reportPlace %}
+                                                        {{ reportPlace }}
+                                                        {% if reportBlock.getReport().geoPoint %}
+                                                            <a href="{{ path('place_item', {id: reportBlock.getReport().geoPoint.id}) }}">
+                                                                <i class="bi bi-box-arrow-in-right"></i>
+                                                            </a>
+                                                        {% endif %}
+                                                    {% else %}
+                                                        [невядомае месца]
+                                                    {% endif %}
+                                                </th>
+                                            </tr>
+                                            {% set geoPlace = reportPlace %}
+                                        {% endif %}
+
+                                        {% if marker.reportBlock and reportBlock.description %}
+                                            <tr>
+                                                <th class="text-center" scope="row" colspan="4">
+                                                    <button title="Расшыфроўка" class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#collapseBlock{{ reportBlock.id }}" aria-expanded="false" aria-controls="collapseBlock{{ reportBlock.id }}">
+                                                        Расшыфроўка для ўсяго блока <i class="bi bi-arrow-down-square-fill"></i>
+                                                    </button>
+                                                    <div class="collapse" id="collapseBlock{{ reportBlock.id }}">
+                                                        <div class="card card-body text-start">
+                                                            <p class="card-text fw-normal">{{ reportBlock.description|nl2br }}</p>
+                                                        </div>
+                                                    </div>
+                                                </th>
+                                            </tr>
+                                        {% endif %}
+                                    {% endif %}
+
+                                    <tr>
+                                        <th scope="row">
+                                            {% if marker.startTime %}
+                                                {{ marker.startTime|date("H:i:s.u")|slice(0,-3) }}
+                                            {% endif %}
+                                        </th>
+                                        <td>
+                                            {% if reportBlock %}
+                                                {% for informant in reportBlock.informants %}
+                                                    <b>{{ informant.firstName }}</b>
+                                                    {% if informant.yearBirth %}{{ informant.yearBirth }} г.н.{% endif %}
+                                                    {% if informant.getBirthPlaceBe() %}з <i>{{ informant.getBirthPlaceBe() }}</i>{% endif %}
+                                                    {% if informant.urlPhoto %}
+                                                        <img src="{{ informant.urlPhoto }}" class="img-thumbnail" alt="" style="max-width: 200px; max-height: 100px;">
+                                                    {% endif %}
+
+                                                    {% if not loop.last %}<br>{% endif %}
+                                                {% endfor %}
+                                                {% if reportBlock.organization %}
+                                                    <b>{{ reportBlock.organization.name }}</b>
+                                                {% endif %}
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if marker.isCategoryNotOther() %}
+                                                {{ marker.getCategoryName() }}{% if marker.name %}:{% else %}.{% endif %}
+                                            {% endif %}
+                                            {{ marker.name }}
+                                            {% for tag in marker.tags %}
+                                                <span class="badge text-bg-secondary">{{ tag.name }}</span>
+                                            {% endfor %}
+                                        </td>
+                                        <td>
+                                            {{ marker.notes }}
+                                            {% if marker.decoding %}
+                                                <button title="Расшыфроўка" class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ marker.id }}" aria-expanded="false" aria-controls="collapse{{ marker.id }}">
+                                                    <i class="bi bi-arrow-down-square-fill"></i>
+                                                </button>
+                                                <div class="collapse" id="collapse{{ marker.id }}">
+                                                    <div class="card card-body">
+                                                        {{ marker.decoding|nl2br }}
+                                                    </div>
+                                                </div>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+
+                                </tbody>
+                            </table>
+
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

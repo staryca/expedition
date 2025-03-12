@@ -1,0 +1,29 @@
+{# https://github.com/josdejong/jsoneditor/blob/master/docs/usage.md #}
+{% extends 'base.html.twig' %}
+
+{% block stylesheets %}
+    <link href="https://cdn.jsdelivr.net/npm/jsoneditor@10.1.2/dist/jsoneditor.min.css" rel="stylesheet">
+{% endblock %}
+
+{% block javascripts %}
+    <script src="https://cdn.jsdelivr.net/npm/jsoneditor@10.1.2/dist/jsoneditor.min.js"></script>
+{% endblock %}
+
+{% block styles_finish %}
+    <script>
+        // create the editor
+        const container = document.getElementById('jsoneditor')
+        const options = {mode: 'view'}
+        const json = {{ data|json_encode|raw }}
+        const editor = new JSONEditor(container, options, json)
+    </script>
+{% endblock %}
+
+{% block title %}
+{% endblock %}
+
+{% block body %}
+    <div class="row">
+        <div class="w-100 h-100" id="jsoneditor"></div>
+    </div>
+{% endblock %}

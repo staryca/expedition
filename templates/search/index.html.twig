@@ -1,0 +1,56 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+    Пошук па экспедыцыям
+{% endblock %}
+
+{% block body %}
+    <div class="my-1 text-center">
+        <h2 class="display-4 fw-bold text-body-emphasis">Пошук па экспедыцыям</h2>
+        <div class="col-lg-6 mx-auto">
+            <p class="lead mb-4">
+                <form class="row" >
+                    <div class="d-flex">
+                        <div class="p-2 flex-grow-1">
+                            <label for="inputSearch" class="visually-hidden">Что шукаць</label>
+                            <input type="text" class="form-control" id="inputSearch"
+                                   placeholder="Что шукаць" value="{{ query }}" name="q" autofocus="autofocus" autocomplete="on">
+                        </div>
+                        <div class="p-2">
+                            <button type="submit" class="btn btn-success mb-3">Шукаць</button>
+                        </div>
+                    </div>
+                </form>
+            </p>
+        </div>
+    </div>
+
+    {% if query %}
+        <div class="px-4">
+            <h5>Пошук па запросу `{{ query }}`</h5>
+            {% if reportBlocks %}
+                <div class="list-group">
+                    {% for block in reportBlocks %}
+                        <a href="{{ path('report_show', {'id': block.report.id}) }}#block{{ block.id }}"
+                                class="list-group-item list-group-item-action">
+                            <div class="d-flex justify-content-between">
+                                <h5 class="mb-1">
+                                    Экспедыцыя {{ block.report.expedition.name }},
+                                    {% if block.report.getGeoPlace(false) %}
+                                        справаздача па {{ block.report.getGeoPlace(false) }},
+                                    {% else %}
+                                        &lt;невядомае месца&gt;,
+                                    {% endif %}
+                                    {{ block.getTypeName()|lower }}
+                                </h5>
+                                <small>{{ block.report.getTextDateAction()|replace({' ': '&nbsp;'})|raw }}</small>
+                            </div>
+                            <p class="mb-1">...{{ block.searchHeadline|raw }}...</p>
+                            <small>{{ block.searchIndex|u.truncate(200, '...') }}</small>
+                        </a>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    {% endif %}
+{% endblock %}

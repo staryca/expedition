@@ -1,0 +1,138 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+    {{ expedition.name }}
+{% endblock %}
+
+{% block stylesheets %}
+<style>
+    #map { height: 300px; }
+</style>
+{% endblock %}
+
+{% block styles_finish %}
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+          crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+            crossorigin=""></script>
+    <script>
+        var map = L.map('map').setView(geoLatLon, geoZoom);
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 20,
+            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        }).addTo(map);
+        for (i in geoPlaces) {
+            L.marker(geoPlaces[i]).addTo(map).bindPopup(geoPopups[i]);
+        }
+    </script>
+{% endblock %}
+
+{% block body %}
+    <div class="container py-5">
+        <h1 class="h2">Экспедыцыя {{ expedition.name }}</h1>
+        <div class="row">
+            <p class="text-end"><small><a href="{{ path('expedition_list') }}">Усе эскпедыцыі</a></small></p>
+            <p>
+                {% if expedition.startDate %}
+                    Даты правядзеньня:
+                        {{ expedition.startDate|format_datetime(pattern: 'dd.MM.Y') }}
+                        - {{ expedition.endDate|format_datetime(pattern: 'dd.MM.Y') }}.
+                {% endif %}
+                {% if expedition.geoPoint %}
+                    База: <b>{{ expedition.geoPoint.getLongBeName() }}</b>
+                    {% if expedition.geoPoint.district %}
+                        ({{ expedition.geoPoint.district }} )
+                    {% endif %}
+                {% endif %}
+            </p>
+
+            {% set geoMapData = expedition.getGeoMapData() %}
+            {% if geoMapData.center %}
+                <div id="map"></div>
+                <script type="text/javascript">
+                    var geoLatLon = [{{ geoMapData.center.lat }}, {{ geoMapData.center.lon }}];
+                    var geoZoom = {{ geoMapData.zoom }};
+                    var geoPlaces = {{ geoMapData.points|json_encode|raw }};
+                    var geoPopups = {{ geoMapData.popups|json_encode|raw }};
+                </script>
+            {% endif %}
+
+            {% if expedition.subjects|length %}
+                <p>
+                    <h5>Прадметы</h5>
+                    <ul class="list-group">
+                        {% for subject in expedition.subjects %}
+                            <li class="list-group-item">
+                                <a href="{{ path('subject_show', {id: subject.id}) }}">
+                                    <b>{{ subject.getTypeName() }}</b>
+                                    {{ subject.name }} {% if subject.model %}({{ subject.model }}){% endif %}
+                                </a>
+                                | {{ subject.files|length }} файлаў
+
+                                {% set amountMarkers = subject.getAmountAllMarkersInFiles() %}
+                                | {{ amountMarkers }} меток
+                                {% if amountMarkers > 0 %}
+                                    ({{ subject.getAmountDecodingsInFileMarkers() }} расшыфровак)
+                                {% endif %}
+                                {% if subject.notes %}
+                                    | <small>{{ subject.notes }}</small>
+                                {% endif %}
+                                {% if subject.digit %}
+                                    | <i class="bi bi-floppy" title="Алічбаваная: {{ subject.digit }}"></i>
+                                {% endif %}
+                                {% if subject.marked %}
+                                    | <i class="bi bi-file-earmark-break" title="Размечана"></i>
+                                {% endif %}
+                                {% if subject.hasText %}
+                                    | <i class="bi bi-chat-left-text" title="Расшыфравана"></i>
+                                {% endif %}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </p>
+            {% endif %}
+
+            <p>
+                <h5>Месцы</h5>
+                <div>
+                    <a href="{{ path('report_new_by_expedition', {id: expedition.id}) }}">
+                        <i class="bi bi-file-earmark-plus"></i> Дадаць справаздачу
+                    </a>
+                </div>
+
+                <ul class="list-group">
+                    {% for report in reports %}
+                        <a href="{{ path('report_show', {id: report.id}) }}" class="list-group-item list-group-item-action">
+                            {{ report.getTextDateAction() }}
+                            {% if report.code %}<small>&lt;{{ report.code }}&gt;</small>{% endif %}
+                            {% if report.geoPoint %}
+                                <b>{{ report.geoPoint.getLongBeName() }}</b>
+                                {% if report.geoPoint.district %}
+                                    ({{ report.geoPoint.district }} )
+                                {% endif %}
+                            {% else %}
+                                <b>{{ report.geoNotes }}</b>
+                            {% endif %}
+                            {% for block in report.blocks %}
+                                | {{ block.getTypeName() }}
+                            {% endfor %}
+
+                            {% if report.getAmountTaskTips() > 0 %}
+                                | <span title="Наводкі">
+                                    <i class="bi bi-truck"></i> <b>{{ report.getAmountTaskTips() }}</b>
+                                </span>
+                            {% endif %}
+                            {% if report.getAmountTaskQuestions() > 0 %}
+                                | <span title="Пытаньні">
+                                    <i class="bi bi-question-square"></i> <b>{{ report.getAmountTaskQuestions() }}</b>
+                                </span>
+                            {% endif %}
+                        </a>
+                    {% endfor %}
+                </ul>
+            </p>
+        </div>
+    </div>
+{% endblock %}

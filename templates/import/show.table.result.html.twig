@@ -1,0 +1,31 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+    Вынікі
+{% endblock %}
+
+{% block body %}
+    <div class="container">
+        <table class="table table-striped table-hover">
+            {% if headers is defined %}
+            <thead>
+                <tr>
+                    {% for name in headers %}
+                        <th scope="col">{{ name }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            {% endif %}
+
+            <tbody>
+                {% for row in data %}
+                <tr>
+                    {% for item in row %}
+                        <td>{{ item }}</td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

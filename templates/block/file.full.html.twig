@@ -1,0 +1,26 @@
+{% if file.isDeny %}
+    <i class="bi bi-ban"></i>
+{% else %}
+    {% if file.type == constant('App\\Entity\\Type\\FileType::TYPE_AUDIO') %}
+        <i class="bi bi-file-music"></i>
+    {% endif %}
+{% endif %}
+
+{% if file.url and file.type == constant('App\\Entity\\Type\\FileType::TYPE_PHOTO') %}
+    <img src="{{ file.url }}" class="img-thumbnail" alt="{{ file.filename }}" style="max-width: 200px; max-height: 100px;">
+{% elseif file.path %}
+    <a target="_blank"
+       href="file://{{ mediaFolder }}/{{ code }}{{ file.path }}/{{ file.filename }}" >
+        {{ file.filename }}
+    </a>
+{% else %}
+    {{ file.filename }}
+{% endif %}
+
+{% if file.sizeText %}
+    - {{ file.sizeText }}
+{% endif %}
+
+{% if file.comment %}
+    ({{ file.comment }})
+{% endif %}

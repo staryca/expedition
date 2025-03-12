@@ -1,0 +1,323 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+    Справаздача па {{ report }}
+{% endblock %}
+
+{% block stylesheets %}
+    <style>
+        #map { height: 250px; }
+    </style>
+{% endblock %}
+
+{% block styles_finish %}
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+          crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+            crossorigin=""></script>
+    <script>
+        var map = L.map('map').setView(geoLatLon, 14);
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 20,
+            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        }).addTo(map);
+        var marker = L.marker(geoLatLon).addTo(map);
+    </script>
+{% endblock %}
+
+{% block body %}
+    <div class="container py-5">
+        <h1 class="h2">Справаздача па экспедыцыі {{ report }}</h1>
+        <p class="text-end"><small><a href="{{ path('expedition_show', {id: report.expedition.id}) }}">Усе справаздачы</a></small></p>
+        <div>
+            <a href="{{ path('report_edit', {id: report.id}) }}">
+                <i class="bi bi-pencil-square"></i> Рэдагаваць
+            </a>
+        </div>
+
+        <div class="row">
+            {% if report.geoPoint %}
+                <div class="col col-12 col-sm-12 col-lg-8">
+                    <b>{{ report.geoPoint.getLongBeName() }}</b>
+                    {% if report.geoPoint.district %}
+                        {{ report.geoPoint.district }}
+                    {% endif %}
+                    {% if report.geoPoint.subdistrict %}
+                        {{ report.geoPoint.subdistrict }}
+                    {% endif %}
+                    - <a href="{{ path('place_item', {id: report.geoPoint.id}) }}">падрабязней</a>
+                </div>
+            {% endif %}
+
+            {% if report.geoNotes %}
+                <div class="col col-lg-4 text-bg-secondary">
+                    {{ report.geoNotes }}
+                </div>
+            {% endif %}
+
+            {% if report.geoPoint %}
+                <div id="map"></div>
+                <script type="text/javascript">
+                    var geoLatLon = [{{ report.geoPoint.lat }}, {{ report.geoPoint.lon }}];
+                </script>
+            {% endif %}
+        </div>
+        <div class="row">
+            {% for userReport in report.getUserReports() %}
+                <div class="{% if userReport.isLeader() %}h5{% endif %}">
+                    {{ userReport.getRoleName() }}: {{ userReport.participant.lastName }} {{ userReport.participant.firstName }}
+                </div>
+            {% endfor %}
+            {% if report.notes %}
+                <p class="text-bg-secondary">Заметкі: {{ report.notes }}</p>
+            {% endif %}
+        </div>
+
+        {% if report.tasks|length %}
+            <div class="row">
+                <p>
+                    <h5>Планы пасля гэтай справаздачы</h5>
+                    <ol class="list-group list-group-numbered">
+                        {% for task in report.tasks %}
+                            <li class="list-group-item">
+                                {% if task.getStatusIcon() %}
+                                    <i class="bi {{ task.getStatusIcon() }}"></i>
+                                {% endif %}
+                                {% if task.status == constant('App\\Entity\\Type\\TaskStatus::TIP') %}
+                                    Наводка:
+                                {% endif %}
+
+                                {{ task.content }}
+                                {% if task.informant %}
+                                    Інфармант:
+                                    {% include 'block/informant.full.html.twig'
+                                        with {'informant': task.informant, 'geoPoint': report.geoPoint, 'isLink' : false} %}
+                                {% endif %}
+                            </li>
+                        {% endfor %}
+                    </ol>
+                </p>
+            </div>
+        {% endif %}
+
+        {% for block in report.blocks %}
+            <hr>
+            <div class="row" id="block{{ block.id }}">
+                <div class="col col-lg-4">
+                    <p class="h4">Блок: {{ block.getTypeCorrectName() }}</p>
+                </div>
+                {% if block.userNotes %}
+                    <div class="col col-12 col-sm-12 col-lg-8">
+                        Заўвагі удзельнікаў: {{ block.userNotes }}
+                    </div>
+                {% endif %}
+
+                {% if block.tags %}
+                    <p>
+                    {% for tag in block.tags %}
+                        <span class="badge text-bg-secondary">{{ tag.name }}</span>
+                    {% endfor %}
+                    </p>
+                {% endif %}
+
+                {% if block.organization %}
+                    <p>
+                        Арганізацыя:
+                        {% include 'block/organization.full.html.twig' with {'organization': block.organization, 'isLink' : false} %}
+                    </p>
+                {% endif %}
+
+                {% if block.informants|length %}
+                    <ul>Інфарманты:
+                        {% for informant in block.informants %}
+                            <li>
+                                {% include 'block/informant.full.html.twig'
+                                    with {'informant': informant, 'geoPoint': report.geoPoint, 'isLink' : false} %}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+
+                {% if block.subjects|length %}
+                    <ul>Прадметы:
+                        {% for subject in block.subjects %}
+                            <li>
+                                {% include 'block/subject.full.html.twig' with {'subject': subject} %}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+
+                {% if block.tasks|length %}
+                    <div class="row mb-3">
+                        <h5>Заўвагі</h5>
+                        <ol class="list-group list-group-numbered">
+                            {% for task in block.tasks %}
+                                <li class="list-group-item">
+                                    {% include 'block/task.full.html.twig' with {'task': task, 'geoPoint': report.geoPoint} %}
+                                </li>
+                            {% endfor %}
+                        </ol>
+                    </div>
+                {% endif %}
+
+                {% if block.description %}
+                    <p>{{ block.description|nl2br }}</p>
+                {% endif %}
+
+                {% if block.getContentFile() %}
+                    <h5>Змест</h5>
+                    <ul class="list-group">
+                        {% for marker in block.getContentFile().fileMarkers %}
+                            <li class="list-group-item">
+                                {% if marker.isCategoryNotOther() %}
+                                    {{ marker.getCategoryName() }}{% if marker.name %}:{% else %}.{% endif %}
+                                {% endif %}
+                                {{ marker.name }}
+                                {% for tag in marker.tags %}
+                                    <span class="badge text-bg-secondary">{{ tag.name }}</span>
+                                {% endfor %}
+                                <p class="fw-light">{{ marker.notes|nl2br }}</p>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+
+                {% set filesInGroup = block.getRealFilesInGroups() %}
+                {% if filesInGroup|length %}
+                    <h5>Файлы</h5>
+                    {% for type, files in filesInGroup %}
+                        
+                    {% for file in files %}
+                        <p>
+                            {% include 'block/file.full.html.twig'
+                                with {'file': file, 'code': report.code, 'mediaFolder': mediaFolder} %}
+                        </p>
+
+                        {% if file.fileMarkers|length %}
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Пачатак</th>
+                                        <th scope="col">Апісаньне</th>
+                                        <th scope="col">Заўвагі</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+
+                                {% for marker in file.fileMarkers %}
+                                    <tr>
+                                        <th scope="row">
+                                            {% if marker.startTime %}
+                                                {{ marker.startTime|date("H:i:s.u")|slice(0,-3) }}
+                                            {% endif %}
+                                        </th>
+                                        <td>
+                                            {% if marker.isCategoryNotOther() %}
+                                                {{ marker.getCategoryName() }}{% if marker.name %}:{% else %}.{% endif %}
+                                            {% endif %}
+                                            {{ marker.name }}
+                                            {% for tag in marker.tags %}
+                                                <span class="badge text-bg-secondary">{{ tag.name }}</span>
+                                            {% endfor %}
+                                        </td>
+                                        <td>
+                                            {{ marker.notes }}
+                                            {% if marker.decoding %}
+                                                <button title="Расшыфроўка" class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ marker.id }}" aria-expanded="false" aria-controls="collapse{{ marker.id }}">
+                                                    <i class="bi bi-arrow-down-square-fill"></i>
+                                                </button>
+                                                <div class="collapse" id="collapse{{ marker.id }}">
+                                                    <div class="card card-body">
+                                                        {{ marker.decoding|nl2br }}
+                                                    </div>
+                                                </div>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+
+                                </tbody>
+                            </table>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% endfor %}
+                {% endif %}
+
+                {% if block.photoNotes %}
+                    <h5>Фота</h5>
+                    <p>Заўвагі: {{ block.photoNotes }}</p>
+                {% endif %}
+
+                {% if block.videoNotes %}
+                    <h5>Відэа</h5>
+                    <p>Заўвагі: {{ block.videoNotes }}</p>
+                {% endif %}
+
+                {% set fileMarkers = block.getFileMarkerGroups() %}
+                {% if fileMarkers|length %}
+                    {% set files = block.getFilesOfMarkers() %}
+
+                    {% for file in files %}
+                        {% set fileId = file.getId() %}
+                        <p>
+                            {% if file.subject %}
+                                <span class="badge text-bg-success">{{ file.subject.getTypeName() }} {{ file.subject.name }}</span>
+                            {% else %}
+                                <span class="badge text-bg-success">Файл</span>
+                            {% endif %}
+                            {{ file.filename }} {% if file.comment %}({{ file.comment }}){% endif %}
+                        </p>
+                        <table class="table">
+                            <thead>
+                            <tr>
+                                <th scope="col">Пачатак</th>
+                                <th scope="col">Апісаньне</th>
+                                <th scope="col">Заўвагі</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+
+                            {% for marker in fileMarkers[fileId] %}
+                                <tr>
+                                    <th scope="row">
+                                        {% if marker.startTime %}
+                                            {{ marker.startTime|date("H:i:s.u")|slice(0,-3) }}
+                                        {% endif %}
+                                    </th>
+                                    <td>
+                                        {% if marker.isCategoryNotOther() %}
+                                            {{ marker.getCategoryName() }}{% if marker.name %}:{% else %}.{% endif %}
+                                        {% endif %}
+                                        {{ marker.name }}
+                                        {% for tag in marker.tags %}
+                                            <span class="badge text-bg-secondary">{{ tag.name }}</span>
+                                        {% endfor %}
+                                    </td>
+                                    <td>
+                                        {{ marker.notes }}
+                                        {% if marker.decoding %}
+                                            <button title="Расшыфроўка" class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ marker.id }}" aria-expanded="false" aria-controls="collapse{{ marker.id }}">
+                                                <i class="bi bi-arrow-down-square-fill"></i>
+                                            </button>
+                                            <div class="collapse" id="collapse{{ marker.id }}">
+                                                <div class="card card-body">
+                                                    {{ marker.decoding|nl2br }}
+                                                </div>
+                                            </div>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+
+                            </tbody>
+                        </table>
+                    {% endfor %}
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}

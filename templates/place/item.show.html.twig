@@ -1,0 +1,97 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+    Інфармацыя па {{ geoPoint.getLongBeName() }}
+{% endblock %}
+
+{% block body %}
+    <div class="container py-5">
+        <h1 class="h2">
+            Інфармацыя па
+            {{ geoPoint.getLongBeName() }}{% if geoPoint.district %}, {{ geoPoint.district }}{% endif %}
+        </h1>
+        <p class="text-end"><small><a href="{{ path('place_list') }}">Усе лакацыі</a></small></p>
+
+        <div class="row mb-3">
+            <h5 class="text-success">Справаздачы</h5>
+            <ul class="list-group">
+                {% for report in reports %}
+                    <a href="{{ path('report_show', {id: report.id}) }}" class="list-group-item list-group-item-action">
+                        <b>{{ report.expedition.name }}</b>,
+                        {{ report.getTextDateAction() }}
+                        {% if report.code %}<small>&lt;{{ report.code }}&gt;</small>{% endif %}
+
+                        {% for block in report.blocks %}
+                            | {{ block.getTypeName() }}
+                        {% endfor %}
+
+                        {% if report.getAmountTaskTips() > 0 %}
+                            | <span title="Наводкі">
+                                    <i class="bi bi-truck"></i> <b>{{ report.getAmountTaskTips() }}</b>
+                                </span>
+                        {% endif %}
+                        {% if report.getAmountTaskQuestions() > 0 %}
+                            | <span title="Пытаньні">
+                                    <i class="bi bi-question-square"></i> <b>{{ report.getAmountTaskQuestions() }}</b>
+                                </span>
+                        {% endif %}
+                    </a>
+                {% endfor %}
+            </ul>
+        </div>
+
+        {% if tasks|length > 0 %}
+            <div class="row mb-3">
+                <h5 class="text-success">Заўвагі</h5>
+                <ul class="list-group">
+                    {% for task in tasks %}
+                        <a href="#" class="list-group-item list-group-item-action">
+                            {% include 'block/task.full.html.twig' with {'task': task, 'geoPoint': geoPoint} %}
+                        </a>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
+        {% if organizations|length > 0 %}
+            <div class="row mb-3">
+                <h5 class="text-success">Арганізацыі / Калектывы</h5>
+                <ul class="list-group">
+                    {% for organization in organizations %}
+                        <a href="#" class="list-group-item list-group-item-action">
+                            {% include 'block/organization.full.html.twig' with {'organization': organization} %}
+                        </a>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+
+        <div class="row mb-3">
+            <h5 class="text-success">Інфарманты</h5>
+            {% if informants|length == 0 %}
+                <p>няма</p>
+            {% else %}
+                <ul class="list-group">
+                    {% for informant in informants %}
+                        <a href="#" class="list-group-item list-group-item-action">
+                            {% include 'block/informant.full.html.twig' with {'geoPoint': geoPoint, 'isLink' : true} %}
+                        </a>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+
+        {% if subjects|length > 0 %}
+            <div class="row mb-3">
+                <h5 class="text-success">Прадметы</h5>
+                <ul class="list-group">
+                    {% for subject in subjects %}
+                        <a href="#" class="list-group-item list-group-item-action">
+                            {% include 'block/subject.full.html.twig' with {'subject': subject} %}
+                        </a>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}

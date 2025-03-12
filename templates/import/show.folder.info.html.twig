@@ -1,0 +1,7 @@
+{% if folderInfo.reportId %}
+    <a target="_blank" href="{{ path('report_show', {'id': folderInfo.reportId}) }}">
+        {{ folderInfo.name }}
+    </a>
+{% else %}
+    {{ folderInfo.name }}
+{% endif %}

@@ -1,0 +1,74 @@
+{% if isLink is not defined %}
+    {% set isLink = true %}
+{% endif %}
+
+<b>{{ informant.firstName }}</b>
+{% if informant.yearBirth %}{{ informant.yearBirth }} г.н.{% endif %}
+{% if informant.isDied %}
+    <i class="bi bi-x-circle" title="{{ informant.getDiedText() }}"></i>
+{% endif %}
+{% if informant.urlPhoto %}
+    {% set imageContent %}
+        {% include 'block/image.html.twig' with {'url': informant.urlPhoto} %}
+    {% endset %}
+    <span data-bs-toggle="tooltip" data-bs-html="true" data-bs-title="{{ imageContent|escape }}">
+        <i class="bi bi-camera-fill"></i>
+    </span>
+{% endif %}
+
+|
+{% if geoPoint
+    and informant.geoPointBirth and informant.geoPointBirth.id == geoPoint.id
+    and informant.geoPointCurrent and informant.geoPointCurrent.id == geoPoint.id %}
+        <i>{% if informant.gender == constant('App\\Entity\\Type\\GenderType::MALE') %}мясцовы{% else %}мясцовая{% endif%}</i>
+{% else %}
+    {% if geoPoint and informant.geoPointBirth and informant.geoPointBirth.id == geoPoint.id %}
+        з <i>гэтай вёсцы</i>
+    {% else %}
+        {% if informant.getBirthPlaceBe() %}
+            з <i>{{ informant.getBirthPlaceBe() }}</i>
+            {% if not isLink and informant.geoPointBirth %}
+                <a href="{{ path('place_item', {id: informant.geoPointBirth.id}) }}">
+                    <i class="bi bi-box-arrow-in-right"></i>
+                </a>
+            {% endif %}
+        {% endif %}
+    {% endif %}
+
+    {% if geoPoint and informant.geoPointCurrent and informant.geoPointCurrent.id == geoPoint.id %}
+        {% if informant.isDied %}
+            {% if informant.gender == constant('App\\Entity\\Type\\GenderType::FEMALE') %}жыла ў{% else %}жыў у{% endif%}
+        {% else %}
+            жыве ў
+        {% endif %}
+        <i>гэтай вёсцы</i>
+    {% else %}
+        {% if informant.getCurrentPlaceBe() %}
+            {% if informant.isDied %}
+                {% if informant.gender == constant('App\\Entity\\Type\\GenderType::FEMALE') %}жыла ў{% else %}жыў у{% endif%}
+            {% else %}
+                жыве ў
+            {% endif %}
+            <i>{{ informant.getCurrentPlaceBe() }}</i>
+            {% if not isLink and informant.geoPointCurrent %}
+                <a href="{{ path('place_item', {id: informant.geoPointCurrent.id}) }}">
+                    <i class="bi bi-box-arrow-in-right"></i>
+                </a>
+            {% endif %}
+        {% endif %}
+    {% endif %}
+{% endif %}
+
+{% if informant.organizationInformants.count() %}
+    | Далучаецца да
+    {% for oi in informant.organizationInformants %}
+        {{ oi.organization.name }}
+        {% if oi.comments %}
+            <small>({{ oi.comments }})</small>
+        {% endif %}
+    {% endfor %}
+{% endif %}
+
+{% if informant.notes %}
+    | <small>{{ informant.notes }}</small>
+{% endif %}

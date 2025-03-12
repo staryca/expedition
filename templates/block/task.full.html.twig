@@ -1,0 +1,14 @@
+{% if task.getStatusIcon() %}
+    <i class="bi {{ task.getStatusIcon() }}"></i>
+{% endif %}
+{% if task.status == constant('App\\Entity\\Type\\TaskStatus::TIP') %}
+    Наводка:
+{% endif %}
+
+{{ task.content }}
+
+{% if task.informant %}
+    Інфармант:
+    {% include 'block/informant.full.html.twig'
+        with {'informant': task.informant, 'geoPoint': geoPoint, 'isLink' : true} %}
+{% endif %}
