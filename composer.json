@@ -1,4 +1,6 @@
 {
+    "name": "staryca/expedition",
+    "description": "Application for expeditions",
     "type": "project",
     "license": "proprietary",
     "minimum-stability": "stable",
@@ -7,6 +9,8 @@
         "php": ">=8.1",
         "ext-ctype": "*",
         "ext-iconv": "*",
+        "ext-mbstring": "*",
+        "ext-xml": "*",
         "api-platform/doctrine-orm": "^4.0",
         "api-platform/symfony": "^4.0",
         "doctrine/dbal": "^3",
@@ -45,7 +49,10 @@
             "symfony/flex": true,
             "symfony/runtime": true
         },
-        "sort-packages": true
+        "sort-packages": true,
+        "platform": {
+            "php": "8.3"
+        }
     },
     "autoload": {
         "psr-4": {
