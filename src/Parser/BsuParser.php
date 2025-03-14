@@ -18,7 +18,6 @@ use App\Helper\TextHelper;
 use App\Service\LocationService;
 use App\Service\PersonService;
 use PHPHtmlParser\Dom;
-use stringEncode\Exception;
 
 class BsuParser
 {
@@ -405,7 +404,6 @@ class BsuParser
      * @param array<PersonBsuDto> $personsBsu
      * @param array<StudentDto> $students
      * @return void
-     * @throws Exception
      */
     public function getStudents(array &$personsBsu, array &$students): void
     {
