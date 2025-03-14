@@ -12,7 +12,6 @@ use App\Dto\StudentDto;
 use App\Entity\Type\GenderType;
 use App\Helper\TextHelper;
 use Carbon\Carbon;
-use stringEncode\Exception;
 
 class PersonService
 {
@@ -226,7 +225,6 @@ class PersonService
     /**
      * @param PersonBsuDto $dto
      * @return array<StudentDto>
-     * @throws Exception
      */
     public function detectStudents(PersonBsuDto $dto): array
     {
@@ -321,7 +319,7 @@ class PersonService
         }
 
         if (empty($names)) {
-            throw new Exception('Bad name of persons: ' . $dto->name);
+            throw new \RuntimeException('Bad name of persons: ' . $dto->name);
         }
 
         $result = [];
