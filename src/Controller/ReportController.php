@@ -7,6 +7,7 @@ namespace App\Controller;
 use App\Entity\Expedition;
 use App\Entity\Report;
 use App\Repository\ExpeditionRepository;
+use App\Repository\GeoPointRepository;
 use App\Repository\ReportRepository;
 use App\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -19,6 +20,7 @@ class ReportController extends AbstractController
         private readonly ExpeditionRepository $expeditionRepository,
         private readonly ReportRepository $reportRepository,
         private readonly UserRepository $userRepository,
+        private readonly GeoPointRepository $geoPointRepository,
     ) {
     }
 
@@ -43,7 +45,7 @@ class ReportController extends AbstractController
         /** @var Expedition|null $expedition */
         $expedition = $this->expeditionRepository->find($id);
 
-        return $this->newByExpedition($expedition);
+        return $this->editReport($expedition);
     }
 
     #[Route('/report/{id}/edit', name: 'report_edit')]
@@ -55,10 +57,7 @@ class ReportController extends AbstractController
             throw $this->createNotFoundException('The report does not exist');
         }
 
-        return $this->render('report/edit.html.twig', [
-            'report' => $report,
-            'users' => $this->userRepository->getList(),
-        ]);
+        return $this->editReport($report->getExpedition(), $report);
     }
 
     #[Route('/report/new', name: 'report_new_for_active_expedition')]
@@ -67,18 +66,25 @@ class ReportController extends AbstractController
         /** @var Expedition|null $expedition */
         $expedition = $this->expeditionRepository->findActive();
 
-        return $this->newByExpedition($expedition);
+        return $this->editReport($expedition);
     }
 
-    private function newByExpedition(?Expedition $expedition): Response
+    private function editReport(?Expedition $expedition, ?Report $report = null): Response
     {
         if (!$expedition) {
             throw $this->createNotFoundException('The expedition does not exist');
         }
 
+        $geoPoints = [];
+        $baseGeoPoint = $report ? $report->getGeoPoint() : $expedition->getGeoPoint();
+        if ($baseGeoPoint) {
+            $geoPoints = $this->geoPointRepository->findNotFarFromPoint($baseGeoPoint);
+        }
+
         return $this->render('report/edit.html.twig', [
-            'report' => new Report($expedition),
+            'report' => $report ?? new Report($expedition),
             'users' => $this->userRepository->getList(),
+            'geoPoints' => $geoPoints,
         ]);
     }
 }
