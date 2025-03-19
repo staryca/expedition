@@ -201,6 +201,23 @@ class GeoPoint
         return ($this->prefixBe ? $this->prefixBe . ' ' : '') . ($this->name ? (' ' . $this->name) : '');
     }
 
+    public function getFullBeName(bool $withRegion = false): string
+    {
+        $name = sprintf('%s %s', $this->getShortPrefixBe(), $this->name);
+
+        if ($this->district) {
+            $name .= ', ' . $this->district;
+        }
+        if ($withRegion) {
+            $name .= ', ' . $this->region;
+        }
+        if ($this->subdistrict) {
+            $name .= ' (' . str_replace('сельскі Савет', 'с/с', $this->subdistrict) . ')';
+        }
+
+        return $name;
+    }
+
     public function __toString(): string
     {
         return sprintf('%s %s (%s, %s)', $this->prefixBe, $this->name, $this->region, $this->district);

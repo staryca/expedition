@@ -1,7 +1,8 @@
 {% extends 'base.html.twig' %}
 
 {% block title %}
-    Новая справаздача для экспедыцыі {{ report.expedition.name }}
+    {% if report.id %}Справаздача{% else %}Новая справаздача{% endif %}
+    для экспедыцыі {{ report.expedition.name }}
 {% endblock %}
 
 {% block stylesheets %}
@@ -53,7 +54,7 @@
     </div>
 
     <div class="main">
-        <h2>Новая справаздача для экспедыцыі {{ report.expedition.name }}</h2>
+        <h2>{% if report.id %}Справаздача #{{ report.id }}{% else %}Новая справаздача{% endif %} для экспедыцыі {{ report.expedition.name }}</h2>
         <div class="card mb-3" id="reportBody">
             <div class="card-header">
                 Справаздача
@@ -62,33 +63,51 @@
             <div class="card-body">
                 <form>
                     <div class="input-group mb-3">
-                        <span class="input-group-text">Дата даследваньня</span>
-                        <input type="date" class="form-control"  aria-describedby="passwordHelpInline">
+                        {% if report.dateAction %}
+                            {% set date = report.dateAction %}
+                        {% else %}
+                            {% set date = "now" %}
+                        {% endif %}
+                        <span class="input-group-text" id="newReportDate">Дата даследваньня</span>
+                        <input type="date" class="form-control" required aria-describedby="newReportDate"
+                               value="{{ date|date("Y-m-d") }}"
+                               max="{{ date|date("Y-m-d") }}"
+                               min="{{ date|date_modify("-20 days")|date("Y-m-d") }}">
                     </div>
 
                     <div class="input-group mb-3">
-                        <span class="input-group-text" id="basic-addon3">Агульныя заўвагі</span>
-                        <input type="text" class="form-control" id="basic-url" value="{{ report.notes }}" aria-describedby="basic-addon3">
+                        <span class="input-group-text" id="newReportNotes">Агульныя заўвагі</span>
+                        <input type="text" class="form-control" value="{{ report.notes }}" aria-describedby="newReportNotes">
                     </div>
 
                     <div class="input-group mb-3">
-                        <span class="input-group-text" id="basic-addon3">Код</span>
-                        <input type="text" class="form-control" id="basic-url" value="{{ report.code }}" aria-describedby="basic-addon3">
+                        <span class="input-group-text" id="newReportCode">Код</span>
+                        <input type="text" class="form-control" value="{{ report.code }}" aria-describedby="newReportCode">
                         <span class="input-group-text">
-                              Назва папкі з файламі да гэтага блоку
+                              Будзе як назва папкі для файлаў да гэтага блоку
                         </span>
                     </div>
 
                     <div class="input-group mb-3">
                         <span class="input-group-text">Месца</span>
-                        <select class="form-select" aria-label="Месца">
+                        <select class="form-select" aria-label="new report location">
                             <option selected>- выбраць -</option>
-                            {% if report.geoPoint %}
-                                <option selected value="{{ report.geoPoint.id }}">{{ report.geoPoint.getLongBeName() }}</option>
+                            {% set selected = report.geoPoint == null %}
+                            {% for geoPoint in geoPoints %}
+                                <option value="{{ geoPoint.id }}"
+                                        {% if report.geoPoint and report.geoPoint.id == geoPoint.id %}selected{% set selected = true %}{% endif %}>
+                                    {{ geoPoint.getFullBeName() }}
+                                </option>
+                            {% endfor %}
+                            {% if not selected %}
+                                <option selected value="{{ report.geoPoint.id }}">
+                                    {{ report.geoPoint.getFullBeName() }}
+                                </option>
                             {% endif %}
                         </select>
-                        <span class="input-group-text">няма ў сьпісе</span>
-                        <input type="text" class="form-control" placeholder="вёска і раён" value="{{ report.geoNotes }}" aria-label="Server">
+                        <button type="button" class="btn btn-primary">Паглядзець на мапе</button>
+                        <span class="input-group-text">няма ў спісе</span>
+                        <input type="text" class="form-control" placeholder="вёска, раён [, вобласць, краіна]" value="{{ report.geoNotes }}" aria-label="new report other location">
                     </div>
 
                     <button type="submit" class="btn btn-success">Захаваць</button>
@@ -109,36 +128,13 @@
                         <button type="button" class="btn btn-danger">Выдаліць</button>
                     </p>
                 {% endfor %}
-
-                <form>
-                    <div class="card">
-                        <div class="card-header">Указаць новага</div>
-                        <div class="card-body">
-                            <div class="input-group mb-3">
-                                <span class="input-group-text">Імя</span>
-                                <select class="form-select" aria-label="Імя">
-                                    <option selected>- выбярыце са сьпіса -</option>
-                                    {% for id, name in users %}
-                                        <option value="{{ id }}">{{ name }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-
-                            <div class="input-group mb-3">
-                                {% for role, name in constant('App\\Entity\\Type\\UserRoleType::ROLES') %}
-                                    <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="checkbox" id="role{{ role }}" name="{{ role }}" value="1">
-                                        <label class="form-check-label" for="role{{ role }}">{{ name }}</label>
-                                    </div>
-                                {% endfor %}
-                            </div>
-
-                            <div class="mb-3">
-                                <button type="submit" class="btn btn-success">Захаваць</button>
-                            </div>
-                        </div>
-                    </div>
-                </form>
+                <hr>
+                <p>
+                    Дадаць удзельніка і яго ролі
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addReportUserModal">
+                        Дадаць
+                    </button>
+                </p>
             </div>
         </div>
 
@@ -158,40 +154,13 @@
                         {% endif %}
                         <button type="submit" class="btn btn-danger">Выдаліць</button></p>
                 {% endfor %}
-
-                <form>
-                    <div class="card">
-                        <div class="card-header">Дадаць новы</div>
-                        <div class="card-body">
-                            <div class="input-group mb-3">
-                                <span class="input-group-text" id="basic-addon1">Тып</span>
-                                <select class="form-select" aria-label="Тып">
-                                    {% for id, name in constant('App\\Entity\\Type\\TaskStatus::STATUSES') %}
-                                        <option value="{{ id }}">{{ name }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-
-                            <div class="mb-3">
-                                <div class="input-group">
-                                    <span class="input-group-text" id="basic-addon3">Тэкст</span>
-                                    <input type="text" class="form-control" id="basic-url" aria-describedby="basic-addon3">
-                                </div>
-                            </div>
-
-                            <div class="input-group mb-3">
-                                <span class="input-group-text" id="basic-addon1">Інфармант</span>
-                                <select class="form-select" aria-label="Default select example">
-                                    <option selected>- выбраць -</option>
-                                </select>
-                            </div>
-
-                            <div class="mb-3">
-                                <button type="submit" class="btn btn-success">Захаваць</button>
-                            </div>
-                        </div>
-                    </div>
-                </form>
+                <hr>
+                <p>
+                    Дадаць новы план, задачу, наводку
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTaskPlanModal">
+                        Дадаць
+                    </button>
+                </p>
             </div>
         </div>
 
@@ -229,187 +198,34 @@
                                     <option selected value="{{ block.organization.id }}">{{ block.organization.name }}</option>
                                 {% endif %}
                             </select>
-                            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#exampleModal">Дадаць новую</button>
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addOrgModal">Дадаць новую</button>
 
-                            <!-- Modal -->
-                            <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                                <div class="modal-dialog">
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-                                            <h1 class="modal-title fs-5" id="exampleModalLabel">Дадаць новую арганізацыю</h1>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                        </div>
-                                        <div class="modal-body">
-                                            <div class="input-group mb-3">
-                                                <span class="input-group-text">Тып</span>
-                                                <select class="form-select" aria-label="Месца">
-                                                    {% for id, name in constant('App\\Entity\\Type\\OrganizationType::TYPES') %}
-                                                        <option value="{{ id }}">{{ name }}</option>
-                                                    {% endfor %}
-                                                </select>
-                                            </div>
-
-                                            <div class="mb-3">
-                                                <div class="input-group">
-                                                    <span class="input-group-text" id="basic-addon3">Назва</span>
-                                                    <input type="text" class="form-control" id="basic-url" aria-describedby="basic-addon3">
-                                                </div>
-                                            </div>
-
-                                            <div class="mb-3">
-                                                <div class="input-group">
-                                                    <span class="input-group-text" id="basic-addon3">Апісаньне</span>
-                                                    <input type="text" class="form-control" id="basic-url" aria-describedby="basic-addon3">
-                                                </div>
-                                            </div>
-
-                                            <div class="mb-3">
-                                                <div class="input-group">
-                                                    <span class="input-group-text" id="basic-addon3">Адрас</span>
-                                                    <input type="text" class="form-control" id="basic-url" aria-describedby="basic-addon3">
-                                                </div>
-                                            </div>
-
-                                            <div class="input-group mb-3">
-                                                <span class="input-group-text">Месца</span>
-                                                <select class="form-select" aria-label="Месца">
-                                                    <option selected>- выбраць -</option>
-                                                    <option value="1">в. Дакудава Лідскі раён</option>
-                                                    <option value="2">в. Дамжарыцы Лепельскі раён</option>
-                                                    <option value="3">в. Дварчаны Пастаўскі раён</option>
-                                                    <option value="4">в. Двор-Суша Лепельскі раён</option>
-                                                    <option value="2">в. Дамжарыцы Лепельскі раён</option>
-                                                    <option value="3">в. Дварчаны Пастаўскі раён</option>
-                                                    <option value="4">в. Двор-Суша Лепельскі раён</option>
-                                                    <option value="2">в. Дамжарыцы Лепельскі раён</option>
-                                                    <option value="3">в. Дварчаны Пастаўскі раён</option>
-                                                    <option value="4">в. Двор-Суша Лепельскі раён</option>
-                                                    <option value="2">в. Дамжарыцы Лепельскі раён</option>
-                                                    <option value="3">в. Дварчаны Пастаўскі раён</option>
-                                                    <option value="4">в. Двор-Суша Лепельскі раён</option>
-                                                    <option value="2">в. Дамжарыцы Лепельскі раён</option>
-                                                    <option value="3">в. Дварчаны Пастаўскі раён</option>
-                                                    <option value="4">в. Двор-Суша Лепельскі раён</option>
-                                                    <option value="2">в. Дамжарыцы Лепельскі раён</option>
-                                                    <option value="3">в. Дварчаны Пастаўскі раён</option>
-                                                    <option value="4">в. Двор-Суша Лепельскі раён</option>
-                                                    <option value="2">в. Дамжарыцы Лепельскі раён</option>
-                                                    <option value="3">в. Дварчаны Пастаўскі раён</option>
-                                                    <option value="4">в. Двор-Суша Лепельскі раён</option>
-                                                </select>
-                                                <span class="input-group-text">няма ў сьпісе</span>
-                                                <input type="text" class="form-control" placeholder="вёска і раён" aria-label="Server">
-                                            </div>
-
-                                            <div class="mb-3">
-                                                <div class="input-group">
-                                                    <span class="input-group-text" id="basic-addon3">Заўвагі</span>
-                                                    <input type="text" class="form-control" id="basic-url" aria-describedby="basic-addon3">
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="modal-footer">
-                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыць</button>
-                                            <button type="button" class="btn btn-primary">Дадаць</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
                         </div>
                     </div>
 
                     <div class="mb-3">
                         <div class="input-group">
-                            <span class="input-group-text" id="basic-addon3">Заўвагі да даследвальнікаў</span>
-                            <input type="text" class="form-control" id="basic-url" value="{{ block.userNotes }}" aria-describedby="basic-addon3">
+                            <span class="input-group-text" id="blockNotesUsers">Заўвагі да даследвальнікаў</span>
+                            <input type="text" class="form-control" value="{{ block.userNotes }}" aria-describedby="blockNotesUsers">
                         </div>
                     </div>
 
                     <div class="mb-3">
                         <div class="input-group">
-                            <span class="input-group-text" id="basic-addon3">Заўвагі к фота</span>
-                            <input type="text" class="form-control" id="basic-url" value="{{ block.photoNotes }}" aria-describedby="basic-addon3">
+                            <span class="input-group-text" id="blockNotesPhoto">Заўвагі к фота</span>
+                            <input type="text" class="form-control" value="{{ block.photoNotes }}" aria-describedby="blockNotesPhoto">
                         </div>
                     </div>
 
                     <div class="mb-3">
                         <div class="input-group">
-                            <span class="input-group-text" id="basic-addon3">Заўвагі к відэа</span>
-                            <input type="text" class="form-control" id="basic-url" value="{{ block.videoNotes }}" aria-describedby="basic-addon3">
+                            <span class="input-group-text" id="blockNotesVideo">Заўвагі к відэа</span>
+                            <input type="text" class="form-control" value="{{ block.videoNotes }}" aria-describedby="blockNotesVideo">
                         </div>
                     </div>
 
                     <div class="mb-3">
                         <button type="submit" class="btn btn-success">Захаваць</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <div class="card mb-3" id="report{{ loop.index }}organization">
-            <div class="card-header">
-                Арганізацыя / гурт
-            </div>
-
-            <div class="card-body">
-                <form>
-                    <div class="card">
-                        <div class="card-header">Дадаць новую</div>
-                        <div class="card-body">
-                            <div class="input-group mb-3">
-                                <span class="input-group-text">Тып</span>
-                                <select class="form-select" aria-label="Месца">
-                                    {% for id, name in constant('App\\Entity\\Type\\OrganizationType::TYPES') %}
-                                        <option value="{{ id }}">{{ name }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-
-                            <div class="mb-3">
-                                <div class="input-group">
-                                    <span class="input-group-text" id="basic-addon3">Назва</span>
-                                    <input type="text" class="form-control" id="basic-url" aria-describedby="basic-addon3">
-                                </div>
-                            </div>
-
-                            <div class="mb-3">
-                                <div class="input-group">
-                                    <span class="input-group-text" id="basic-addon3">Апісаньне</span>
-                                    <input type="text" class="form-control" id="basic-url" aria-describedby="basic-addon3">
-                                </div>
-                            </div>
-
-                            <div class="mb-3">
-                                <div class="input-group">
-                                    <span class="input-group-text" id="basic-addon3">Адрас</span>
-                                    <input type="text" class="form-control" id="basic-url" aria-describedby="basic-addon3">
-                                </div>
-                            </div>
-
-                            <div class="input-group mb-3">
-                                <span class="input-group-text">Месца</span>
-                                <select class="form-select" aria-label="Месца">
-                                    <option selected>- выбраць -</option>
-                                    <option value="1">в. Дакудава Лідскі раён</option>
-                                    <option value="2">в. Дамжарыцы Лепельскі раён</option>
-                                    <option value="3">в. Дварчаны Пастаўскі раён</option>
-                                    <option value="4">в. Двор-Суша Лепельскі раён</option>
-                                </select>
-                                <span class="input-group-text">няма ў сьпісе</span>
-                                <input type="text" class="form-control" placeholder="вёска і раён" aria-label="Server">
-                            </div>
-
-                            <div class="mb-3">
-                                <div class="input-group">
-                                    <span class="input-group-text" id="basic-addon3">Заўвагі</span>
-                                    <input type="text" class="form-control" id="basic-url" aria-describedby="basic-addon3">
-                                </div>
-                            </div>
-
-                            <div class="mb-3">
-                                <button type="submit" class="btn btn-success">Захаваць</button>
-                            </div>
-                        </div>
                     </div>
                 </form>
             </div>
@@ -422,112 +238,17 @@
 
             <div class="card-body">
                 {% for informant in block.informants %}
-                    <p>{{ informant }}
+                    <p>{% include 'block/informant.full.html.twig'
+                            with {'informant': informant, 'geoPoint': report.geoPoint, 'isLink' : false} %}
                         <button type="submit" class="btn btn-danger">Выдаліць</button></p>
                 {% endfor %}
-
-                <form>
-                    <div class="card">
-                        <div class="card-header">Дадаць новага</div>
-                        <div class="card-body">
-                            <div class="mb-3">
-                                <div class="input-group">
-                                    <span class="input-group-text" id="basic-addon3">Імя</span>
-                                    <input type="text" class="form-control" id="basic-url" aria-describedby="basic-addon3">
-                                </div>
-                            </div>
-
-                            <div class="mb-3">
-                                <div class="input-group">
-                                    <span class="input-group-text" id="basic-addon3">Год нараджэньня</span>
-                                    <input type="text" class="form-control" id="basic-url" aria-describedby="basic-addon3">
-                                </div>
-                            </div>
-
-                            <div class="input-group mb-3">
-                                <span class="input-group-text">Адкуль</span>
-                                <select class="form-select" aria-label="Месца">
-                                    <option selected>- выбраць -</option>
-                                    <option value="1">в. Дакудава Лідскі раён</option>
-                                    <option value="2">в. Дамжарыцы Лепельскі раён</option>
-                                    <option value="3">в. Дварчаны Пастаўскі раён</option>
-                                    <option value="4">в. Двор-Суша Лепельскі раён</option>
-                                </select>
-                                <span class="input-group-text">няма ў сьпісе</span>
-                                <input type="text" class="form-control" placeholder="вёска і раён" aria-label="Server">
-                            </div>
-
-                            <div class="mb-3">
-                                <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio1" value="option1">
-                                    <label class="form-check-label" for="inlineRadio1">жыве тут</label>
-                                </div>
-                                <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio1" value="option1">
-                                    <label class="form-check-label" for="inlineRadio1">невядома дзе жыве</label>
-                                </div>
-                                <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio1" value="option1">
-                                    <label class="form-check-label" for="inlineRadio1">жыве ў іншым месцы</label>
-                                </div>
-                            </div>
-
-                            <div class="input-group mb-3">
-                                <span class="input-group-text">Жыве ў</span>
-                                <select class="form-select" aria-label="Месца">
-                                    <option selected>- выбраць -</option>
-                                    <option value="1">в. Дакудава Лідскі раён</option>
-                                    <option value="2">в. Дамжарыцы Лепельскі раён</option>
-                                    <option value="3">в. Дварчаны Пастаўскі раён</option>
-                                    <option value="4">в. Двор-Суша Лепельскі раён</option>
-                                </select>
-                                <span class="input-group-text">няма ў сьпісе</span>
-                                <input type="text" class="form-control" placeholder="вёска і раён" aria-label="Server">
-                            </div>
-
-                            <div class="mb-3">
-                                <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="radio" name="informantSex" id="inlineRadio10" value="option1">
-                                    <label class="form-check-label" for="inlineRadio10">мужчына</label>
-                                </div>
-                                <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="radio" name="informantSex" id="inlineRadio11" value="option1">
-                                    <label class="form-check-label" for="inlineRadio11">жанчына</label>
-                                </div>
-                                <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="radio" name="informantSex" id="inlineRadio12" value="option1">
-                                    <label class="form-check-label" for="inlineRadio12">невядома</label>
-                                </div>
-                            </div>
-
-                            <div class="mb-3">
-                                <div class="input-group">
-                                    <span class="input-group-text" id="basic-addon3">Заўвагі</span>
-                                    <input type="text" class="form-control" id="basic-url" aria-describedby="basic-addon3">
-                                </div>
-                            </div>
-
-                            <div class="mb-3">
-                                <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="radio" name="informantNotLive" id="informantLive" value="0">
-                                    <label class="form-check-label" for="informantLive">жыве</label>
-                                </div>
-                                <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="radio" name="informantNotLive" id="informantDead" value="1">
-                                    <label class="form-check-label" for="informantDead">памёр/ла</label>
-                                </div>
-                                <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="radio" name="informantNotLive" id="informantLiveUnknown" value="-1">
-                                    <label class="form-check-label" for="informantLiveUnknown">невядома</label>
-                                </div>
-                            </div>
-
-                            <div class="mb-3">
-                                <button type="submit" class="btn btn-success">Захаваць</button>
-                            </div>
-                        </div>
-                    </div>
-                </form>
+                <hr>
+                <p>
+                    Дадаць новага інфарманта
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addInformantModal">
+                        Дадаць
+                    </button>
+                </p>
             </div>
         </div>
 
@@ -537,49 +258,28 @@
             </div>
 
             <div class="card-body">
-                {% for marker in block.getContentFile().fileMarkers %}
-                    <p>
-                        {% if marker.isCategoryNotOther() %}
-                            {{ marker.getCategoryName() }}{% if marker.name %}:{% else %}.{% endif %}
-                        {% endif %}
-                        {{ marker.name }}
-                        {% for tag in marker.tags %}
-                            <span class="badge text-bg-secondary">{{ tag.name }}</span>
-                        {% endfor %}
-                        {{ marker.notes }}
-                        <button type="submit" class="btn btn-danger">Выдаліць</button>
-                    </p>
-                {% endfor %}
-
-                <form>
-                    <div class="input-group mb-3">
-                        <span class="input-group-text">Эпізод</span>
-                        <input type="text" class="form-control" placeholder="тэкст эпізода" aria-label="Server">
-                        <span class="input-group-text">Тэгі</span>
-                        <input type="text" class="form-control" placeholder="" aria-label="Server">
-                        <button type="submit" class="btn btn-danger">Выдаліць</button>
-                        <button type="submit" class="btn btn-success">Дадаць</button>
-                    </div>
-                    <div class="input-group mb-3">
-                        <span class="input-group-text">Эпізод</span>
-                        <input type="text" class="form-control" placeholder="тэкст эпізода" aria-label="Server">
-                        <span class="input-group-text">Тэгі</span>
-                        <input type="text" class="form-control" placeholder="" aria-label="Server">
-                        <button type="submit" class="btn btn-danger">Выдаліць</button>
-                        <button type="submit" class="btn btn-success">Дадаць</button>
-                    </div>
-                    <div class="input-group mb-3">
-                        <span class="input-group-text">Эпізод</span>
-                        <input type="text" class="form-control" placeholder="тэкст эпізода" aria-label="Server">
-                        <span class="input-group-text">Тэгі</span>
-                        <input type="text" class="form-control" placeholder="" aria-label="Server">
-                        <button type="submit" class="btn btn-danger">Выдаліць</button>
-                        <button type="submit" class="btn btn-success">Дадаць</button>
-                    </div>
-                    <div class="mb-3">
-                        <button type="submit" class="btn btn-success">Захаваць</button>
-                    </div>
-                </form>
+                {% if block.getContentFile() %}
+                    {% for marker in block.getContentFile().fileMarkers %}
+                        <p>
+                            {% if marker.isCategoryNotOther() %}
+                                {{ marker.getCategoryName() }}{% if marker.name %}:{% else %}.{% endif %}
+                            {% endif %}
+                            {{ marker.name }}
+                            {% for tag in marker.tags %}
+                                <span class="badge text-bg-secondary">{{ tag.name }}</span>
+                            {% endfor %}
+                            {{ marker.notes }}
+                            <button type="submit" class="btn btn-danger">Выдаліць</button>
+                        </p>
+                    {% endfor %}
+                {% endif %}
+                <hr>
+                <p>
+                    Дадаць новы эпізод
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addEpisodeModal">
+                        Дадаць
+                    </button>
+                </p>
             </div>
         </div>
 
@@ -595,43 +295,384 @@
                         <button type="submit" class="btn btn-danger">Выдаліць</button>
                     </p>
                 {% endfor %}
+                <hr>
+                <p>
+                    Дадаць новы прадмет
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addSubjectModal">
+                        Дадаць
+                    </button>
+                </p>
 
-                <form>
-                    <div class="card">
-                        <div class="card-header">Дадаць новы</div>
-                        <div class="card-body">
-                            <div class="input-group mb-3">
-                                <span class="input-group-text">Тып</span>
-                                <select class="form-select" aria-label="Месца">
-                                    {% for id, name in constant('App\\Entity\\Type\\SubjectType::TYPES') %}
-                                        <option value="{{ id }}">{{ name }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-
-                            <div class="mb-3">
-                                <div class="input-group">
-                                    <span class="input-group-text" id="basic-addon3">Назва</span>
-                                    <input type="text" class="form-control" id="basic-url" aria-describedby="basic-addon3">
-                                </div>
-                            </div>
-
-                            <div class="mb-3">
-                                <div class="input-group">
-                                    <span class="input-group-text" id="basic-addon3">Заўвагі</span>
-                                    <input type="text" class="form-control" id="basic-url" aria-describedby="basic-addon3">
-                                </div>
-                            </div>
-
-                            <div class="mb-3">
-                                <button type="submit" class="btn btn-success">Захаваць</button>
-                            </div>
-                        </div>
-                    </div>
-                </form>
             </div>
         </div>
+
+        <div class="card mb-3" id="reportTasks">
+            <div class="card-header">
+                Планы, задачы, наводкі
+            </div>
+
+            <div class="card-body">
+                {% for task in block.tasks %}
+                    <p>{% if task.status == constant('App\\Entity\\Type\\TaskStatus::TIP') %}
+                            Наводка:
+                        {% endif %}
+                        {{ task.content }}
+                        {% if task.informant %}
+                            Інфармант: {{ task.informant.firstName }}
+                        {% endif %}
+                        <button type="submit" class="btn btn-danger">Выдаліць</button></p>
+                {% endfor %}
+                <hr>
+                <p>
+                    Дадаць новы план, задачу, наводку
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTaskPlanModal">
+                        Дадаць
+                    </button>
+                </p>
+            </div>
+        </div>
+
         {% endfor %}
 
     </div>
+
+    <!-- Modals -->
+
+    <!-- Modal: addReportUserModal -->
+    <div class="modal fade" id="addReportUserModal" tabindex="-1" aria-labelledby="addReportUserModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="addReportUserModalLabel">Дадаць новага ўдзельніка</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Імя</span>
+                            <select class="form-select" aria-label="Name of user">
+                                <option selected>- выбярыце са сьпіса -</option>
+                                {% for id, name in users %}
+                                    <option value="{{ id }}">{{ name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="input-group mb-3">
+                            {% for role, name in constant('App\\Entity\\Type\\UserRoleType::ROLES') %}
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" id="role{{ role }}" name="{{ role }}" value="1">
+                                    <label class="form-check-label" for="role{{ role }}">{{ name }}</label>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыць</button>
+                    <button type="button" class="btn btn-success">Дадаць</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: addTaskPlanModal -->
+    <div class="modal fade" id="addTaskPlanModal" tabindex="-1" aria-labelledby="addTaskPlanModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="addTaskPlanModalLabel">Дадаць новы план, задачу, наводку</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="input-group mb-3">
+                            <span class="input-group-text" id="taskType">Тып</span>
+                            <select class="form-select" aria-label="Type of task">
+                                {% for id, name in constant('App\\Entity\\Type\\TaskStatus::STATUSES') %}
+                                    <option value="{{ id }}">{{ name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Тэкст</span>
+                            <textarea class="form-control" aria-label="Text of task"></textarea>
+                        </div>
+
+                        <div class="input-group mb-3">
+                            <span class="input-group-text" id="basic-addon1">Інфармант</span>
+                            <select class="form-select" aria-label="Informant of task">
+                                <option selected>- выбраць -</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыць</button>
+                    <button type="button" class="btn btn-success">Дадаць</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: addOrgModal -->
+    <div class="modal fade" id="addOrgModal" tabindex="-1" aria-labelledby="addOrgModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="addOrgModalLabel">Дадаць новую арганізацыю</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="input-group mb-3">
+                        <span class="input-group-text">Тып</span>
+                        <select class="form-select" aria-label="Type of org">
+                            {% for id, name in constant('App\\Entity\\Type\\OrganizationType::TYPES') %}
+                                <option value="{{ id }}">{{ name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="input-group">
+                            <span class="input-group-text" id="newOrgName">Назва</span>
+                            <input type="text" class="form-control" aria-describedby="newOrgName">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="input-group">
+                            <span class="input-group-text" id="newOrgDesc">Апісаньне</span>
+                            <input type="text" class="form-control" aria-describedby="newOrgDesc">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="input-group">
+                            <span class="input-group-text" id="newOrgAddress">Адрас</span>
+                            <input type="text" class="form-control" aria-describedby="newOrgAddress">
+                        </div>
+                    </div>
+
+                    <div class="input-group mb-3">
+                        <span class="input-group-text">Месца</span>
+                        <select class="form-select" aria-label="Location of org">
+                            <option selected>- выбраць -</option>
+                            {% for geoPoint in geoPoints %}
+                                <option value="{{ geoPoint.id }}"
+                                        {% if report.geoPoint and report.geoPoint.id == geoPoint.id %}selected{% endif %}>
+                                    {{ geoPoint.getFullBeName() }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="input-group">
+                            <span class="input-group-text" id="newOrgNotes">Заўвагі</span>
+                            <input type="text" class="form-control" aria-describedby="newOrgNotes">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыць</button>
+                    <button type="button" class="btn btn-success">Дадаць</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: addInformantModal -->
+    <div class="modal fade" id="addInformantModal" tabindex="-1" aria-labelledby="addInformantModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="addInformantModalLabel">Дадаць новага інфарманта</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="mb-3">
+                            <div class="input-group">
+                                <span class="input-group-text" id="informantName">Імя</span>
+                                <input type="text" class="form-control" aria-describedby="informantName">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="input-group">
+                                <span class="input-group-text" id="informantBirthYear">Год нараджэньня</span>
+                                <input type="number" class="form-control" aria-describedby="informantBirthYear">
+                            </div>
+                        </div>
+
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Адкуль</span>
+                            <select class="form-select" aria-label="Месца">
+                                <option selected>- выбраць -</option>
+                                <option value="1">в. Дакудава Лідскі раён</option>
+                                <option value="2">в. Дамжарыцы Лепельскі раён</option>
+                                <option value="3">в. Дварчаны Пастаўскі раён</option>
+                                <option value="4">в. Двор-Суша Лепельскі раён</option>
+                            </select>
+                            <span class="input-group-text">няма ў сьпісе</span>
+                            <input type="text" class="form-control" placeholder="вёска і раён" aria-label="Server">
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="inlineRadioOptions" id="informantLive1" value="1">
+                                <label class="form-check-label" for="informantLive1">жыве тут</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="inlineRadioOptions" id="informantLive2" value="2">
+                                <label class="form-check-label" for="informantLive2">невядома дзе жыве</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="inlineRadioOptions" id="informantLive3" value="3">
+                                <label class="form-check-label" for="informantLive3">жыве ў іншым месцы</label>
+                            </div>
+                        </div>
+
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Жыве ў</span>
+                            <select class="form-select" aria-label="Месца">
+                                <option selected>- выбраць -</option>
+                                <option value="1">в. Дакудава Лідскі раён</option>
+                                <option value="2">в. Дамжарыцы Лепельскі раён</option>
+                                <option value="3">в. Дварчаны Пастаўскі раён</option>
+                                <option value="4">в. Двор-Суша Лепельскі раён</option>
+                            </select>
+                            <span class="input-group-text">няма ў сьпісе</span>
+                            <input type="text" class="form-control" placeholder="вёска і раён" aria-label="">
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="informantSex" id="informantSexM" value="m">
+                                <label class="form-check-label" for="informantSexM">мужчына</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="informantSex" id="informantSexF" value="f">
+                                <label class="form-check-label" for="informantSexF">жанчына</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="informantSex" id="informantSexU" value="u">
+                                <label class="form-check-label" for="informantSexU">невядома</label>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="input-group">
+                                <span class="input-group-text" id="informantNotes">Заўвагі</span>
+                                <input type="text" class="form-control" aria-describedby="informantNotes">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="informantNotLive" id="informantLive" value="0">
+                                <label class="form-check-label" for="informantLive">жыве</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="informantNotLive" id="informantDead" value="1">
+                                <label class="form-check-label" for="informantDead">памёр/ла</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="informantNotLive" id="informantLiveUnknown" value="-1">
+                                <label class="form-check-label" for="informantLiveUnknown">невядома</label>
+                            </div>
+                        </div>
+                    </form>
+
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыць</button>
+                    <button type="button" class="btn btn-success">Дадаць</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: addEpisodeModal -->
+    <div class="modal fade" id="addEpisodeModal" tabindex="-1" aria-labelledby="addEpisodeModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="addEpisodeModalLabel">Дадаць новы эпізод</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="input-group mb-3">
+                            <span class="input-group-text" id="taskType">Тып</span>
+                            <select class="form-select" aria-label="Type of episode">
+                                {% for id, name in constant('App\\Entity\\Type\\CategoryType::TYPES') %}
+                                    <option value="{{ id }}"
+                                            {% if id == constant('App\\Entity\\Type\\CategoryType::STORY') %}selected{% endif %}>
+                                        {{ name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Эпізод</span>
+                            <textarea class="form-control" aria-label="Text of episode"></textarea>
+                        </div>
+
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Тэгі</span>
+                            <input type="text" class="form-control" placeholder="" aria-label="Tags of episode">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыць</button>
+                    <button type="button" class="btn btn-success">Дадаць</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: addSubjectModal -->
+    <div class="modal fade" id="addSubjectModal" tabindex="-1" aria-labelledby="addSubjectModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="addSubjectModalLabel">Дадаць новы прадмет</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="input-group mb-3">
+                            <span class="input-group-text" id="subjectType">Тып</span>
+                            <select class="form-select" aria-label="Type of subject">
+                                {% for id, name in constant('App\\Entity\\Type\\SubjectType::TYPES') %}
+                                    <option value="{{ id }}">{{ name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Назва</span>
+                            <textarea class="form-control" aria-label="Name of subject"></textarea>
+                        </div>
+
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Заўвагі</span>
+                            <textarea class="form-control" aria-label="Notes of subject"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыць</button>
+                    <button type="button" class="btn btn-success">Дадаць</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 {% endblock %}

@@ -41,7 +41,7 @@ class GeoPointType
         self::BE_URBAN_SETTLEMENT_SHORT => self::BE_URBAN_SETTLEMENT,
         self::BE_RESORT_SETTLEMENT_SHORT => self::BE_RESORT_SETTLEMENT,
         self::BE_WORKER_SETTLEMENT_SHORT => self::BE_WORKER_SETTLEMENT,
-        self::BE_TRACT_SHORT => self::BE_TRACT_SHORT,
+        self::BE_TRACT_SHORT => self::BE_TRACT,
         self::BE_FOLWARK_SHORT => self::BE_FOLWARK,
         self::BE_KHUTOR_SHORT => self::BE_KHUTOR,
     ];
@@ -62,6 +62,10 @@ class GeoPointType
 
     public static function getShortName(?string $longName): string
     {
+        if ('' === $longName) {
+            return '';
+        }
+
         $beShort = array_search($longName, self::BE_SHORT_LONG, true);
         if (false === $beShort) {
             return mb_substr($longName, 0, 1) . '.';
