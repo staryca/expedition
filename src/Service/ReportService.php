@@ -40,7 +40,7 @@ class ReportService
                 }
             }
 
-            $text = $episode->getText() . "\n";
+            $text = $episode->getText() . "\n" . $content;
             $episode->setText($text);
         }
 
