@@ -18,34 +18,36 @@ class ReportService
     {
         $episodes = [];
 
-        $category = $defaultCategory;
+        $episode = new EpisodeDto($defaultCategory, '');
+
         foreach ($contents as $index => $content) {
             if (mb_strlen($content) < 2) {
-                $category = $defaultCategory;
+                $episodes[] = $episode;
+                $episode = new EpisodeDto($defaultCategory, '');
+
                 continue;
             }
 
             $pos = mb_strpos($content, ':');
             if (false !== $pos) {
+                $episodes[] = $episode;
                 $categoryContent = mb_substr($content, 0, $pos);
                 $contentThis = trim(mb_substr($content, $pos + 1));
                 $categoryThis = CategoryType::getId($categoryContent, $contentThis);
                 if ($categoryThis) {
-                    if (empty($contentThis)) {
-                        $category = $categoryThis;
-                        if ($category !== CategoryType::getIdForOther($categoryContent, $contentThis)) {
-                            continue;
-                        }
-                    } else {
-                        if ($categoryThis === CategoryType::getIdForOther($categoryContent, $contentThis)) {
-                            $contentThis = $content;
-                        }
-                        $episodes[$index] = new EpisodeDto($categoryThis, $contentThis);
-                        continue;
-                    }
+                    $episode = new EpisodeDto($categoryThis, $content);
+                    continue;
                 }
             }
-            $episodes[$index] = new EpisodeDto($category, $content);
+
+            $text = $episode->getText() . "\n";
+            $episode->setText($text);
+        }
+
+        $episodes[] = $episode;
+
+        if ($episodes[0]->getText() === '') {
+            array_shift($episodes);
         }
 
         return $episodes;
