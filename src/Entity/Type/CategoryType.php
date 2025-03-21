@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Entity\Type;
 
+use phpDocumentor\Reflection\Types\Self_;
+
 class CategoryType
 {
     public const KARAHOD = 10;
@@ -153,6 +155,12 @@ class CategoryType
     public static function getId(string $text, string $textNext): ?int
     {
         $text = mb_strtolower($text);
+
+        foreach (self::TEXT_JOIN[self::OTHER] as $name) {
+            if (mb_strtolower($text) === mb_strtolower($name)) {
+                return self::OTHER;
+            }
+        }
 
         foreach (self::TYPES as $key => $name) {
             if ($text === mb_strtolower($name)) {
