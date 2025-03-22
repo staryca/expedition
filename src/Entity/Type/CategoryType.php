@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Entity\Type;
 
-use phpDocumentor\Reflection\Types\Self_;
-
 class CategoryType
 {
     public const KARAHOD = 10;
