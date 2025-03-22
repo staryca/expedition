@@ -74,8 +74,6 @@ class GetEpisodesTest extends TestCase
         $episodes = $this->reportService->getEpisodes($contents, CategoryType::STORY);
         $this->assertNotEmpty($episodes);
 
-        // todo   (use CategoryType::TEXT_JOIN)
-        /*
         $this->assertCount(2, $episodes);
 
         $this->assertEquals(CategoryType::OTHER, $episodes[0]->getCategory());
@@ -84,6 +82,6 @@ class GetEpisodesTest extends TestCase
 туряць
 слончык - малая лавачка
 падгалосьнік - той, хто падводзіць у песьні', $episodes[0]->getText());
-        */
+
     }
 }
