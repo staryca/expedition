@@ -18,36 +18,48 @@ class ReportService
     {
         $episodes = [];
 
-        $episode = new EpisodeDto($defaultCategory, '');
-
+        $category = $defaultCategory;
+        $otherCategory = false;
         foreach ($contents as $index => $content) {
             if (mb_strlen($content) < 2) {
-                $episodes[] = $episode;
-                $episode = new EpisodeDto($defaultCategory, '');
-
+                $category = $defaultCategory;
+                $otherCategory = false;
                 continue;
             }
 
             $pos = mb_strpos($content, ':');
             if (false !== $pos) {
-                $episodes[] = $episode;
                 $categoryContent = mb_substr($content, 0, $pos);
                 $contentThis = trim(mb_substr($content, $pos + 1));
                 $categoryThis = CategoryType::getId($categoryContent, $contentThis);
                 if ($categoryThis) {
-                    $episode = new EpisodeDto($categoryThis, $content);
-                    continue;
+                    if (empty($contentThis)) {
+                        $category = $categoryThis;
+                        if ($category !== CategoryType::getIdForOther($categoryContent, $contentThis)) {
+                            continue;
+                        } else {
+                            $otherCategory = true;
+                            $episodes[$index] = new EpisodeDto($category, $content);
+                            continue;
+                        }
+                    } else {
+                        if ($categoryThis === CategoryType::getIdForOther($categoryContent, $contentThis)) {
+                            $contentThis = $content;
+                            $otherCategory = true;
+                        }
+                        $episodes[$index] = new EpisodeDto($categoryThis, $contentThis);
+                        continue;
+                    }
                 }
             }
 
-            $text = $episode->getText() . "\n" . $content;
-            $episode->setText($text);
-        }
-
-        $episodes[] = $episode;
-
-        if ($episodes[0]->getText() === '') {
-            array_shift($episodes);
+            if ($otherCategory) {
+                $key = array_key_last($episodes);
+                $text = $episodes[$key]->getText() . "\n" . $content;
+                $episodes[$key]->setText($text);
+                continue;
+            }
+            $episodes[$index] = new EpisodeDto($category, $content);
         }
 
         return $episodes;
