@@ -154,12 +154,6 @@ class CategoryType
     {
         $text = mb_strtolower($text);
 
-        foreach (self::TEXT_JOIN[self::OTHER] as $name) {
-            if (mb_strtolower($text) === mb_strtolower($name)) {
-                return self::OTHER;
-            }
-        }
-
         foreach (self::TYPES as $key => $name) {
             if ($text === mb_strtolower($name)) {
                 return $key;
@@ -177,6 +171,12 @@ class CategoryType
 
     public static function getIdForOther(string $text, string $textNext): ?int
     {
+        foreach (self::TEXT_JOIN[self::OTHER] as $name) {
+            if (mb_strtolower($text) === mb_strtolower($name)) {
+                return self::OTHER;
+            }
+        }
+
         foreach (self::VARIANTS_OTHER as $key => $variants) {
             if (in_array($text, $variants, true)) {
                 return $key;
