@@ -17,7 +17,7 @@ use App\Entity\Report;
 use App\Helper\TextHelper;
 use App\Service\LocationService;
 use App\Service\PersonService;
-use PHPHtmlParser\Dom;
+use Symfony\Component\DomCrawler\Crawler;
 
 class BsuParser
 {
@@ -30,124 +30,109 @@ class BsuParser
 
     public function parseContent(string $content): BsuDto
     {
-        $dom = new Dom();
-        $dom->loadStr(str_replace('href=', ' href=', $content));
+        $crawler = new Crawler($content);
 
         $dto = new BsuDto();
 
         // Title
-        $tag = $dom->find('title')[0];
-        $dto->title = mb_strpos($tag->text, 'Электронная библиотека БГУ:') !== false
-            ? mb_substr($tag->text, 28)
-            : $tag->text;
+        $tagText = $crawler->filter('title')->first()->text();
+        $dto->title = mb_strpos($tagText, 'Электронная библиотека БГУ:') !== false
+            ? mb_substr($tagText, 28)
+            : $tagText;
 
         // Find meta DC
-        $metas = $dom->find('meta');
-        foreach ($metas as $meta) {
-            if (str_starts_with($meta->getAttribute('name') ?? '', 'DC')) {
-                $_content = str_replace('&quot;', '', $meta->getAttribute('content'));
-                $dto->dc[$meta->getAttribute('name')] = $_content;
+        $crawler->filter('meta')->each(function (Crawler $node) use ($dto) {
+            if (str_starts_with($node->attr('name') ?? '', 'DC')) {
+                $_content = str_replace('&quot;', '', $node->attr('content'));
+                $dto->dc[$node->attr('name')] = $_content;
             }
-            if ($meta->getAttribute('name') === 'DC.identifier') {
-                $dto->id = (int)substr($meta->getAttribute('content'), -6);
+            if ($node->attr('name') === 'DC.identifier') {
+                $dto->id = (int) substr($node->attr('content'), -6);
             }
-        }
+        });
 
         // Find table
-        $items = $dom->find('.itemDisplayTable tr');
-        foreach ($items as $item) {
-            $label = $item->find('.metadataFieldLabel')[0];
-            $labelClass = trim(str_replace('metadataFieldLabel', '', $label->getAttribute('class')));
+        $crawler->filter('.itemDisplayTable tr')->each(function (Crawler $node) use ($dto) {
+            $label = $node->filter('.metadataFieldLabel')->first();
+            $labelClass = trim(str_replace('metadataFieldLabel', '', $label->attr('class')));
             if (empty($labelClass)) {
-                $labelClass = $label->text;
+                $labelClass = $label->text();
             }
 
-            $value = $item->find('.metadataFieldValue')[0]->innerHtml;
-            $dto->values[$labelClass] = $value;
+            $nodeValue = $node->filter('.metadataFieldValue')->first();
+            $dto->values[$labelClass] = $nodeValue->text();
 
             if ($labelClass === 'Appears in Collections:' || $labelClass === 'Располагается в коллекциях:') {
-                $parent = new Dom();
-                $parent->loadStr($value);
-                $a = $parent->find('a')[0];
+                $a = $nodeValue->filter('a')->first();
 
-                $dto->locationId = (int)substr($a->getAttribute('href'), -6);
-                $dto->locationText = html_entity_decode($a->text);
+                $dto->locationId = (int) substr($a->attr('href'), -6);
+                $dto->locationText = html_entity_decode($a->text());
             }
 
             if ($labelClass === 'dc_identifier_uri' && $dto->id < 1) {
-                $parent = new Dom();
-                $parent->loadStr($value);
-                $a = $parent->find('a')[0];
+                $a = $nodeValue->filter('a')->first();
 
-                $dto->id = (int)substr($a->getAttribute('href'), -6);
+                $dto->id = (int) substr($a->attr('href'), -6);
             }
 
             if ($labelClass === 'dc_contributor') {
-                $parent = new Dom();
-                $parent->loadStr($value);
-                $list = $parent->find('a');
-
-                $key = -1;
-                foreach ($list as $itemW) {
-                    $key = $itemW->text === 'невядомы' ? 500 : $key + 1;
-                    $dto->authors[$key] = html_entity_decode($itemW->innerHtml);
-                }
+                $nodeValue->filter('a')->each(function (Crawler $nodeA, $key) use ($dto) {
+                    $i = $nodeA->text() === 'невядомы' ? 500 : $key;
+                    $dto->authors[$i] = html_entity_decode($nodeA->innerText());
+                });
             }
-        }
+        });
 
         // Find links
-        $items = $dom->find('h4.list-group-item-heading');
-        foreach ($items as $item) {
-            $a = $item->find('a')[0];
-            $id = (int)mb_substr($a->getAttribute('href'), -6);
-            $dto->links[$id] = trim($a->text);
-        }
+        $crawler->filter('h4.list-group-item-heading')->each(function (Crawler $node) use ($dto) {
+            $nodeA = $node->filter('a')->first();
+            $id = (int) mb_substr($nodeA->attr('href'), -6);
+            $dto->links[$id] = trim($nodeA->text());
+        });
 
         // Find children
-        $items = $dom->find('td.evenRowEvenCol strong a');
-        foreach ($items as $item) {
-            $id = (int)mb_substr($item->getAttribute('href'), -6);
-            $dto->children[$id] = html_entity_decode($item->text);
-        }
-        $items = $dom->find('td.oddRowEvenCol strong a');
-        foreach ($items as $item) {
-            $id = (int)mb_substr($item->getAttribute('href'), -6);
-            $dto->children[$id] = html_entity_decode($item->text);
-        }
+        $crawler->filter('td.evenRowEvenCol strong a')->each(function (Crawler $node) use ($dto) {
+            $id = (int) mb_substr($node->attr('href'), -6);
+            $dto->children[$id] = html_entity_decode($node->text());
+        });
+        $crawler->filter('td.oddRowEvenCol strong a')->each(function (Crawler $node) use ($dto) {
+            $id = (int) mb_substr($node->attr('href'), -6);
+            $dto->children[$id] = html_entity_decode($node->text());
+        });
 
         // Find amount of children
         $pos = mb_strpos($content, ': 1 по 20 из ');
         if ($pos !== false) {
-            $dto->total = (int)mb_substr($content, $pos + 13, 5);
+            $dto->total = (int) mb_substr($content, $pos + 13, 5);
         } else {
             $pos = mb_strpos($content, ': 1 по ');
             if ($pos !== false) {
-                $dto->total = (int)mb_substr($content, $pos + 7, 5);
+                $dto->total = (int) mb_substr($content, $pos + 7, 5);
             }
         }
 
         // Find files
-        $items = $dom->find('div.panel-info table.panel-body tr');
-        foreach ($items as $item) {
-            $tds = $item->find('td');
+        $crawler->filter('div.panel-info table.panel-body tr')->each(function (Crawler $node) use ($dto) {
             $filename = null;
             $size = '';
             $type = '';
-            foreach ($tds as $td) {
-                if ($td->getAttribute('headers') === 't1') {
-                    $filename = urldecode($td->find('a')[0]->getAttribute('href'));
+
+            $node->filter('td')->each(function (Crawler $nodeTd) use (&$filename, &$size, &$type) {
+                if ($nodeTd->attr('headers') === 't1') {
+                    $filename = urldecode($nodeTd->filter('a')->first()->attr('href'));
                 }
-                if ($td->getAttribute('headers') === 't3') {
-                    $size = $td->text;
+                if ($nodeTd->attr('headers') === 't3') {
+                    $size = $nodeTd->text();
                 }
-                if ($td->getAttribute('headers') === 't4') {
-                    $type = $td->text;
+                if ($nodeTd->attr('headers') === 't4') {
+                    $type = $nodeTd->text();
                 }
-            }
+
+            });
             if ($filename) {
                 $dto->files[] = ['filename' => $filename, 'size' => $size, 'type' => $type];
             }
-        }
+        });
 
         return $dto;
     }
