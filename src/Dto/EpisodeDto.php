@@ -27,9 +27,9 @@ class EpisodeDto
     /**
      * @param string $text
      */
-    public function setText(string $text): void
+    public function addText(string $text): void
     {
-        $this->text = $text;
+        $this->text .= "\n" . $text;
     }
 
     public function toArray(): array
