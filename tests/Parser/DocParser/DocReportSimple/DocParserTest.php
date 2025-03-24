@@ -62,6 +62,6 @@ class DocParserTest extends TestCase
         $this->assertCount(2, $report->blocks[0]->additional);
         $this->assertArrayHasKey('Photo', $report->blocks[0]->additional);
         $this->assertArrayHasKey('code', $report->blocks[0]->additional);
-        $this->assertCount(5, $report->blocks[0]->episodes);
+        $this->assertCount(7, $report->blocks[0]->episodes);
     }
 }
