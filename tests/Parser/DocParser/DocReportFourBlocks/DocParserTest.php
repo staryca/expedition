@@ -102,6 +102,12 @@ class DocParserTest extends TestCase
         $this->assertEquals('Барадулькіна (Жукава) Марыя Сьцяпанаўна', $report->blocks[2]->informants[0]->name);
         $this->assertEquals(243026442, $report->blocks[2]->informants[0]->geoPoint->getId());
         $this->assertCount(24, $report->blocks[2]->episodes);
+        $this->assertEquals(CategoryType::STORY, $report->blocks[2]->episodes[0]->getCategory());
+        $this->assertEquals('Пераехала ў в. Якубава ў 1938 г.', $report->blocks[2]->episodes[0]->getText());
+        $this->assertEquals(CategoryType::STORY, $report->blocks[2]->episodes[1]->getCategory());
+        $this->assertEquals('Самыя галоўныя сьвяты: "Рашство", "Паска", Тройца.', $report->blocks[2]->episodes[1]->getText());
+        $this->assertEquals(CategoryType::CEREMONY, $report->blocks[2]->episodes[2]->getCategory());
+        $this->assertEquals('Каляды: пеялі, рассыпалі Каляду, калядавалі перад Раством.', $report->blocks[2]->episodes[2]->getText());
 
         $this->assertEquals(ReportBlockType::TYPE_VILLAGE_TOUR, $report->blocks[3]->type);
         $this->assertCount(2, $report->blocks[3]->additional);

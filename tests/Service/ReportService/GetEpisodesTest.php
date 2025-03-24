@@ -25,7 +25,7 @@ class GetEpisodesTest extends TestCase
             'Аповед пра мясцовых гарманістаў і пра тое, што танчылі і без музыкаў.',
             'Танцы: стараданіе, кракавяк, сямёнаўна, полька, дасада. Прыпеўкі пад страданіе і сямёнаўну.',
             'Аповед пра тое, як дзеці вучыліся танцаваць. Гарманісту плацілі яйкамі.',
-            'Вяселле: як закідывалі зайца, як абсевалі, як кусалі хлеб, нявесту садзяць на шубу "каб была багата, гарбата", пра падарункі (насавікі), пра тое, як бутылку гарелкі перавязвалі краснай лентай і везлі цёшчы за чэсную нявесту,',
+            'Вяселле: як закідывалі зайца, як абсевалі, як кусалі хлеб, ...',
             'Аповед пра тое, як рабілі квас, што кублы выкарыстоўвалі замест лядоўні, пра ежу, як лягушак кідалі ў малако, каб не скісала, пра тое, як выкарыстоўвалі шэрсць вечак, побытавыя прылады, шаптух.',
         ];
 
@@ -34,9 +34,12 @@ class GetEpisodesTest extends TestCase
         $this->assertCount(5, $episodes);
 
         $this->assertEquals(CategoryType::OTHER, $episodes[0]->getCategory());
+        $this->assertEquals('Аповед пра мясцовых гарманістаў і пра тое, што танчылі і без музыкаў.', $episodes[0]->getText());
         $this->assertEquals(CategoryType::DANCE, $episodes[1]->getCategory());
+        $this->assertEquals('Танцы: стараданіе, кракавяк, сямёнаўна, полька, дасада. Прыпеўкі пад страданіе і сямёнаўну.', $episodes[1]->getText());
         $this->assertEquals(CategoryType::OTHER, $episodes[2]->getCategory());
         $this->assertEquals(CategoryType::CEREMONY, $episodes[3]->getCategory());
+        $this->assertEquals('Вяселле: як закідывалі зайца, як абсевалі, як кусалі хлеб, ...', $episodes[3]->getText());
         $this->assertEquals(CategoryType::OTHER, $episodes[4]->getCategory());
     }
 
@@ -83,5 +86,7 @@ class GetEpisodesTest extends TestCase
 слончык - малая лавачка
 падгалосьнік - той, хто падводзіць у песьні', $episodes[0]->getText());
 
+        $this->assertEquals(CategoryType::STORY, $episodes[6]->getCategory());
+        $this->assertEquals('Танцавальны этыкет, як трымалі рукі ў парным танцы', $episodes[6]->getText());
     }
 }
