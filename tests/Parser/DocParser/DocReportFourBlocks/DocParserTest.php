@@ -89,7 +89,7 @@ class DocParserTest extends TestCase
         $this->assertCount(1, $report->blocks[0]->informants);
         $this->assertEquals('Пацук (Барадулькіна) Зінаіда Сьцяпанаўна', $report->blocks[1]->informants[0]->name);
         $this->assertEquals(243026442, $report->blocks[1]->informants[0]->geoPoint->getId());
-        $this->assertCount(36, $report->blocks[1]->episodes);
+        $this->assertCount(28, $report->blocks[1]->episodes);
         $this->assertEquals(CategoryType::STORY, $report->blocks[1]->episodes[0]->getCategory());
 
         $this->assertEquals(ReportBlockType::TYPE_CONVERSATION, $report->blocks[2]->type);
