@@ -55,8 +55,7 @@ class ReportService
 
             if ($otherCategory) {
                 $key = array_key_last($episodes);
-                $text = $episodes[$key]->getText() . "\n" . $content;
-                $episodes[$key]->setText($text);
+                $episodes[$key]->addText($content);
                 continue;
             }
             $episodes[$index] = new EpisodeDto($category, $content);
