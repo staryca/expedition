@@ -20,10 +20,10 @@ class ImportDocController extends AbstractController
     private const EXPEDITION_ID = 321;
 
     public function __construct(
-        private readonly DocParser              $parser,
-        private readonly ExpeditionRepository   $expeditionRepository,
+        private readonly DocParser $parser,
+        private readonly ExpeditionRepository $expeditionRepository,
         private readonly EntityManagerInterface $entityManager,
-        private readonly ReportManager          $reportManager,
+        private readonly ReportManager $reportManager,
     ) {
     }
 

@@ -13,7 +13,6 @@ use App\Dto\ReportDataDto;
 use App\Entity\Expedition;
 use App\Entity\File;
 use App\Entity\FileMarker;
-use App\Entity\GeoPoint;
 use App\Entity\Informant;
 use App\Entity\Organization;
 use App\Entity\OrganizationInformant;
@@ -26,12 +25,10 @@ use App\Entity\Type\CategoryType;
 use App\Entity\Type\FileType;
 use App\Entity\Type\OrganizationType;
 use App\Entity\Type\ReportBlockType;
-use App\Entity\Type\SubjectType;
 use App\Entity\Type\TaskStatus;
 use App\Entity\UserReport;
 use App\Repository\TagRepository;
 use App\Service\LocationService;
-use App\Service\ReportService;
 use App\Service\SubjectService;
 use Carbon\Carbon;
 use Carbon\CarbonImmutable;
@@ -45,7 +42,6 @@ class ReportManager
         private readonly TagRepository $tagRepository,
         private readonly LocationService $locationService,
         private readonly SubjectService $subjectService,
-        private readonly ReportService $reportService,
     ) {
     }
 
@@ -598,11 +594,13 @@ class ReportManager
             foreach ($fileDto->markers as $markerDto) {
                 $fileMarker = new FileMarker();
                 $fileMarker->setCategory($markerDto->category ?? CategoryType::OTHER);
-                $fileMarker->setStartTime($markerDto->timeFrom
+                $fileMarker->setStartTime(
+                    $markerDto->timeFrom
                     ? CarbonImmutable::createFromFormat('i:s.u', $markerDto->timeFrom)
                     : null
                 );
-                $fileMarker->setEndTime($markerDto->timeTo
+                $fileMarker->setEndTime(
+                    $markerDto->timeTo
                     ? CarbonImmutable::createFromFormat('i:s.u', $markerDto->timeTo)
                     : null
                 );

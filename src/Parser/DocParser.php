@@ -21,9 +21,9 @@ class DocParser
 {
     public function __construct(
         private readonly LocationService $locationService,
-        private readonly PersonService   $personService,
-        private readonly UserService     $userService,
-        private readonly ReportService   $reportService,
+        private readonly PersonService $personService,
+        private readonly UserService $userService,
+        private readonly ReportService $reportService,
     ) {
     }
 
@@ -46,8 +46,7 @@ class DocParser
 
         // Find all blocks
         $content = [];
-        $crawler->filter('para')->each(function (Crawler $node)
-                use (&$blockKey, &$reportKey, &$reports, &$content, &$previousType, &$expeditionDate, &$users) {
+        $crawler->filter('para')->each(function (Crawler $node) use (&$blockKey, &$reportKey, &$reports, &$content, &$previousType, &$expeditionDate, &$users) {
             $text = htmlspecialchars_decode(trim($node->text()));
 
             $currentType = null;

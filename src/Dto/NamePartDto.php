@@ -35,7 +35,7 @@ class NamePartDto
                 } else {
                     $isBase = false;
                 }
-            } else if (!$isSame) {
+            } elseif (!$isSame) {
                 return null;
             }
         }
@@ -61,10 +61,10 @@ class NamePartDto
                 $parts[++$keyPart] = $part;
                 if (!$isSame) {
                     $keyLast = null;
-                } else if (null === $keyLast) {
+                } elseif (null === $keyLast) {
                     $keyLast = $keyPart;
                 }
-            } else if (!$isSame) {
+            } elseif (!$isSame) {
                 $isDiff = true;
                 $parts[++$keyPart] = $part;
             }

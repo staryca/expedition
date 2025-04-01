@@ -22,10 +22,10 @@ class VideoKozParser
 {
     public function __construct(
         private readonly LocationService $locationService,
-        private readonly PersonService   $personService,
-        private readonly TextHelper      $textHelper,
-        private readonly PackRepository  $packRepository,
-     ) {
+        private readonly PersonService $personService,
+        private readonly TextHelper $textHelper,
+        private readonly PackRepository $packRepository,
+    ) {
     }
 
     /**

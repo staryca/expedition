@@ -10,5 +10,4 @@ class PlaceDto
 {
     public ?GeoPoint $geoPoint = null;
     public ?string $place = null;
-
 }

@@ -149,6 +149,6 @@ class User
 
     public function __toString(): string
     {
-        return sprintf("#%d %s". $this->id, $this->firstName);
+        return sprintf("#%d %s" . $this->id, $this->firstName);
     }
 }

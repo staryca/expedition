@@ -29,7 +29,8 @@ class KoboParserTest extends TestCase
         $textHelper = new TextHelper();
         $locationService = new LocationService($this->geoPointRepository, $textHelper);
         $userService = new UserService(
-            $this->createMock(UserRepository::class), $textHelper
+            $this->createMock(UserRepository::class),
+            $textHelper
         );
         $this->koboParser = new KoboParser($locationService, $userService);
     }
@@ -118,7 +119,8 @@ class KoboParserTest extends TestCase
         $this->assertCount(2, $report->blocks[0]->additional);
         $this->assertArrayHasKey(InformationType::AUDIO, $report->blocks[0]->additional);
         $this->assertArrayHasKey(InformationType::PHOTO, $report->blocks[0]->additional);
-        $this->assertEquals('партрэт інфарматаркі, копіі фотаздымкаў з сямейнага архіва: "прашчальная" (провады) сына Сяргея, з гармонікам Мікалай Купрэеў (№2), пераапранутыя госці з вяселля сына Сяргея, 1970 г. (№3-4), сын Сяргей у дзяцінстве (№5),   гарманіст Уладзімір Ражкоў (№5-7), дзед інф-кі Васіль Фёдаравіч Семянкоў з жонкай (№8), свякры інф-кі Макар і Лукер\'я Хадарцовы (№9), партрэты інфарматаркі і мужа (№ 10-11)',
+        $this->assertEquals(
+            'партрэт інфарматаркі, копіі фотаздымкаў з сямейнага архіва: "прашчальная" (провады) сына Сяргея, з гармонікам Мікалай Купрэеў (№2), пераапранутыя госці з вяселля сына Сяргея, 1970 г. (№3-4), сын Сяргей у дзяцінстве (№5),   гарманіст Уладзімір Ражкоў (№5-7), дзед інф-кі Васіль Фёдаравіч Семянкоў з жонкай (№8), свякры інф-кі Макар і Лукер\'я Хадарцовы (№9), партрэты інфарматаркі і мужа (№ 10-11)',
             $report->blocks[0]->photoNotes
         );
 
@@ -162,25 +164,29 @@ class KoboParserTest extends TestCase
 
         $content = $contents[104];
         $this->assertEquals(46, $content->reportIndex);
-        $this->assertEquals('Біяграфічныя звесткі. Як мясцовыя хутары звозілі ў вёску ў 1939 г.',
+        $this->assertEquals(
+            'Біяграфічныя звесткі. Як мясцовыя хутары звозілі ў вёску ў 1939 г.',
             mb_substr($content->notes, 0, 66)
         );
 
         $content = $contents[105];
         $this->assertEquals(47, $content->reportIndex);
-        $this->assertEquals('Біяграфічныя звесткі.  Вяселле, пераезд у Ордзеж.  Мясцовыя музыканты:  Мікалай Смолаў',
+        $this->assertEquals(
+            'Біяграфічныя звесткі.  Вяселле, пераезд у Ордзеж.  Мясцовыя музыканты:  Мікалай Смолаў',
             mb_substr($content->notes, 0, 86)
         );
 
         $content = $contents[106];
         $this->assertEquals(48, $content->reportIndex);
-        $this->assertEquals('Фота  рушнікоў, кашуль, андарака, посцілак, куфраў, збаноў, прасоў, жорны, свістуляк',
+        $this->assertEquals(
+            'Фота  рушнікоў, кашуль, андарака, посцілак, куфраў, збаноў, прасоў, жорны, свістуляк',
             mb_substr($content->notes, 0, 84)
         );
 
         $content = $contents[107];
         $this->assertEquals(49, $content->reportIndex);
-        $this->assertEquals('фота  вырабаў мясцовых майстрых з лямцу, з гліны, з лазы і саломы, тэкстыльныя вырабы',
+        $this->assertEquals(
+            'фота  вырабаў мясцовых майстрых з лямцу, з гліны, з лазы і саломы, тэкстыльныя вырабы',
             mb_substr($content->notes, 0, 85)
         );
     }

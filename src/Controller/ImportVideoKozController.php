@@ -16,7 +16,7 @@ class ImportVideoKozController extends AbstractController
     private const FILENAME = '../var/data/video_koz/br-1.csv';
 
     public function __construct(
-        private readonly VideoKozHandler       $videoKozHandler,
+        private readonly VideoKozHandler $videoKozHandler,
     ) {
     }
 
