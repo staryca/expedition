@@ -11,7 +11,6 @@ use App\Repository\InformantRepository;
 use App\Repository\OrganizationRepository;
 use App\Repository\ReportRepository;
 use App\Repository\SubjectRepository;
-use App\Repository\TagRepository;
 use App\Repository\TaskRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;

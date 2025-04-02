@@ -1,0 +1,2 @@
+google_login:
+  path: /login/check-google

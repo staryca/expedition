@@ -4,6 +4,7 @@
 !bin/symfony_requirements
 /vendor/
 /var/
+/certificate
 
 # Symfony
 /.env.local
