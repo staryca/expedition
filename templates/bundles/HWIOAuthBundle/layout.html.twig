@@ -1,0 +1,15 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+    Аўтарызацыя
+{% endblock %}
+
+{% block body %}
+    <div class="container py-5">
+        <h1 class="h2">Аўтарызацыя</h1>
+        <p>
+            {% block hwi_oauth_content %}
+            {% endblock hwi_oauth_content %}
+        </p>
+    </div>
+{% endblock %}
