@@ -30,11 +30,11 @@ class VideoKozHandler
     private const USER_LEADER_ID = 6; // Kozienka
 
     public function __construct(
-        private readonly VideoKozParser       $parser,
+        private readonly VideoKozParser $parser,
         private readonly ExpeditionRepository $expeditionRepository,
-        private readonly PersonService        $personService,
-        private readonly UserRepository       $userRepository,
-        private readonly ReportManager        $reportManager,
+        private readonly PersonService $personService,
+        private readonly UserRepository $userRepository,
+        private readonly ReportManager $reportManager,
     ) {
     }
 

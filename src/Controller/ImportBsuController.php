@@ -25,11 +25,11 @@ class ImportBsuController extends AbstractController
     private const EXPEDITION_ID = 8;
 
     public function __construct(
-        private readonly BsuParser              $parser,
-        private readonly ExpeditionRepository   $expeditionRepository,
-        private readonly TagRepository          $tagRepository,
+        private readonly BsuParser $parser,
+        private readonly ExpeditionRepository $expeditionRepository,
+        private readonly TagRepository $tagRepository,
         private readonly EntityManagerInterface $entityManager,
-        private readonly ReportManager          $reportManager,
+        private readonly ReportManager $reportManager,
     ) {
     }
 
@@ -267,7 +267,8 @@ class ImportBsuController extends AbstractController
         foreach ($expedition->getReports() as $report) {
             $code = (int) $report->getCode();
             $data = $report->getTemp();
-            if ($code > 100000
+            if (
+                $code > 100000
                 && !empty(isset($data['dc']['DCTERMS.spatial']) && $data['locationText'])
                 && $report->getGeoPoint() === null
             ) {
@@ -288,7 +289,8 @@ class ImportBsuController extends AbstractController
         foreach ($expedition->getReports() as $report) {
             $code = (int) $report->getCode();
             $data = $report->getTemp();
-            if ($code > 100000
+            if (
+                $code > 100000
                 && !empty(isset($data['dc']['DCTERMS.spatial']) && $data['locationText'])
             ) {
                 $reports[$code] = $report;
@@ -502,13 +504,13 @@ class ImportBsuController extends AbstractController
                 $personsBsu[] = $person;
             }
         }
-        usort($personsBsu, function ($a, $b) { return strcasecmp($a->name, $b->name); });
+        usort($personsBsu, static function ($a, $b) {
+            return strcasecmp($a->name, $b->name);
+        });
         $stat['All reports Data'] = count($reportsData);
         $stat['memory 2'] = memory_get_usage(true) / 1024 / 1024;
         unset($expedition);
         $stat['memory 3'] = memory_get_usage(true) / 1024 / 1024;
-        $expedition = $this->expeditionRepository->find(self::EXPEDITION_ID);
-        $stat['memory 3b'] = memory_get_usage(true) / 1024 / 1024;
 
         /** @var array<OrganizationDto> $organizations */
         $organizations = [];
@@ -524,7 +526,9 @@ class ImportBsuController extends AbstractController
         $stat['Informants in organizations'] = count($informants);
 
         $this->parser->getStudents($personsBsu, $students);
-        usort($students, function ($a, $b) { return strcasecmp($a->name, $b->name); });
+        usort($students, static function ($a, $b) {
+            return strcasecmp($a->name, $b->name);
+        });
         $stat['Students'] = count($students);
         $stat['memory 4'] = memory_get_usage(true) / 1024 / 1024;
 
@@ -617,7 +621,9 @@ class ImportBsuController extends AbstractController
                 $personsBsu[] = $person;
             }
         }
-        usort($personsBsu, function ($a, $b) { return strcasecmp($a->name, $b->name); });
+        usort($personsBsu, static function ($a, $b) {
+            return strcasecmp($a->name, $b->name);
+        });
 
         $sr['m2'] = memory_get_usage(true) / 1024 / 1024;
 
@@ -631,7 +637,9 @@ class ImportBsuController extends AbstractController
         $this->parser->getOrganizations($personsBsu, $organizations);
         $this->parser->getInformantsFromOrganizations($organizations, $informants);
         $this->parser->getStudents($personsBsu, $students);
-        usort($students, function ($a, $b) { return strcasecmp($a->name, $b->name); });
+        usort($students, static function ($a, $b) {
+            return strcasecmp($a->name, $b->name);
+        });
         $this->parser->getInformants($personsBsu, $informants);
 
         // Compare students and informants

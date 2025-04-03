@@ -17,7 +17,7 @@ class ImportFilesController extends AbstractController
 
     public function __construct(
         private readonly ExpeditionRepository $expeditionRepository,
-        private readonly FilesServer          $filesServer,
+        private readonly FilesServer $filesServer,
     ) {
     }
 

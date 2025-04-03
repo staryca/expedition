@@ -9,7 +9,8 @@ class EpisodeDto
     private int $category;
     private string $text;
 
-    public function __construct(int $category, string $text) {
+    public function __construct(int $category, string $text)
+    {
         $this->category = $category;
         $this->text = $text;
     }

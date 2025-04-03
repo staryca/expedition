@@ -23,8 +23,8 @@ class BsuParser
 {
     public function __construct(
         private readonly LocationService $locationService,
-        private readonly PersonService   $personService,
-        private readonly TextHelper      $textHelper,
+        private readonly PersonService $personService,
+        private readonly TextHelper $textHelper,
     ) {
     }
 
@@ -127,7 +127,6 @@ class BsuParser
                 if ($nodeTd->attr('headers') === 't4') {
                     $type = $nodeTd->text();
                 }
-
             });
             if ($filename) {
                 $dto->files[] = ['filename' => $filename, 'size' => $size, 'type' => $type];
@@ -141,7 +140,8 @@ class BsuParser
     {
         $report = new Report($expedition);
         $report->setCode((string)$dto->id);
-        $report->setDateCreated(isset($dto->dc['DCTERMS.available'])
+        $report->setDateCreated(
+            isset($dto->dc['DCTERMS.available'])
             ? new \DateTimeImmutable($dto->dc['DCTERMS.available'])
             : date_create()
         );
@@ -203,11 +203,12 @@ class BsuParser
     {
         $data = $report->getTemp();
 
-        $report->setDateCreated(isset($data['dc']['DCTERMS.available'])
+        $report->setDateCreated(
+            isset($data['dc']['DCTERMS.available'])
             ? new \DateTimeImmutable($data['dc']['DCTERMS.available'])
             : date_create()
         );
-        if (isset($data['dc']['DCTERMS.created']) && (int)$data['dc']['DCTERMS.created'] > 1900) {
+        if (isset($data['dc']['DCTERMS.created']) && (int) $data['dc']['DCTERMS.created'] > 1900) {
             $report->setDateAction((new \DateTimeImmutable())->setDate((int)$data['dc']['DCTERMS.created'], 1, 1));
         }
 
@@ -232,8 +233,10 @@ class BsuParser
         foreach ($authors as $author) {
             $person = new PersonDto();
             $author = $this->textHelper->replaceLetters($author);
-            if (str_contains($author, 'рупа жанчын') /* група */
-                || $author === 'тое ж' || $author === 'дзіцё'
+            if (
+                str_contains($author, 'рупа жанчын') /* група */
+                || $author === 'тое ж'
+                || $author === 'дзіцё'
                 || str_contains($author, 'пявякоў') /* спявякоў */
             ) {
                 $author = 'невядомы';
@@ -359,7 +362,7 @@ class BsuParser
                     }
                 }
                 if (!$isSame) {
-                    $organizations[] = (new OrganizationDto)->make($personBsu);
+                    $organizations[] = (new OrganizationDto())->make($personBsu);
                 }
                 unset($personsBsu[$key]);
             }
@@ -394,7 +397,7 @@ class BsuParser
     {
         foreach ($personsBsu as $key => $personBsu) {
             if ($personBsu->isStudent) {
-                foreach($this->personService->detectStudents($personBsu) as $student) {
+                foreach ($this->personService->detectStudents($personBsu) as $student) {
                     $isSame = false;
                     foreach ($students as $_student) {
                         if ($student->isSame($_student)) {

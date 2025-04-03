@@ -25,7 +25,7 @@ class VopisParser
 
     public function __construct(
         private readonly LocationService $locationService,
-        private readonly PersonService   $personService,
+        private readonly PersonService $personService,
     ) {
     }
 
@@ -54,10 +54,12 @@ class VopisParser
             if ($record[0] === '') {
                 continue;
             }
-            if ($key < 0 || (
+            if (
+                $key < 0
+                || (
                     $record[1] === ''
                     && $record[2] === ''
-                    && ($withTime || !is_numeric(mb_substr($record[0], 0 ,1)))
+                    && ($withTime || !is_numeric(mb_substr($record[0], 0, 1)))
                 )
             ) {
                 $key++;

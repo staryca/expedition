@@ -1,3 +1,3 @@
 # Expedition App
 
-Application for import, view and change the expedition data.
+Application for importing, viewing and changing of the expedition data.

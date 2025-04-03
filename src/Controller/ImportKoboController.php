@@ -19,10 +19,10 @@ class ImportKoboController extends AbstractController
     private const EXPEDITION_ID = 311;
 
     public function __construct(
-        private readonly KoboParser             $parser,
-        private readonly ExpeditionRepository   $expeditionRepository,
-        private readonly LocationService        $locationService,
-        private readonly ReportManager          $reportManager,
+        private readonly KoboParser $parser,
+        private readonly ExpeditionRepository $expeditionRepository,
+        private readonly LocationService $locationService,
+        private readonly ReportManager $reportManager,
     ) {
     }
 

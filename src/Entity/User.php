@@ -10,11 +10,13 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use HWI\Bundle\OAuthBundle\OAuth\Response\UserResponseInterface;
+use HWI\Bundle\OAuthBundle\Security\Core\User\OAuthAwareUserProviderInterface;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
 #[ApiResource]
-class User
+class User implements OAuthAwareUserProviderInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -149,6 +151,11 @@ class User
 
     public function __toString(): string
     {
-        return sprintf("#%d %s". $this->id, $this->firstName);
+        return sprintf("#%d %s" . $this->id, $this->firstName);
+    }
+
+    public function loadUserByOAuthUserResponse(UserResponseInterface $response): void
+    {
+        $this->firstName = $response->getUserIdentifier();
     }
 }

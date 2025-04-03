@@ -20,9 +20,9 @@ class ImportVopisController extends AbstractController
     private const WITH_TIME = false;
 
     public function __construct(
-        private readonly VopisParser          $parser,
+        private readonly VopisParser $parser,
         private readonly ExpeditionRepository $expeditionRepository,
-        private readonly ReportManager        $reportManager,
+        private readonly ReportManager $reportManager,
     ) {
     }
 

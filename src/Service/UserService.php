@@ -85,7 +85,7 @@ class UserService
 
             $userRole = new UserRolesDto();
             $userRole->user = $user;
-            $userRole->roles = array_unique($roleKeys);;
+            $userRole->roles = array_unique($roleKeys);
             $result[] = $userRole;
         }
 

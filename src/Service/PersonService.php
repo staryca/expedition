@@ -61,7 +61,8 @@ class PersonService
                 $informant = new InformantDto();
                 $informant->notes = 'кір.';
                 $informant->name = preg_replace(
-                    '!\s+!', ' ',
+                    '!\s+!',
+                    ' ',
                     trim(mb_substr($persons, 0, $pos) . mb_substr($persons, $pos + 4))
                 );
                 $dto->informants[] = $informant;
@@ -81,7 +82,7 @@ class PersonService
             $parts = explode(',', $text);
             $name = '';
             if (count($parts) < 2) {
-                $this->addInformants( $dto->informants, $informant);
+                $this->addInformants($dto->informants, $informant);
             } else {
                 $notes = [];
                 $informant = null;
@@ -89,7 +90,7 @@ class PersonService
                     if (null === $informant) {
                         $informant = $this->getPersonByFullName($part);
                         if (null !== $informant) {
-                            $this->addInformants( $dto->informants, $informant);
+                            $this->addInformants($dto->informants, $informant);
                             continue;
                         }
                     }

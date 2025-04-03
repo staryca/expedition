@@ -208,7 +208,6 @@ class Subject
         }
 
         return $amount;
-
     }
 
     public function isMarked(): ?bool
