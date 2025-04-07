@@ -16,13 +16,26 @@ class InformantService
     {
         $result = [];
 
-        for ($i = 0; $i < count($informants); $i++) {
-            for ($j = $i + 1; $j < count($informants); $j++) {
-                $informant1 = $informants[$i];
-                $informant2 = $informants[$j];
+        $groupedByName = [];
 
-                if ($informant1 instanceof Informant && $informant2 instanceof Informant) {
-                    if ($informant1->getFirstName() === $informant2->getFirstName()) {
+        foreach ($informants as $informant) {
+            if ($informant instanceof Informant) {
+                $firstName = $informant->getFirstName();
+                if (!isset($groupedByName[$firstName])) {
+                    $groupedByName[$firstName] = [];
+                }
+                $groupedByName[$firstName][] = $informant;
+            }
+        }
+
+        foreach ($groupedByName as $group) {
+            $count = count($group);
+            if ($count > 1) {
+                for ($i = 0; $i < $count; $i++) {
+                    for ($j = $i + 1; $j < $count; $j++) {
+                        $informant1 = $group[$i];
+                        $informant2 = $group[$j];
+
                         if (
                             $informant1->getGeoPointBirth() === $informant2->getGeoPointBirth() ||
                             $informant1->getGeoPointCurrent() === $informant2->getGeoPointCurrent()

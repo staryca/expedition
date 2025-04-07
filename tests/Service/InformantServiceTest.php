@@ -18,7 +18,20 @@ class InformantServiceTest extends TestCase
         $this->informantService = new InformantService();
     }
 
-    public function testGetDuplicates()
+    /** @dataProvider dataFiles
+     * @param array<Informant> $informants
+     */
+    public function testGetDuplicates(array $informants)
+    {
+        $result = $this->informantService->getDuplicates($informants);
+
+        $this->assertCount(2, $result, 'Должно быть два массива с дубликатами');
+
+        $this->assertContains([$informants[0], $informants[1]], $result, 'Результат должен содержать дубликаты 1 и 2 информантов');
+        $this->assertContains([$informants[1], $informants[2]], $result, 'Результат должен содержать дубликаты 2 и 3 информантов');
+    }
+
+    private function dataFiles(): array
     {
         $geo1 = (new GeoPoint('First'));
         $geo2 = (new GeoPoint('Second'));
@@ -38,13 +51,11 @@ class InformantServiceTest extends TestCase
             ->setFirstName('Nadia')
             ->setGeoPointBirth($geo2)
             ->setGeoPointCurrent($geo3);
-        $informants = [$inf1, $inf2, $inf3, $inf4];
 
-        $result = $this->informantService->getDuplicates($informants);
-
-        $this->assertCount(2, $result, 'Должно быть два массива с дубликатами');
-
-        $this->assertContains([$inf1, $inf2], $result, 'Результат должен содержать дубликаты 1 и 2 информантов');
-        $this->assertContains([$inf2, $inf3], $result, 'Результат должен содержать дубликаты 2 и 3 информантов');
+        return [
+            [
+                [$inf1, $inf2, $inf3, $inf4]
+            ],
+        ];
     }
 }
