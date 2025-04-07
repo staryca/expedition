@@ -19,6 +19,7 @@ class InformantDto extends StudentDto
     public ?Carbon $dateAdded = null;
     public ?string $photo = null;
     public ?string $photoUrl = null;
+    public ?PlaceDto $birthPlace = null;
 
     public function isSameBirth(InformantDto $informantDto): ?bool
     {
@@ -53,8 +54,8 @@ class InformantDto extends StudentDto
         if ($informantDto->birthDay && !$this->birthDay) {
             $this->birthDay = $informantDto->birthDay;
         }
-        if (!empty($informantDto->notes) && $informantDto->notes !== $this->notes) {
-            $this->notes .= (empty($this->notes) ? '' : '. ') . $informantDto->notes;
+        if (!empty($informantDto->notes) && !str_contains($this->notes, $informantDto->notes)) {
+            $this->addNotes($informantDto->notes);
         }
         if (GenderType::UNKNOWN !== $informantDto->gender && $this->gender === GenderType::UNKNOWN) {
             $this->gender = $informantDto->gender;
@@ -71,6 +72,14 @@ class InformantDto extends StudentDto
         if (!empty($informantDto->photoUrl) && empty($this->photoUrl)) {
             $this->photoUrl = $informantDto->photoUrl;
         }
+        if (null !== $informantDto->birthPlace && !$this->birthPlace) {
+            $this->birthPlace = $informantDto->birthPlace;
+        }
+    }
+
+    public function addNotes(string $notes): void
+    {
+        $this->notes .= (empty($this->notes) ? '' : '. ') . $notes;
     }
 
     public static function fromKobo(array $data): self
@@ -110,5 +119,15 @@ class InformantDto extends StudentDto
     {
         $this->name = $nameAndGender->getName();
         $this->gender = $nameAndGender->gender;
+    }
+
+    public function getHash(): string
+    {
+        return md5(
+            $this->birth . '$1#'
+            . $this->name . '$2#'
+            . $this->gender . '$3#'
+            . $this->getPlaceHash() . '$4#'
+        );
     }
 }

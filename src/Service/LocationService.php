@@ -14,6 +14,8 @@ class LocationService
 {
     public const DISTRICT = 'раён';
     public const SUBDISTRICT = 'сельскі Савет';
+    public const SUBDISTRICT_SHORT = 'с/с';
+    public const REGION = 'вобласць';
 
     public function __construct(
         private readonly GeoPointRepository $geoPointRepository,
@@ -45,13 +47,13 @@ class LocationService
     public function getSearchDtoByFullPlace(string $fullPlace): GeoPointSearchDto
     {
         $fullPlace = str_replace(
-            ['р-н', 'раёна', 'вобл.', 'вобласці', '(', ')', '  ', ' - ', ' -', '- '],
-            [self::DISTRICT, self::DISTRICT, 'вобласць', 'вобласць', ',', '', ' ', '-', '-', '-'],
-            $this->textHelper->replaceLetters($fullPlace)
+            ['р-н', 'раёна', 'сельсавет', 'вобл.', 'вобласці', '(', ')', '  ', ' - ', ' -', '- '],
+            [self::DISTRICT, self::DISTRICT, self::SUBDISTRICT_SHORT, self::REGION, self::REGION, ',', '', ' ', '-', '-', '-'],
+            TextHelper::replaceLetters($fullPlace)
         );
         $fullPlace = self::addComma($fullPlace, self::DISTRICT);
-        $fullPlace = self::addComma($fullPlace, 'с/с');
-        $fullPlace = self::addComma($fullPlace, 'вобласць');
+        $fullPlace = self::addComma($fullPlace, self::SUBDISTRICT_SHORT);
+        $fullPlace = self::addComma($fullPlace, self::REGION);
 
         $parts = explode(',', $fullPlace);
         $district = null;
@@ -68,9 +70,9 @@ class LocationService
 
                 if (str_contains($part, self::DISTRICT)) {
                     $district = trim($part);
-                } elseif (str_contains($part, 'с/с')) {
+                } elseif (str_contains($part, self::SUBDISTRICT_SHORT)) {
                     $subDistrict = trim($part);
-                } elseif (str_contains($part, 'вобласць')) {
+                } elseif (str_contains($part, self::REGION)) {
                     $region = str_replace('кай', 'кая', trim($part));
                 } elseif (str_contains($part, 'Беларусь')) {
                     continue;
@@ -95,7 +97,7 @@ class LocationService
         }
 
         if (null === $subDistrict) {
-            $pos = mb_strpos($place, 'с/с');
+            $pos = mb_strpos($place, self::SUBDISTRICT_SHORT);
             if ($pos !== false) {
                 $posSubDistrict = mb_strrpos(trim(mb_substr($place, 0, $pos)), ' ');
                 if ($posSubDistrict !== false) {
@@ -107,7 +109,7 @@ class LocationService
         if (isset(GeoPointSearchDto::SUBDISTRICTS[$subDistrict])) {
             $subDistrict = GeoPointSearchDto::SUBDISTRICTS[$subDistrict];
         }
-        if ($subDistrict && ($pos = mb_strpos($subDistrict, 'с/с')) > 0) {
+        if ($subDistrict && ($pos = mb_strpos($subDistrict, self::SUBDISTRICT_SHORT)) > 0) {
             $subDistrict = trim(mb_substr($subDistrict, 0, $pos)) . ' ' . self::SUBDISTRICT;
         }
 
@@ -122,10 +124,14 @@ class LocationService
         ?string $region = null
     ): GeoPointSearchDto {
         $dto = new GeoPointSearchDto();
-        $place = $this->textHelper->replaceLetters($place);
+        $place = TextHelper::replaceLetters($place);
 
         if (!empty($district)) {
-            $district = str_replace('р-н', self::DISTRICT, $this->textHelper->replaceLetters($district));
+            $district = str_replace(
+                ['р-н', "'"],
+                [self::DISTRICT, '’'],
+                TextHelper::replaceLetters($district)
+            );
             if (isset(GeoPointSearchDto::DISTINCTS[$district])) {
                 $district = GeoPointSearchDto::DISTINCTS[$district];
             }
@@ -135,8 +141,8 @@ class LocationService
         }
 
         $place = str_replace(
-            array('и', 'Дя', 'тё', 'Б. ', 'В. ', ' е', '  '),
-            array('і', 'Дзя', 'цё', 'Вялікая ', 'Вялікая ', ' Е', ' '),
+            array('и', 'Дя', 'тё', 'Б. ', 'В. ', ' е', '  ', "'"),
+            array('і', 'Дзя', 'цё', 'Вялікая ', 'Вялікая ', ' Е', ' ', '’'),
             $place
         );
         [$place, $place2] = $this->textHelper->getNames($place);
@@ -186,7 +192,9 @@ class LocationService
 
         $dto->district = $district;
 
-        $dto->subDistrict = $subDistrict;
+        $dto->subDistrict = $subDistrict
+            ? str_replace("'", '’', TextHelper::replaceLetters($subDistrict))
+            : null;
 
         $dto->region = $region;
 

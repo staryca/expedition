@@ -22,9 +22,12 @@ class CategoryType
     public const PROVERB = 82;
     public const FAIRY_TALE = 83;
     public const LULLABY = 84;
+    public const RIDDLE = 85;
+    public const PARABLE = 86;
     public const ABOUT_RECORD = 90;
     public const ABOUT_INFORMANT = 91;
     public const ABOUT_OTHER_INFORMANTS = 92;
+    public const CHANGE_INFORMANTS = 93;
     public const STAGE_ACTION = 97;
     public const FILM = 98;
     public const OTHER = 99;
@@ -46,9 +49,12 @@ class CategoryType
         self::PROVERB => 'Прыказка',
         self::FAIRY_TALE => 'Казка',
         self::LULLABY => 'Калыханкі',
+        self::RIDDLE => 'Загадка',
+        self::PARABLE => 'Прыпавесць',
         self::ABOUT_RECORD => 'Звесткі пра запіс',
         self::ABOUT_INFORMANT => 'Звесткі пра інфармантаў',
         self::ABOUT_OTHER_INFORMANTS => 'Звесткі пра іншых інфармантаў',
+        self::CHANGE_INFORMANTS => 'Змена інфармантаў',
         self::STAGE_ACTION => 'Сцэнічная дзея',
         self::FILM => 'Фільм',
         self::OTHER => 'Іншае',
@@ -66,18 +72,31 @@ class CategoryType
         self::CEREMONY => ['абрады'],
         self::GAME => ['гульні'],
         self::STORY => ['аповеды пра', 'аповед пра', 'аповед'],
-        self::ABOUT_DANCES => ['згадванне пра танцы'],
+        self::ABOUT_DANCES => [
+            'згадванне пра танцы', 'як танцавалі', 'пра танец', 'каманда ў танцах', 'каманды ў танцах'
+        ],
         self::PROVERB => ['прыказкі'],
         self::FAIRY_TALE => ['казка пра'],
         self::LULLABY => ['калыханка'],
-        self::ABOUT_RECORD => ['зьвесткі пра запіс'],
+        self::RIDDLE => ['загадкі'],
+        self::PARABLE => ['прытча'],
+        self::ABOUT_RECORD => [
+            'зьвесткі пра запіс',
+            'звесткі пра перадачу',
+        ],
         self::ABOUT_INFORMANT => [
-            'зьвесткі пра інфарманта',
             'звесткі пра інфарманта',
-            'зьвесткі пра інфарматара',
+            'звесткі пра інфармантку',
+            'звесткі пра інфармантак',
+            'звесткі пра інфармантаў',
             'звесткі пра інфарматара',
+            'звесткі пра гурт-інфармант',
+            'звесткі пра гарманіста',
+            'зьвесткі пра інфарманта',
+            'зьвесткі пра інфарматара',
         ],
         self::ABOUT_OTHER_INFORMANTS => ['зьвесткі пра іншых інфармантаў'],
+        self::CHANGE_INFORMANTS => ['змена інфарманта', 'зьмена інфарманта', 'зьмена інфармантаў'],
     ];
 
     private const VARIANTS_OTHER = [
@@ -88,7 +107,7 @@ class CategoryType
             'сьпявалі', 'масьленіца', 'бяседная', 'масьленка', 'жніўная', 'любоўная', 'вясельная',
             'лірычная', 'салдацкая', 'талочная', 'балада', 'паставая', 'сямейна-бытавая', 'жартоўная',
             'вялікодная', 'піліпаўская', 'калядная', 'раманс', 'масьленыя', 'вясельныя', 'турэмная', 'рамансы',
-            'веснавыя', 'лірычныя', 'на сене', 'провады ў армію', 'лірыка',
+            'веснавыя', 'лірычныя', 'на сене', 'провады ў армію', 'лірыка', 'хрэсьбінная'
         ],
     ];
 
@@ -99,6 +118,11 @@ class CategoryType
     public const TEXT_JOIN = [
         self::OTHER => ['Цікавыя словы, дыялекты', 'Дыялекты', 'Цікавыя выразы'],
     ];
+
+    public static function isTypeNextBlock(int $type): bool
+    {
+        return in_array($type, [self::ABOUT_RECORD, self::CHANGE_INFORMANTS]);
+    }
 
     public static function findId(string $text, string $textNext, bool $isAll = true): ?int
     {
@@ -115,7 +139,10 @@ class CategoryType
 
         foreach (self::VARIANTS_SAME as $key => $variants) {
             foreach ($variants as $variant) {
-                if (!$isAll && !in_array($key, [self::ABOUT_RECORD, self::ABOUT_INFORMANT, self::ABOUT_OTHER_INFORMANTS])) {
+                if (
+                    !$isAll
+                    && !in_array($key, [self::ABOUT_RECORD, self::ABOUT_INFORMANT, self::ABOUT_OTHER_INFORMANTS])
+                ) {
                     continue;
                 }
                 if (false !== mb_strstr($text, $variant)) {

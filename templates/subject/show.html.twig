@@ -65,22 +65,23 @@
                                                     {% endif %}
                                                 </th>
                                             </tr>
-                                            {% set geoPlace = reportPlace %}
-                                        {% endif %}
 
-                                        {% if marker.reportBlock and reportBlock.description %}
-                                            <tr>
-                                                <th class="text-center" scope="row" colspan="4">
-                                                    <button title="Расшыфроўка" class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#collapseBlock{{ reportBlock.id }}" aria-expanded="false" aria-controls="collapseBlock{{ reportBlock.id }}">
-                                                        Расшыфроўка для ўсяго блока <i class="bi bi-arrow-down-square-fill"></i>
-                                                    </button>
-                                                    <div class="collapse" id="collapseBlock{{ reportBlock.id }}">
-                                                        <div class="card card-body text-start">
-                                                            <p class="card-text fw-normal">{{ reportBlock.description|nl2br }}</p>
+                                            {% if reportBlock.description %}
+                                                <tr>
+                                                    <th class="text-center" scope="row" colspan="4">
+                                                        <button title="Расшыфроўка" class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#collapseBlock{{ reportBlock.id }}" aria-expanded="false" aria-controls="collapseBlock{{ reportBlock.id }}">
+                                                            Каментарый ці расшыфроўка для ўсяго блока <i class="bi bi-arrow-down-square-fill"></i>
+                                                        </button>
+                                                        <div class="collapse" id="collapseBlock{{ reportBlock.id }}">
+                                                            <div class="card card-body text-start">
+                                                                <p class="card-text fw-normal">{{ reportBlock.description|nl2br }}</p>
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                </th>
-                                            </tr>
+                                                    </th>
+                                                </tr>
+                                            {% endif %}
+
+                                            {% set geoPlace = reportPlace %}
                                         {% endif %}
                                     {% endif %}
 

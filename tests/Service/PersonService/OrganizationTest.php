@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Service\PersonService;
 
 use App\Dto\OrganizationDto;
+use App\Entity\Type\GenderType;
 use App\Helper\TextHelper;
 use App\Service\PersonService;
 use PHPUnit\Framework\TestCase;
@@ -45,6 +46,22 @@ class OrganizationTest extends TestCase
 
         $this->assertCount(1, $organization->informants);
         $this->assertEquals('Замастоцкая В.В.', $organization->informants[0]->name);
+    }
+
+    public function testParseOrganizationOnly1Name(): void
+    {
+        $organization = new OrganizationDto();
+        $organization->name = 'Наташа Башкірава (13 гадоў)';
+
+        $this->personService->parseOrganization($organization);
+
+        $this->assertEquals('', $organization->name);
+        $this->assertEquals('', $organization->informantText);
+
+        $this->assertCount(1, $organization->informants);
+        $this->assertEquals('Башкірава Наташа', $organization->informants[0]->name);
+        $this->assertEquals('13 гадоў', $organization->informants[0]->notes);
+        $this->assertEquals(GenderType::FEMALE, $organization->informants[0]->gender);
     }
 
     public function testParseOrganizationAsPerson(): void
@@ -121,7 +138,7 @@ class OrganizationTest extends TestCase
     public function testParseOrganizationKozManyInformants(): void
     {
         $organization = new OrganizationDto();
-        $organization->name = 'Загадчыца Беразлянскага сельскага клубу Шуляк Лідзія Мікалаеўна, жанчыны мясцовага калектыву:
+        $organization->name = 'Загадчыца Беразлянскага клубу Шуляк Лідзія Мікалаеўна, жанчыны мясцовага калектыву:
             Алена Сцяпанаўна Гетманчук, 1937 г.н., Алена Данілаўна Гетманчук, 1946 г.н., Вера Гетманчук, 1936 г.н.,
             Любоў Луцэвіч, 1937 г.н., Ганна Шуляк, 1931 г.н., Лідзія Мікалаеўна Шуляк, 1958 г.н. ';
 
@@ -153,13 +170,14 @@ class OrganizationTest extends TestCase
         $informant = $organization->informants[5];
         $this->assertEquals('Шуляк Лідзія Мікалаеўна', $informant->name);
         $this->assertEquals(1958, $informant->birth);
-        $this->assertEquals('Загадчыца Беразлянскага сельскага клубу', $informant->notes);
+        $this->assertEquals('Загадчыца Беразлянскага клубу', $informant->notes);
     }
 
     public function testParseOrganizationNameOnly2(): void
     {
         $organization = new OrganizationDto();
-        $organization->name = 'Жаночы фальклорны калектыў вёскі Крамно: Вольга Шум, 1930 г.н., Анастасія Мартыновіч, 1930 г.н.,
+        $organization->name = 'Жаночы фальклорны калектыў вёскі Крамно:
+            Вольга Шум, 1930 г.н., Анастасія Мартыновіч, 1930 г.н.,
             Вольга Крэйдзіч, 1932 г.н., Вольга Каласей, 1932 г.н., Дар\'я Шум, 1935 г.н., Ганна Міснік, 1933 г.н. ';
 
         $this->personService->parseOrganization($organization);
@@ -197,7 +215,8 @@ class OrganizationTest extends TestCase
     public function testParseOrganizationWithoutYears(): void
     {
         $organization = new OrganizationDto();
-        $organization->name = 'Народны фальклорны ансамбль "Жураўка": Кацярына Мікалаеўна Мазько, Лідзія Мікалаеўна Балюк,
+        $organization->name = 'Народны фальклорны ансамбль "Жураўка":
+            Кацярына Мікалаеўна Мазько, Лідзія Мікалаеўна Балюк,
             Вольга Дзмітрыеўна Балюк, Кацярына Зіноўеўна Балюк, Таццяна Васільеўна Балюк, Марыя Мікалаеўна Малашчук. ';
 
         $this->personService->parseOrganization($organization);
@@ -279,7 +298,8 @@ class OrganizationTest extends TestCase
     public function testParseOrganizationKozOne(): void
     {
         $organization = new OrganizationDto();
-        $organization->name = 'Васіль Кавалевіч, 1920 г.н. і Вольга Карагода, 1927 г.н. Музыкі:  Дзмітрый Астапчук, 1920 г.н. (гармонік),
+        $organization->name = 'Васіль Кавалевіч, 1920 г.н. і Вольга Карагода, 1927 г.н. Музыкі:
+            Дзмітрый Астапчук, 1920 г.н. (гармонік),
             Іван Краўчук, 1922 г.н. (скрыпка),
             Мікалай Кавалевіч, 1947 г.н. (бубен, мастацкі свіст). ';
 

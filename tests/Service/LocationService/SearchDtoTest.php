@@ -90,6 +90,20 @@ class SearchDtoTest extends TestCase
         $this->assertEquals('Заёнка', $dto->names[2]);
     }
 
+    public function testGetGeoPointSearchAgro(): void
+    {
+        $dto = $this->locationService->getSearchDto('аг. Горкі', 'Лепельскі раён');
+
+        $this->assertNull($dto->region);
+        $this->assertEquals('Лепельскі раён', $dto->district);
+        $this->assertCount(1, $dto->prefixes);
+        $this->assertEquals(GeoPointType::BE_AGRO_CITY, $dto->prefixes[0]);
+        $this->assertCount(3, $dto->names);
+        $this->assertEquals('Горкі', $dto->names[0]);
+        $this->assertEquals('Гаркі', $dto->names[1]);
+        $this->assertEquals('Горка', $dto->names[2]);
+    }
+
     public function testGetGeoPointSearchHighLetters(): void
     {
         $dto = $this->locationService->getSearchDto('в. Старыя елкі');
@@ -102,6 +116,18 @@ class SearchDtoTest extends TestCase
         $this->assertEquals('Старые Елкі', $dto->names[1]);
         $this->assertEquals('Старая Елкі', $dto->names[2]);
         $this->assertEquals('Старыя Елка', $dto->names[3]);
+    }
+
+    public function testGetGeoPointSearchHighLettersWith(): void
+    {
+        $dto = $this->locationService->getSearchDto('в. Параф\'янава', 'Докшыцкі раён');
+
+        $this->assertNull($dto->region);
+        $this->assertEquals('Докшыцкі раён', $dto->district);
+        $this->assertEquals(GeoPointType::BE_VILLAGE_LONGS, $dto->prefixes);
+        $this->assertCount(2, $dto->names);
+        $this->assertEquals('Параф’янава', $dto->names[0]);
+        $this->assertEquals('Параф’енава', $dto->names[1]);
     }
 
     public function testGetGeoPointSearchLetterLastI(): void
@@ -378,5 +404,16 @@ class SearchDtoTest extends TestCase
         $this->assertEquals('Песчанка', $dto->names[0]);
         $this->assertEquals('Пёсчанка', $dto->names[1]);
         $this->assertEquals('Пясчанка', $dto->names[2]);
+    }
+
+    public function testGetGeoPointSearchLetterAccent(): void
+    {
+        $dto = $this->locationService->getSearchDto('Ю́рцава', 'Аршанскі раён');
+
+        $this->assertNull($dto->region);
+        $this->assertEquals('Аршанскі раён', $dto->district);
+        $this->assertEquals(GeoPointType::BE_VILLAGE_LONGS, $dto->prefixes);
+        $this->assertCount(1, $dto->names);
+        $this->assertEquals('Юрцава', $dto->names[0]);
     }
 }

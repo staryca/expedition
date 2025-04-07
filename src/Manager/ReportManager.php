@@ -10,6 +10,7 @@ use App\Dto\FileDto;
 use App\Dto\InformantDto;
 use App\Dto\OrganizationDto;
 use App\Dto\ReportDataDto;
+use App\Dto\SubjectDto;
 use App\Entity\Expedition;
 use App\Entity\File;
 use App\Entity\FileMarker;
@@ -171,6 +172,10 @@ class ReportManager
             $informantDb->setGeoPointCurrent($informant->geoPoint);
             if (count($informant->locations) < 2) {
                 $informantDb->setPlaceCurrent($informant->place);
+            }
+            if ($informant->birthPlace !== null) {
+                $informantDb->setGeoPointBirth($informant->birthPlace->geoPoint);
+                $informantDb->setPlaceBirth($informant->birthPlace->place);
             }
 
             $this->entityManager->persist($informantDb);
@@ -382,7 +387,8 @@ class ReportManager
                 }
             }
 
-            $this->createSubjects($expedition, $filesData, true, $reportBlocks);
+            $subjectsData = $this->subjectService->getSubjects($filesData, true);
+            $this->createSubjects($expedition, $subjectsData, $reportBlocks);
 
             $this->entityManager->flush();
             $this->entityManager->getConnection()->commit();
@@ -620,15 +626,12 @@ class ReportManager
 
     /**
      * @param Expedition $expedition
-     * @param array<FileDto> $filesData
-     * @param bool $withGroupingFiles
+     * @param array<SubjectDto> $subjectsData
      * @param array<int, array<int, ReportBlock>> $reportBlocks
      * @return void
      */
-    private function createSubjects(Expedition $expedition, array $filesData, bool $withGroupingFiles, array $reportBlocks): void
+    private function createSubjects(Expedition $expedition, array $subjectsData, array $reportBlocks): void
     {
-        $subjectsData = $this->subjectService->getSubjects($filesData, $withGroupingFiles);
-
         foreach ($subjectsData as $subjectDto) {
             $subject = new Subject();
             $subject->setName($subjectDto->name);
@@ -686,6 +689,50 @@ class ReportManager
             }
 
             $this->createFiles($filesData, $reportBlocks);
+
+            $this->entityManager->flush();
+            $this->entityManager->getConnection()->commit();
+        } catch (\Exception $e) {
+            if ($this->entityManager->isOpen()) {
+                $this->entityManager->getConnection()->rollBack();
+            }
+
+            throw $e;
+        }
+
+        return $reports;
+    }
+
+    /**
+     * @param Expedition $expedition
+     * @param array<InformantDto> $informants
+     * @param array<OrganizationDto> $organizations
+     * @param array<ReportDataDto> $reportsData
+     * @param array<SubjectDto> $subjectsData
+     * @return array<Report>
+     * @throws Exception
+     */
+    public function saveSubjects(
+        Expedition $expedition,
+        array $informants,
+        array $organizations,
+        array $reportsData,
+        array $subjectsData,
+    ): array {
+        $this->entityManager->getConnection()->beginTransaction();
+        try {
+            $informantsDb = $this->saveInformants($informants, [], []);
+            $organizationsDb = $this->saveOrganizations($organizations, $informantsDb, []);
+            $reports = $this->createReports($expedition, $reportsData, [], $informantsDb, $organizationsDb);
+
+            $reportBlocks = [];
+            foreach ($reports as $reportKey => $report) {
+                foreach ($report->getBlocks() as $blockKey => $block) {
+                    $reportBlocks[$reportKey][$blockKey] = $block;
+                }
+            }
+
+            $this->createSubjects($expedition, $subjectsData, $reportBlocks);
 
             $this->entityManager->flush();
             $this->entityManager->getConnection()->commit();
