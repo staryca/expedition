@@ -67,10 +67,14 @@ class Informant
     #[ORM\Column(length: 50, nullable: true, options: ['comment' => 'Канфесія'])]
     private ?string $confession = null;
 
-    #[ORM\Column(length: 200, nullable: true, options: ['comment' => 'Фотаздымак інфарматара (часова, перанясецца ў іншую табліцу)'])]
+    #[ORM\Column(length: 200, nullable: true, options: [
+        'comment' => 'Фотаздымак інфарматара (часова, перанясецца ў іншую табліцу)'
+    ])]
     private ?string $pathPhoto = null;
 
-    #[ORM\Column(length: 1000, nullable: true, options: ['comment' => 'Фотаздымак інфарматара URL (часова, перанясецца ў іншую табліцу)'])]
+    #[ORM\Column(length: 1000, nullable: true, options: [
+        'comment' => 'Фотаздымак інфарматара URL (часова, перанясецца ў іншую табліцу)'
+    ])]
     private ?string $urlPhoto = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]

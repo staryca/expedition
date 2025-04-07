@@ -10,4 +10,9 @@ class PlaceDto
 {
     public ?GeoPoint $geoPoint = null;
     public ?string $place = null;
+
+    public function getPlaceHash(): string
+    {
+        return '@' . $this->geoPoint?->getId() . '!!' . $this->place;
+    }
 }

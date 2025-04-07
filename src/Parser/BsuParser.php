@@ -24,7 +24,6 @@ class BsuParser
     public function __construct(
         private readonly LocationService $locationService,
         private readonly PersonService $personService,
-        private readonly TextHelper $textHelper,
     ) {
     }
 
@@ -232,7 +231,7 @@ class BsuParser
 
         foreach ($authors as $author) {
             $person = new PersonDto();
-            $author = $this->textHelper->replaceLetters($author);
+            $author = TextHelper::replaceLetters($author);
             if (
                 str_contains($author, 'рупа жанчын') /* група */
                 || $author === 'тое ж'
@@ -468,7 +467,10 @@ class BsuParser
 
             if (
                 count($inOrganization) === 1
-                && !$this->personService->isSameNames((string) $organization->informantText, $informants[$inOrganization[0]]->name)
+                && !$this->personService->isSameNames(
+                    (string) $organization->informantText,
+                    $informants[$inOrganization[0]]->name
+                )
             ) {
                 $this->personService->informantToStudent($informants[$inOrganization[0]], $students);
                 unset($informants[$inOrganization[0]]);

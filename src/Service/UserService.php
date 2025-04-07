@@ -26,7 +26,7 @@ class UserService
     {
         $result = [];
 
-        $text = $this->textHelper->cleanManySpaces($text);
+        $text = TextHelper::cleanManySpaces($text);
         $text = str_replace('=', '-', $text);
 
         $blocks = explode(';', $text);

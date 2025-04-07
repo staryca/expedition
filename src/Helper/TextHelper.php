@@ -6,11 +6,13 @@ namespace App\Helper;
 
 class TextHelper
 {
-    public function replaceLetters(string $string): string
+    public static function replaceLetters(string $string): string
     {
         return str_replace(
-            array('i', 'a', 'o', 'e', 'c', 'y', 'x', 'p', 'B', 'A', 'I', 'O', 'E', 'C', 'X', 'P', ' '),
-            array('і', 'а', 'о', 'е', 'с', 'у', 'х', 'р', 'В', 'А', 'І', 'О', 'Е', 'С', 'Х', 'Р', ' '),
+            ['i', 'a', 'o', 'e', 'c', 'y', 'x', 'p', 'B', 'A', 'I', 'O', 'E', 'C', 'X', 'P', ' ',
+                'ы́', 'о́', 'а́', 'е́', 'э́', 'і́', 'у́', 'ю́', 'я́', 'О́', 'А́', 'Е́', 'Э́', 'І́', 'У́', 'Ю́', 'Я́'],
+            ['і', 'а', 'о', 'е', 'с', 'у', 'х', 'р', 'В', 'А', 'І', 'О', 'Е', 'С', 'Х', 'Р', ' ',
+                'ы', 'о', 'а', 'е', 'э', 'і', 'у', 'ю', 'я', 'О', 'А', 'Е', 'Э', 'І', 'У', 'Ю', 'Я'],
             trim($string)
         );
     }
@@ -136,7 +138,7 @@ class TextHelper
         return $result;
     }
 
-    public function cleanManySpaces(string $text): string
+    public static function cleanManySpaces(string $text): string
     {
         $text = str_replace(["\r", "\n", ';;', ' '], [";", ";", ';', ' '], $text);
 

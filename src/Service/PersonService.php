@@ -29,8 +29,8 @@ class PersonService
     public function parseOrganization(OrganizationDto $dto): void
     {
         $name = trim($dto->name, " ;,\t\n\r\0\x0B");
-        $name = $this->textHelper->replaceLetters($name);
-        $name = $this->textHelper->cleanManySpaces($name);
+        $name = TextHelper::replaceLetters($name);
+        $name = TextHelper::cleanManySpaces($name);
 
         $pos = mb_strpos($name, ':');
         $posBlock = mb_strpos($name, ';');
@@ -105,7 +105,23 @@ class PersonService
                 }
             }
         } else {
-            $name = $text;
+            // Name as person with gender
+            $informant = null;
+            [$person, $notes] = $this->textHelper->getNotes($text);
+            $parts = explode(' ', trim($person));
+            if (count($parts) === 2) {
+                $nameGenderDto = new NameGenderDto($person);
+                $this->fixNameAndGender($nameGenderDto);
+                if ($nameGenderDto->gender !== GenderType::UNKNOWN) {
+                    $informant = new InformantDto();
+                    $informant->setNameAndGender($nameGenderDto);
+                    $informant->addNotes($notes);
+
+                    $this->addInformants($dto->informants, $informant);
+                }
+            }
+
+            $name = (null === $informant) ? $text : '';
         }
 
         $dto->name = trim($name, " .,;\t\n\r\0\x0B");
@@ -229,7 +245,7 @@ class PersonService
      */
     public function detectStudents(PersonBsuDto $dto): array
     {
-        $name = $this->textHelper->replaceLetters($dto->name);
+        $name = TextHelper::replaceLetters($dto->name);
         if (str_contains($name, 'група студэнтаў') || str_contains($name, 'группа студэнтаў')) {
             return [];
         }
@@ -695,7 +711,7 @@ class PersonService
 
     public function normalizeName(string $name): string
     {
-        $name = $this->textHelper->replaceLetters($name);
+        $name = TextHelper::replaceLetters($name);
         $name = str_replace(
             ['и', 'ау', 'еу', 'іу', 'ыу', 'оу', 'эу', 'ёу', 'ді', 'де', 'дя', 'дё', 'щ', 'И'
                 , 'овн', 'авн', 'евн', 'эвн', 'івн', 'ёвн', 'ывн', 'ті', 'те', 'тя', 'тё', '`', '’',
@@ -720,7 +736,7 @@ class PersonService
         $detectedNames = [];
         $detectedFullNames = [];
 
-        $name = $this->textHelper->cleanManySpaces($dto->getName());
+        $name = TextHelper::cleanManySpaces($dto->getName());
         $name = str_replace(' (', '(', $name);
         $parts = $this->textHelper->explodeWithBrackets([' '], $name);
         foreach ($parts as $key => $part) {

@@ -28,8 +28,7 @@ class GeoPointRepository extends ServiceEntityRepository
         $qb = $this->createQueryBuilder('gp');
 
         if ($geoPointSearchDto->prefixes) {
-            $exReg = $qb->expr()->orX('gp.name IN (:names)', 'gp.nameWordStress IN (:names)');
-            $qb->andWhere($exReg)
+            $qb->andWhere('gp.name IN (:names)')
                 ->setParameter('names', $geoPointSearchDto->names);
         }
 

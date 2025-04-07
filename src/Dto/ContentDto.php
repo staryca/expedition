@@ -14,7 +14,9 @@ class ContentDto
     public static function fromKobo(array $data): self
     {
         $dto = new self();
-        $dto->reportIndex = $data[KoboContentColumns::INDEX_REPORT] ? (int) $data[KoboContentColumns::INDEX_REPORT] : null;
+        $dto->reportIndex = $data[KoboContentColumns::INDEX_REPORT]
+            ? (int) $data[KoboContentColumns::INDEX_REPORT]
+            : null;
         $dto->notes = $data[KoboContentColumns::NOTES] ?? null;
 
         return $dto;
