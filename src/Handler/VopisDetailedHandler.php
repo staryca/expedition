@@ -140,8 +140,8 @@ class VopisDetailedHandler
      */
     public function detectOrganizationsAndInformants(array &$subjects, array &$organizations, array &$informants): void
     {
-        /** @var array<int, string> $names */
-        $names = [];
+        /** @var array<int, string> $hashes */
+        $hashes = [];
         $keyNames = -1;
         $keys = [];
         /** @var array<int, FileMarkerDto> $markersForOrgs */
@@ -151,10 +151,18 @@ class VopisDetailedHandler
             foreach ($subject->files as $keyFile => $file) {
                 foreach ($file->markers as $keyMarker => $marker) {
                     if (!empty($marker->informantsText)) {
-                        $key = array_search($marker->informantsText, $names, true);
+                        $hash = $marker->informantsText . '_' . $marker->getPlaceHash();
+                        $key = array_search($hash, $hashes, true);
                         if ($key === false) {
                             $keyNames++;
-                            $names[$keyNames] = $marker->informantsText;
+                            $hashes[$keyNames] = $hash;
+
+                            $organization = new OrganizationDto();
+                            $organization->name = $marker->informantsText;
+                            $organization->geoPoint = $marker->geoPoint;
+                            $organization->place = $marker->place;
+                            $organizations[$keyNames] = $organization;
+
                             $markersForOrgs[$keyNames] = $marker;
                             $key = $keyNames;
                         }
@@ -167,19 +175,13 @@ class VopisDetailedHandler
         /* Create OrganizationDto from name */
         $keyInformant = count($informants) - 1;
         $informantHashes = [];
-        foreach ($names as $keyName => $name) {
-            $organization = new OrganizationDto();
-            $organization->name = $name;
+        foreach ($organizations as $keyNames => $organization) {
             $this->personService->parseOrganization($organization);
-            $organization->geoPoint = $markersForOrgs[$keyName]->geoPoint;
-            $organization->place = $markersForOrgs[$keyName]->place;
-
-            $organizations[$keyName] = $organization;
 
             foreach ($organization->informants as $informant) {
-                $informant->geoPoint = $markersForOrgs[$keyName]->geoPoint;
-                $informant->place = $markersForOrgs[$keyName]->place;
-                $informant->birthPlace = $markersForOrgs[$keyName]->getBirthPlace();
+                $informant->geoPoint = $organization->geoPoint;
+                $informant->place = $organization->place;
+                $informant->birthPlace = $markersForOrgs[$keyNames]->getBirthPlace();
 
                 $hash = $informant->getHash();
                 $key = array_search($hash, $informantHashes, true);

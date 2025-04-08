@@ -382,7 +382,9 @@ class PersonService
         // a. -> A.
         $pos = mb_strpos($name, '.');
         while ($pos > 0 && $pos < mb_strlen($name) - 1) {
-            $name = mb_substr($name, 0, $pos - 1) . mb_strtoupper(mb_substr($name, $pos - 1, 1)) . mb_substr($name, $pos);
+            $name = mb_substr($name, 0, $pos - 1)
+                . mb_strtoupper(mb_substr($name, $pos - 1, 1))
+                . mb_substr($name, $pos);
             $pos = mb_strpos($name, '.', $pos + 1);
         }
 
@@ -456,9 +458,12 @@ class PersonService
         $partsA2 = $partsA[1] ?? '';
         $partsB2 = $partsB[1] ?? '';
         $isOnlyLong1 = !str_contains($partsA[0], '.') && !str_contains($partsB[0], '.');
-        $isOnlyLong2 = $partsA2 !== '' && !str_contains($partsA2, '.') && $partsB2 !== '' && !str_contains($partsB2, '.');
-        $variantsA = $this->getNameVariants($partsA[0], $partsA2, $partsB2 !== '', $isOnlyLong1, $isOnlyLong2);
-        $variantsB = $this->getNameVariants($partsB[0], $partsB2, $partsA2 !== '', $isOnlyLong1, $isOnlyLong2);
+        $isOnlyLong2 =
+            $partsA2 !== '' && !str_contains($partsA2, '.') && $partsB2 !== '' && !str_contains($partsB2, '.');
+        $variantsA =
+            $this->getNameVariants($partsA[0], $partsA2, $partsB2 !== '', $isOnlyLong1, $isOnlyLong2);
+        $variantsB =
+            $this->getNameVariants($partsB[0], $partsB2, $partsA2 !== '', $isOnlyLong1, $isOnlyLong2);
         foreach ($variantsA as $variantA) {
             if (in_array($variantA, $variantsB, true)) {
                 return true;
@@ -498,7 +503,8 @@ class PersonService
 
         if (!empty($namePart2)) {
             $name2short = str_contains($namePart2, '.') ? $namePart2 : mb_substr($namePart2, 0, 1) . '.';
-            $name2long = str_contains($namePart2, '.') ? null : mb_substr($namePart2, 0, 4); // compare by first 4 letters
+            // compare by first 4 letters
+            $name2long = str_contains($namePart2, '.') ? null : mb_substr($namePart2, 0, 4);
             if (!$isOnlyLong1 && !$isOnlyLong2) {
                 $variants[] = $name1short . $name2short;
             }
@@ -598,7 +604,8 @@ class PersonService
             $name = '';
             foreach ($parts as $part) {
                 [$text, $notes] = $this->textHelper->getNotes($part);
-                $isNotLocation = !str_contains($part, 'в.') && !str_contains($part, 'р-н') && !str_contains($part, 'раён');
+                $isNotLocation =
+                    !str_contains($part, 'в.') && !str_contains($part, 'р-н') && !str_contains($part, 'раён');
                 if ($isNotLocation && ($this->isPersonName($text) || null !== $this->getPersonByFullName($text))) {
                     if ($name !== '') {
                         $persons[] = $name;
@@ -637,7 +644,11 @@ class PersonService
             if (null === $informant) {
                 $name = trim($name, " ,;\t\n\r\0\x0B");
                 $len = mb_strlen($name);
-                if ($len > 2 && mb_substr($name, -1) === '.' && !$this->textHelper->isName(mb_substr($name, $len - 2, 1))) {
+                if (
+                    $len > 2
+                    && mb_substr($name, -1) === '.'
+                    && !$this->textHelper->isName(mb_substr($name, $len - 2, 1))
+                ) {
                     $name = mb_substr($name, 0, -1);
                 }
                 $informant = new InformantDto();
@@ -905,7 +916,11 @@ class PersonService
         }
 
         // Case only 1 notBase first name as Unknown
-        if (count($detectedTypes) === 1 && $detectedTypes[0] === self::NUM_FIRST && !GenderType::isBaseName($detectedNames[0])) {
+        if (
+            count($detectedTypes) === 1
+            && $detectedTypes[0] === self::NUM_FIRST
+            && !GenderType::isBaseName($detectedNames[0])
+        ) {
             $detectedTypes[0] = self::NUM_UNDEFINED;
             $detectedGenders[0] = GenderType::UNKNOWN;
         }

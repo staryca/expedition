@@ -170,6 +170,7 @@ class ReportManager
             $informantDb->setFirstName($informant->name);
             $informantDb->setYearBirth($informant->birth);
             $informantDb->setGeoPointCurrent($informant->geoPoint);
+            $informantDb->setGender($informant->gender);
             if (count($informant->locations) < 2) {
                 $informantDb->setPlaceCurrent($informant->place);
             }
