@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Handler;
+namespace App\Tests\Handler\VopisDetailedHandler;
 
 use App\Dto\FileMarkerDto;
 use App\Dto\InformantDto;
@@ -79,9 +79,15 @@ class VopisDetailedHandlerTest extends TestCase
         $informants = [];
         $this->handler->detectOrganizationsAndInformants($subjects, $organizations, $informants);
 
-        $this->assertCount(1, $organizations);
+        $this->assertCount(2, $organizations);
         $organization = $organizations[3];
         $this->assertEquals('гурт', $organization->name);
+        $this->assertEquals('в. Пожарцы, Пастаўскі раён', $organization->place);
+        $this->assertCount(0, $organization->informants);
+        $this->assertCount(0, $organization->informantKeys);
+        $organization = $organizations[4];
+        $this->assertEquals('гурт', $organization->name);
+        $this->assertEquals('в. Велеўшчына, Лепельскі раён', $organization->place);
         $this->assertCount(0, $organization->informants);
         $this->assertCount(0, $organization->informantKeys);
 
@@ -103,7 +109,7 @@ class VopisDetailedHandlerTest extends TestCase
         /* Create reports */
         $reportsData = $this->handler->createReportsData($subjects);
 
-        $this->assertCount(3, $reportsData);
+        $this->assertCount(4, $reportsData);
 
         $report = $reportsData[0];
         $this->assertEquals('в. Груздава, Пастаўскі раён', $report->geoNotes);
@@ -122,5 +128,11 @@ class VopisDetailedHandlerTest extends TestCase
         $this->assertCount(2, $report->blocks[0]->informantKeys);
         $this->assertContains(1, $report->blocks[0]->informantKeys);
         $this->assertContains(2, $report->blocks[0]->informantKeys);
+
+        $report = $reportsData[3];
+        $this->assertEquals('в. Велеўшчына, Лепельскі раён', $report->geoNotes);
+        $this->assertEquals('28/10/1987', $report->dateAction->format('d/m/Y'));
+        $this->assertCount(1, $report->blocks);
+        $this->assertCount(0, $report->blocks[0]->informantKeys);
     }
 }
