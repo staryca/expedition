@@ -6,6 +6,7 @@ namespace App\Controller;
 
 use App\Entity\Type\GenderType;
 use App\Repository\InformantRepository;
+use App\Service\InformantService;
 use App\Service\PersonService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -126,6 +127,48 @@ class ToolsController extends AbstractController
 
         return $this->render('import/show.table.result.html.twig', [
             'headers' => ['Імя до', 'Пол до', 'Імя пасля', 'Пол пасля'],
+            'data' => $data,
+        ]);
+    }
+
+    #[Route('/import/tools/duplicate_informant_names', name: 'app_import_tools_duplicate_informant_names')]
+    public function duplicateInformantNames(): Response
+    {
+        $data = [];
+
+        $informants = $this->informantRepository->findAll();
+        $duplicates = (new InformantService())->getDuplicates($informants);
+        $duplArray = [];
+        foreach ($duplicates as $value) {
+            $duplArray[] = $value[0];
+            $duplArray[] = $value[1];
+        }
+
+        foreach ($duplArray as $informant) {
+            $dto = $informant->getNameAndGender();
+            $item['before_gender'] = GenderType::TYPES_MIDDLE[$dto->gender];
+            $item['before_name'] = $dto->getName();
+            $dto->gender = GenderType::UNKNOWN;
+
+            $middleNames = $this->personService->fixNameAndGender($dto);
+            $item['after_gender'] = GenderType::TYPES_MIDDLE[$dto->gender];
+            $item['after_name'] = $dto->getName();
+
+            $item['compare'] =
+                $item['before_gender'] !== GenderType::TYPES_MIDDLE[GenderType::UNKNOWN]
+                && $item['after_gender'] !== $item['before_gender']
+                && $item['after_gender'] !== GenderType::TYPES_MIDDLE[GenderType::UNKNOWN]
+            ;
+
+            $item['middle_names'] = implode(', ', $middleNames);
+
+            if ($item['before_name'] !== $item['after_name'] || $item['after_gender'] !== $item['before_gender']) {
+                $data[] = $item;
+            }
+        }
+
+        return $this->render('import/show.table.result.html.twig', [
+            'headers' => ['Імя до', 'Пол до', 'Імя пасля', 'Пол пасля', 'Супадзеньне пола', 'Імя па бацьку'],
             'data' => $data,
         ]);
     }
