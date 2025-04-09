@@ -1,21 +1,24 @@
 <?php
 
-namespace App\Tests\Service;
+
+namespace App\Tests\Service\PersonService;
 
 use App\Entity\GeoPoint;
 use App\Entity\Informant;
-use App\Service\InformantService;
+use App\Helper\TextHelper;
+use App\Service\PersonService;
 use PHPUnit\Framework\TestCase;
 
-class InformantServiceTest extends TestCase
+
+class GetDuplicates extends TestCase
 {
-    private readonly InformantService $informantService;
+    private readonly PersonService $personService;
 
     public function setUp(): void
     {
         parent::setUp();
 
-        $this->informantService = new InformantService();
+        $this->personService = new PersonService(new TextHelper());
     }
 
     /** @dataProvider dataInformants
@@ -23,7 +26,7 @@ class InformantServiceTest extends TestCase
      */
     public function testGetDuplicates(array $informants)
     {
-        $result = $this->informantService->getDuplicates($informants);
+        $result = $this->personService->getDuplicates($informants);
 
         $this->assertCount(2, $result, 'Должно быть два массива с дубликатами');
 
