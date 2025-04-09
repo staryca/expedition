@@ -18,7 +18,7 @@ class InformantServiceTest extends TestCase
         $this->informantService = new InformantService();
     }
 
-    /** @dataProvider dataFiles
+    /** @dataProvider dataInformants
      * @param array<Informant> $informants
      */
     public function testGetDuplicates(array $informants)
@@ -31,7 +31,7 @@ class InformantServiceTest extends TestCase
         $this->assertContains([$informants[1], $informants[2]], $result, 'Результат должен содержать дубликаты 2 и 3 информантов');
     }
 
-    private function dataFiles(): array
+    private function dataInformants(): array
     {
         $geo1 = (new GeoPoint('First'));
         $geo2 = (new GeoPoint('Second'));
