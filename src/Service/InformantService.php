@@ -14,34 +14,26 @@ class InformantService
      */
     public function getDuplicates(array $informants): array
     {
+        usort($informants, function ($a, $b) {
+            if ($a instanceof Informant && $b instanceof Informant) {
+                return strcmp($a->getFirstName(), $b->getFirstName());
+            }
+            return 0;
+        });
+
         $result = [];
 
-        $groupedByName = [];
+        for ($i = 0; $i < count($informants) - 1; $i++) {
+            $informant1 = $informants[$i];
+            $informant2 = $informants[$i + 1];
 
-        foreach ($informants as $informant) {
-            if ($informant instanceof Informant) {
-                $firstName = $informant->getFirstName();
-                if (!isset($groupedByName[$firstName])) {
-                    $groupedByName[$firstName] = [];
-                }
-                $groupedByName[$firstName][] = $informant;
-            }
-        }
-
-        foreach ($groupedByName as $group) {
-            $count = count($group);
-            if ($count > 1) {
-                for ($i = 0; $i < $count; $i++) {
-                    for ($j = $i + 1; $j < $count; $j++) {
-                        $informant1 = $group[$i];
-                        $informant2 = $group[$j];
-
-                        if (
-                            $informant1->getGeoPointBirth() === $informant2->getGeoPointBirth() ||
-                            $informant1->getGeoPointCurrent() === $informant2->getGeoPointCurrent()
-                        ) {
-                            $result[] = [$informant1, $informant2];
-                        }
+            if ($informant1 instanceof Informant && $informant2 instanceof Informant) {
+                if ($informant1->getFirstName() === $informant2->getFirstName()) {
+                    if (
+                        $informant1->getGeoPointBirth() === $informant2->getGeoPointBirth() ||
+                        $informant1->getGeoPointCurrent() === $informant2->getGeoPointCurrent()
+                    ) {
+                        $result[] = [$informant1, $informant2];
                     }
                 }
             }
