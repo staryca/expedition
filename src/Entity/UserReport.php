@@ -20,7 +20,7 @@ class UserReport
 
     #[ORM\ManyToOne(inversedBy: 'userReports')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?User $participant = null;
+    private User $participant;
 
     #[ORM\ManyToOne(inversedBy: 'userReports')]
     #[ORM\JoinColumn(nullable: false)]
@@ -29,9 +29,10 @@ class UserReport
     #[ORM\Column(length: 20)]
     private string $role = '';
 
-    public function __construct(Report $report)
+    public function __construct(Report $report, User $participant)
     {
         $this->report = $report;
+        $this->participant = $participant;
     }
 
     public function getId(): ?int
@@ -39,16 +40,9 @@ class UserReport
         return $this->id;
     }
 
-    public function getParticipant(): ?User
+    public function getParticipant(): User
     {
         return $this->participant;
-    }
-
-    public function setParticipant(?User $participant): static
-    {
-        $this->participant = $participant;
-
-        return $this;
     }
 
     public function getReport(): Report

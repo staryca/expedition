@@ -43,7 +43,11 @@ class VopisDetailedHandlerTest extends TestCase
         $this->parser = new VopisDetailedParser($locationService);
 
         $this->handler = new VopisDetailedHandler(
-            $this->parser, $expeditionRepository, $personService, $userRepository, $reportManager
+            $this->parser,
+            $expeditionRepository,
+            $personService,
+            $userRepository,
+            $reportManager
         );
     }
 

@@ -274,30 +274,15 @@ class Report
     }
 
     /**
-     * @return array<string, array<User>>
-     */
-    public function getUserReportsGroupsByRole(): array
-    {
-        $results = [];
-
-        foreach ($this->userReports as $userReport) {
-            $role = $userReport->getRoleName();
-            $results[$role][] = $userReport->getParticipant();
-        }
-
-        return $results;
-    }
-
-    /**
-     * @return array<string, array<string>>
+     * @return array<string, array<UserReport>>
      */
     public function getUserReportsGroupsByUser(): array
     {
         $results = [];
 
         foreach ($this->userReports as $userReport) {
-            $user = $userReport->getParticipant()?->gelFullName();
-            $results[$user][] = $userReport->getRoleName();
+            $userId = $userReport->getParticipant()->getId();
+            $results[$userId][] = $userReport;
         }
 
         return $results;

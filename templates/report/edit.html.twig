@@ -62,6 +62,7 @@
 
             <div class="card-body">
                 <form>
+                    <input type="hidden" id="editReportId" value="{{ report.id }}">
                     <div class="input-group mb-3">
                         {% if report.dateAction %}
                             {% set date = report.dateAction %}
@@ -110,7 +111,7 @@
                         <input type="text" class="form-control" placeholder="вёска, раён [, вобласць, краіна]" value="{{ report.geoNotes }}" aria-label="new report other location">
                     </div>
 
-                    <button type="submit" class="btn btn-success">Захаваць</button>
+                    <button type="button" class="btn btn-success" id="reportSaveAction">Захаваць</button>
                 </form>
             </div>
         </div>
@@ -121,11 +122,16 @@
             </div>
 
             <div class="card-body">
-                {% for userName, roles in report.getUserReportsGroupsByUser() %}
+                {% for userRoles in report.getUserReportsGroupsByUser() %}
                     <p>
-                        {{ userName }}:
-                        {% for role in roles %} {{ role }}, {% endfor %}
-                        <button type="button" class="btn btn-danger">Выдаліць</button>
+                        {% for userRole in userRoles %}
+                            {% if loop.index == 1 %} {{ userRole.participant.gelFullName() }}: {% endif %}
+                            <span id="editUserReport{{ userRole.id }}">
+                                {{ userRole.getRoleName() }}
+                                <button type="button" class="btn btn-danger report-user-role" data-index="{{ userRole.id }}">Выдаліць</button>
+                                {% if not loop.last %},{% endif %}
+                            </span>
+                        {% endfor %}
                     </p>
                 {% endfor %}
                 <hr>
@@ -145,14 +151,16 @@
 
             <div class="card-body">
                 {% for task in report.tasks %}
-                    <p>{% if task.status == constant('App\\Entity\\Type\\TaskStatus::TIP') %}
+                    <p id="editReportTask{{ task.id }}">
+                        {% if task.status == constant('App\\Entity\\Type\\TaskStatus::TIP') %}
                             Наводка:
                         {% endif %}
                         {{ task.content }}
                         {% if task.informant %}
                             Інфармант: {{ task.informant.firstName }}
                         {% endif %}
-                        <button type="submit" class="btn btn-danger">Выдаліць</button></p>
+                        <button type="submit" class="btn btn-danger report-task" data-index="{{ task.id }}">Выдаліць</button>
+                    </p>
                 {% endfor %}
                 <hr>
                 <p>
@@ -165,14 +173,16 @@
         </div>
 
         {% for block in report.blocks %}
-        <h3>Блок {{ loop.index }}</h3>
-        <div class="card mb-3" id="block{{ loop.index }}body">
+            {% set blockIndex = loop.index %}
+        <h3>Блок {{ blockIndex }}</h3>
+        <div class="card mb-3" id="block{{ blockIndex }}body">
             <div class="card-header">
-                Блок {{ loop.index }}: асноўная інфармацыя
+                Блок {{ blockIndex }}: асноўная інфармацыя
             </div>
 
             <div class="card-body">
                 <form>
+                    <input type="hidden" id="editReportBlock{{ blockIndex }}" value="{{ block.id }}">
                     <div class="input-group mb-3">
                         <span class="input-group-text">Тып</span>
                         <select class="form-select" aria-label="Тып">
@@ -225,22 +235,27 @@
                     </div>
 
                     <div class="mb-3">
-                        <button type="submit" class="btn btn-success">Захаваць</button>
+                        <button type="button" class="btn btn-success edit-report-block"
+                                data-index="{{ blockIndex }}"
+                                id="editReportBlock{{ blockIndex }}SaveAction">Захаваць</button>
                     </div>
                 </form>
             </div>
         </div>
 
-        <div class="card mb-3" id="block{{ loop.index }}informants">
+        <div class="card mb-3" id="block{{ blockIndex }}informants">
             <div class="card-header">
                 Інфарманты
             </div>
 
             <div class="card-body">
                 {% for informant in block.informants %}
-                    <p>{% include 'block/informant.full.html.twig'
+                    <p id="editBlock{{ blockIndex }}Informant{{ informant.id }}">
+                        {% include 'block/informant.full.html.twig'
                             with {'informant': informant, 'geoPoint': report.geoPoint, 'isLink' : false} %}
-                        <button type="submit" class="btn btn-danger">Выдаліць</button></p>
+                        <button type="button" class="btn btn-danger edit-block-informant"
+                                data-index="{{ informant.id }}" data-block="{{ blockIndex }}">Выдаліць</button>
+                    </p>
                 {% endfor %}
                 <hr>
                 <p>
@@ -252,7 +267,7 @@
             </div>
         </div>
 
-        <div class="card mb-3" id="block{{ loop.index }}tags">
+        <div class="card mb-3" id="block{{ blockIndex }}tags">
             <div class="card-header">
                 Краткае апісаньне эпізодаў блока
             </div>
@@ -260,7 +275,7 @@
             <div class="card-body">
                 {% if block.getContentFile() %}
                     {% for marker in block.getContentFile().fileMarkers %}
-                        <p>
+                        <p id="editBlock{{ blockIndex }}Marker{{ marker.id }}">
                             {% if marker.isCategoryNotOther() %}
                                 {{ marker.getCategoryName() }}{% if marker.name %}:{% else %}.{% endif %}
                             {% endif %}
@@ -269,7 +284,8 @@
                                 <span class="badge text-bg-secondary">{{ tag.name }}</span>
                             {% endfor %}
                             {{ marker.notes }}
-                            <button type="submit" class="btn btn-danger">Выдаліць</button>
+                            <button type="submit" class="btn btn-danger edit-block-marker"
+                                    data-index="{{ marker.id }}" data-block="{{ blockIndex }}">Выдаліць</button>
                         </p>
                     {% endfor %}
                 {% endif %}
@@ -283,16 +299,17 @@
             </div>
         </div>
 
-        <div class="card mb-3" id="block{{ loop.index }}items">
+        <div class="card mb-3" id="block{{ blockIndex }}items">
             <div class="card-header">
                 Прадметы
             </div>
 
             <div class="card-body">
                 {% for subject in block.subjects %}
-                    <p>
+                    <p id="editBlock{{ blockIndex }}Subject{{ subject.id }}">
                         {{ subject.getTypeName() }}: <b>{{ subject.name }}</b>
-                        <button type="submit" class="btn btn-danger">Выдаліць</button>
+                        <button type="submit" class="btn btn-danger edit-block-subject"
+                                data-index="{{ subject.id }}" data-block="{{ blockIndex }}">Выдаліць</button>
                     </p>
                 {% endfor %}
                 <hr>
@@ -313,14 +330,17 @@
 
             <div class="card-body">
                 {% for task in block.tasks %}
-                    <p>{% if task.status == constant('App\\Entity\\Type\\TaskStatus::TIP') %}
+                    <p id="editBlock{{ blockIndex }}Task{{ task.id }}">
+                        {% if task.status == constant('App\\Entity\\Type\\TaskStatus::TIP') %}
                             Наводка:
                         {% endif %}
                         {{ task.content }}
                         {% if task.informant %}
                             Інфармант: {{ task.informant.firstName }}
                         {% endif %}
-                        <button type="submit" class="btn btn-danger">Выдаліць</button></p>
+                        <button type="submit" class="btn btn-danger edit-block-task"
+                                data-index="{{ task.id }}" data-block="{{ blockIndex }}">Выдаліць</button>
+                    </p>
                 {% endfor %}
                 <hr>
                 <p>
@@ -370,7 +390,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыць</button>
-                    <button type="button" class="btn btn-success">Дадаць</button>
+                    <button type="button" class="btn btn-success" id="saveReportUser">Дадаць</button>
                 </div>
             </div>
         </div>
@@ -410,7 +430,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыць</button>
-                    <button type="button" class="btn btn-success">Дадаць</button>
+                    <button type="button" class="btn btn-success" id="saveReportTask">Дадаць</button>
                 </div>
             </div>
         </div>
@@ -477,7 +497,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыць</button>
-                    <button type="button" class="btn btn-success">Дадаць</button>
+                    <button type="button" class="btn btn-success" id="saveNewOrganization">Дадаць</button>
                 </div>
             </div>
         </div>
@@ -586,11 +606,10 @@
                         </div>
                     </form>
 
-
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыць</button>
-                    <button type="button" class="btn btn-success">Дадаць</button>
+                    <button type="button" class="btn btn-success" id="saveNewInformant">Дадаць</button>
                 </div>
             </div>
         </div>
@@ -631,7 +650,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыць</button>
-                    <button type="button" class="btn btn-success">Дадаць</button>
+                    <button type="button" class="btn btn-success" id="saveNewEpisode">Дадаць</button>
                 </div>
             </div>
         </div>
@@ -669,10 +688,34 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыць</button>
-                    <button type="button" class="btn btn-success">Дадаць</button>
+                    <button type="button" class="btn btn-success" id="saveNewSubject">Дадаць</button>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Show result of dialog -->
+
+    <div aria-live="polite" aria-atomic="true" class="position-relative">
+        <div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastBlockMessages">
+
+            <div id="toastBlockResult" class="toast" role="alert" aria-live="assertive"
+                 aria-atomic="true" data-bs-delay="2000">
+                <div class="toast-header">
+                    <i class="bi bi-database me-2"></i>
+                    <strong class="me-auto" id="toastBlockResultTitle">Title</strong>
+                    <small id="toastBlockResultSubTitle">Subtitle</small>
+                    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+                <div class="toast-body" id="toastBlockResultMessage">
+                    Message
+                </div>
+            </div>
+
+        </div>
+    </div>
+{% endblock %}
+
+{% block styles_finish %}
+    <script src="{{ asset('js/exp.js') }}"></script>
 {% endblock %}
