@@ -525,7 +525,7 @@
 
     <!-- Modal: addInformantModal -->
     <div class="modal fade" id="addInformantModal" tabindex="-1" aria-labelledby="addInformantModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
                     <h1 class="modal-title fs-5" id="addInformantModalLabel">Дадаць новага інфарманта</h1>
@@ -546,7 +546,9 @@
                         <div class="mb-3">
                             <div class="input-group">
                                 <span class="input-group-text" id="informantBirthYear">Год нараджэньня</span>
-                                <input type="number" class="form-control" aria-describedby="informantBirthYear">
+                                <input type="number" class="form-control"
+                                       aria-describedby="informantBirthYear"
+                                       min="1850" max="2020" size="4">
                             </div>
                         </div>
 
@@ -561,6 +563,8 @@
                                     </option>
                                 {% endfor %}
                             </select>
+                        </div>
+                        <div class="input-group mb-3">
                             <span class="input-group-text">няма ў сьпісе</span>
                             <input type="text" class="form-control" placeholder="вёска і раён" aria-label="Server">
                         </div>
@@ -591,21 +595,26 @@
                                     </option>
                                 {% endfor %}
                             </select>
+                        </div>
+                        <div class="input-group mb-3">
                             <span class="input-group-text">няма ў сьпісе</span>
                             <input type="text" class="form-control" placeholder="вёска і раён" aria-label="">
                         </div>
 
                         <div class="mb-3">
                             <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="informantSex" id="informantSexM" value="m">
+                                <input class="form-check-input" type="radio" name="informantSex"
+                                       id="informantSexM" value="m">
                                 <label class="form-check-label" for="informantSexM">мужчына</label>
                             </div>
                             <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="informantSex" id="informantSexF" value="f">
+                                <input class="form-check-input" type="radio" name="informantSex"
+                                       id="informantSexF" value="f">
                                 <label class="form-check-label" for="informantSexF">жанчына</label>
                             </div>
                             <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="informantSex" id="informantSexU" value="u">
+                                <input class="form-check-input" type="radio" name="informantSex"
+                                       id="informantSexU" value="u" checked>
                                 <label class="form-check-label" for="informantSexU">невядома</label>
                             </div>
                         </div>
@@ -619,15 +628,18 @@
 
                         <div class="mb-3">
                             <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="informantNotLive" id="informantLive" value="0">
+                                <input class="form-check-input" type="radio" name="informantNotLive"
+                                       id="informantLive" value="0">
                                 <label class="form-check-label" for="informantLive">жыве</label>
                             </div>
                             <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="informantNotLive" id="informantDead" value="1">
+                                <input class="form-check-input" type="radio" name="informantNotLive"
+                                       id="informantDead" value="1">
                                 <label class="form-check-label" for="informantDead">памёр/ла</label>
                             </div>
                             <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="informantNotLive" id="informantLiveUnknown" value="-1">
+                                <input class="form-check-input" type="radio" name="informantNotLive"
+                                       id="informantLiveUnknown" value="-1" checked>
                                 <label class="form-check-label" for="informantLiveUnknown">невядома</label>
                             </div>
                         </div>
