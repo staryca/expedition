@@ -125,7 +125,7 @@
                 {% for userRoles in report.getUserReportsGroupsByUser() %}
                     <p>
                         {% for userRole in userRoles %}
-                            {% if loop.index == 1 %} {{ userRole.participant.gelFullName() }}: {% endif %}
+                            {% if loop.index == 1 %} <u>{{ userRole.participant.gelFullName() }}</u>: {% endif %}
                             <span id="editUserReport{{ userRole.id }}">
                                 {{ userRole.getRoleName() }}
                                 <button type="button" class="btn btn-danger report-user-role" data-index="{{ userRole.id }}">Выдаліць</button>
@@ -367,15 +367,18 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form>
+                    <form id="formAddReportUser">
                         <div class="input-group mb-3">
                             <span class="input-group-text">Імя</span>
-                            <select class="form-select" aria-label="Name of user">
-                                <option selected>- выбярыце са сьпіса -</option>
+                            <select class="form-select" aria-label="Name of user" required>
+                                <option selected disabled value="">- выбярыце са сьпіса -</option>
                                 {% for id, name in users %}
                                     <option value="{{ id }}">{{ name }}</option>
                                 {% endfor %}
                             </select>
+                            <div class="invalid-feedback">
+                                Калі ласка, выбярыце даследчыка
+                            </div>
                         </div>
 
                         <div class="input-group mb-3">
@@ -405,19 +408,25 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form>
+                    <form id="formAddTaskPlan">
                         <div class="input-group mb-3">
                             <span class="input-group-text" id="taskType">Тып</span>
-                            <select class="form-select" aria-label="Type of task">
+                            <select class="form-select" aria-label="Type of task" required>
                                 {% for id, name in constant('App\\Entity\\Type\\TaskStatus::STATUSES') %}
                                     <option value="{{ id }}">{{ name }}</option>
                                 {% endfor %}
                             </select>
+                            <div class="invalid-feedback">
+                                Калі ласка, выбярыце тып
+                            </div>
                         </div>
 
                         <div class="input-group mb-3">
                             <span class="input-group-text">Тэкст</span>
-                            <textarea class="form-control" aria-label="Text of task"></textarea>
+                            <textarea class="form-control" aria-label="Text of task" required></textarea>
+                            <div class="invalid-feedback">
+                                Калі ласка, напішыце тэкст задачы
+                            </div>
                         </div>
 
                         <div class="input-group mb-3">
@@ -445,55 +454,66 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="input-group mb-3">
-                        <span class="input-group-text">Тып</span>
-                        <select class="form-select" aria-label="Type of org">
-                            {% for id, name in constant('App\\Entity\\Type\\OrganizationType::TYPES') %}
-                                <option value="{{ id }}">{{ name }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-
-                    <div class="mb-3">
-                        <div class="input-group">
-                            <span class="input-group-text" id="newOrgName">Назва</span>
-                            <input type="text" class="form-control" aria-describedby="newOrgName">
+                    <form id="formAddOrg">
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Тып</span>
+                            <select class="form-select" aria-label="Type of org" required>
+                                {% for id, name in constant('App\\Entity\\Type\\OrganizationType::TYPES') %}
+                                    <option value="{{ id }}">{{ name }}</option>
+                                {% endfor %}
+                            </select>
+                            <div class="invalid-feedback">
+                                Калі ласка, выбярыце тып арганізацыі
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="mb-3">
-                        <div class="input-group">
-                            <span class="input-group-text" id="newOrgDesc">Апісаньне</span>
-                            <input type="text" class="form-control" aria-describedby="newOrgDesc">
+                        <div class="mb-3">
+                            <div class="input-group">
+                                <span class="input-group-text" id="newOrgName">Назва</span>
+                                <input type="text" class="form-control" aria-describedby="newOrgName" required>
+                                <div class="invalid-feedback">
+                                    Калі ласка, напішыце назву арганізацыі
+                                </div>
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="mb-3">
-                        <div class="input-group">
-                            <span class="input-group-text" id="newOrgAddress">Адрас</span>
-                            <input type="text" class="form-control" aria-describedby="newOrgAddress">
+                        <div class="mb-3">
+                            <div class="input-group">
+                                <span class="input-group-text" id="newOrgDesc">Апісаньне</span>
+                                <input type="text" class="form-control" aria-describedby="newOrgDesc">
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="input-group mb-3">
-                        <span class="input-group-text">Месца</span>
-                        <select class="form-select" aria-label="Location of org">
-                            <option selected>- выбраць -</option>
-                            {% for geoPoint in geoPoints %}
-                                <option value="{{ geoPoint.id }}"
-                                        {% if report.geoPoint and report.geoPoint.id == geoPoint.id %}selected{% endif %}>
-                                    {{ geoPoint.getFullBeName() }}
-                                </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-
-                    <div class="mb-3">
-                        <div class="input-group">
-                            <span class="input-group-text" id="newOrgNotes">Заўвагі</span>
-                            <input type="text" class="form-control" aria-describedby="newOrgNotes">
+                        <div class="mb-3">
+                            <div class="input-group">
+                                <span class="input-group-text" id="newOrgAddress">Адрас</span>
+                                <input type="text" class="form-control" aria-describedby="newOrgAddress">
+                            </div>
                         </div>
-                    </div>
+
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Месца</span>
+                            <select class="form-select" aria-label="Location of org" required>
+                                <option selected disabled value="">- выбраць -</option>
+                                {% for geoPoint in geoPoints %}
+                                    <option value="{{ geoPoint.id }}"
+                                            {% if report.geoPoint and report.geoPoint.id == geoPoint.id %}selected{% endif %}>
+                                        {{ geoPoint.getFullBeName() }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <div class="invalid-feedback">
+                                Калі ласка, выбярыце месца знаходжаньня
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="input-group">
+                                <span class="input-group-text" id="newOrgNotes">Заўвагі</span>
+                                <input type="text" class="form-control" aria-describedby="newOrgNotes">
+                            </div>
+                        </div>
+                    </form>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыць</button>
@@ -512,11 +532,14 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form>
+                    <form id="formAddInformant">
                         <div class="mb-3">
                             <div class="input-group">
                                 <span class="input-group-text" id="informantName">Імя</span>
-                                <input type="text" class="form-control" aria-describedby="informantName">
+                                <input type="text" class="form-control" aria-describedby="informantName" required>
+                                <div class="invalid-feedback">
+                                    Калі ласка, напішыце імя
+                                </div>
                             </div>
                         </div>
 
@@ -624,10 +647,10 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form>
+                    <form id="formAddEpisode">
                         <div class="input-group mb-3">
                             <span class="input-group-text" id="taskType">Тып</span>
-                            <select class="form-select" aria-label="Type of episode">
+                            <select class="form-select" aria-label="Type of episode" required>
                                 {% for id, name in constant('App\\Entity\\Type\\CategoryType::TYPES') %}
                                     <option value="{{ id }}"
                                             {% if id == constant('App\\Entity\\Type\\CategoryType::STORY') %}selected{% endif %}>
@@ -635,11 +658,17 @@
                                     </option>
                                 {% endfor %}
                             </select>
+                            <div class="invalid-feedback">
+                                Калі ласка, выбярыце тып эпізода
+                            </div>
                         </div>
 
                         <div class="input-group mb-3">
                             <span class="input-group-text">Эпізод</span>
-                            <textarea class="form-control" aria-label="Text of episode"></textarea>
+                            <textarea class="form-control" aria-label="Text of episode" required></textarea>
+                            <div class="invalid-feedback">
+                                Калі ласка, апішыце эпізод
+                            </div>
                         </div>
 
                         <div class="input-group mb-3">
@@ -665,19 +694,25 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form>
+                    <form id="formAddSubject">
                         <div class="input-group mb-3">
                             <span class="input-group-text" id="subjectType">Тып</span>
-                            <select class="form-select" aria-label="Type of subject">
+                            <select class="form-select" aria-label="Type of subject" required>
                                 {% for id, name in constant('App\\Entity\\Type\\SubjectType::TYPES') %}
                                     <option value="{{ id }}">{{ name }}</option>
                                 {% endfor %}
                             </select>
+                            <div class="invalid-feedback">
+                                Калі ласка, выбярыце тып прадмета
+                            </div>
                         </div>
 
                         <div class="input-group mb-3">
                             <span class="input-group-text">Назва</span>
-                            <textarea class="form-control" aria-label="Name of subject"></textarea>
+                            <textarea class="form-control" aria-label="Name of subject" required></textarea>
+                            <div class="invalid-feedback">
+                                Калі ласка, напішыце назву
+                            </div>
                         </div>
 
                         <div class="input-group mb-3">

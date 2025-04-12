@@ -85,73 +85,133 @@ for (let i = 0; i < allBlockTasks.length; i++) {
 // save in dialogs
 const saveReportUser = document.getElementById('saveReportUser')
 if (saveReportUser) {
-    saveReportUser.addEventListener('click', () => {
-        // todo
-        const id = '00000'
-        showMessage(200, 'Данныя захаваліся паспяхова!', 'Даследвальнік', '#' + id)
-        const modalElement = document.getElementById('addReportUserModal')
-        const modal = bootstrap.Modal.getInstance(modalElement)
-        modal.hide()
+    saveReportUser.addEventListener('click', event => {
+        const form = document.getElementById('formAddReportUser')
+        if (!form.checkValidity()) {
+            event.preventDefault()
+            event.stopPropagation()
+        } else {
+            // todo
+            const id = '00000'
+            showMessage(200, 'Данныя захаваліся паспяхова!', 'Даследвальнік', '#' + id)
+
+            const modalElement = document.getElementById('addReportUserModal')
+            bootstrap.Modal.getInstance(modalElement).hide()
+
+            form.classList.remove('was-validated')
+            form.reset()
+        }
+        form.classList.add('was-validated')
     })
 }
 
 const saveReportTask = document.getElementById('saveReportTask')
 if (saveReportTask) {
-    saveReportTask.addEventListener('click', () => {
-        // todo
-        const id = '00000'
-        showMessage(200, 'Данныя захаваліся паспяхова!', 'План, задача, наводка', '#' + id)
-        const modalElement = document.getElementById('addTaskPlanModal')
-        const modal = bootstrap.Modal.getInstance(modalElement)
-        modal.hide()
+    saveReportTask.addEventListener('click', event => {
+        const form = document.getElementById('formAddTaskPlan')
+        if (!form.checkValidity()) {
+            event.preventDefault()
+            event.stopPropagation()
+        } else {
+            // todo
+            const id = '00000'
+            showMessage(200, 'Данныя захаваліся паспяхова!', 'План, задача, наводка', '#' + id)
+
+            const modalElement = document.getElementById('addTaskPlanModal')
+            bootstrap.Modal.getInstance(modalElement).hide()
+
+            form.classList.remove('was-validated')
+            form.reset()
+        }
+        form.classList.add('was-validated')
     })
 }
 
 const saveNewOrganization = document.getElementById('saveNewOrganization')
 if (saveNewOrganization) {
-    saveNewOrganization.addEventListener('click', () => {
-        // todo
-        const id = '00000'
-        showMessage(200, 'Данныя захаваліся паспяхова!', 'Арганізацыя', '#' + id)
-        const modalElement = document.getElementById('addOrgModal')
-        const modal = bootstrap.Modal.getInstance(modalElement)
-        modal.hide()
+    saveNewOrganization.addEventListener('click', event => {
+        const form = document.getElementById('formAddOrg')
+        if (!form.checkValidity()) {
+            event.preventDefault()
+            event.stopPropagation()
+        } else {
+            // todo
+            const id = '00000'
+            showMessage(200, 'Данныя захаваліся паспяхова!', 'Арганізацыя', '#' + id)
+
+            const modalElement = document.getElementById('addOrgModal')
+            bootstrap.Modal.getInstance(modalElement).hide()
+
+            form.classList.remove('was-validated')
+            form.reset()
+        }
+        form.classList.add('was-validated')
     })
 }
 
 const saveNewInformant = document.getElementById('saveNewInformant')
 if (saveNewInformant) {
-    saveNewInformant.addEventListener('click', () => {
-        // todo
-        const id = '00000'
-        showMessage(200, 'Данныя захаваліся паспяхова!', 'Інфармант', '#' + id)
-        const modalElement = document.getElementById('addInformantModal')
-        const modal = bootstrap.Modal.getInstance(modalElement)
-        modal.hide()
+    saveNewInformant.addEventListener('click', event => {
+        const form = document.getElementById('formAddInformant')
+        if (!form.checkValidity()) {
+            event.preventDefault()
+            event.stopPropagation()
+        } else {
+            // todo
+            const id = '00000'
+            showMessage(200, 'Данныя захаваліся паспяхова!', 'Інфармант', '#' + id)
+
+            const modalElement = document.getElementById('addInformantModal')
+            bootstrap.Modal.getInstance(modalElement).hide()
+
+            form.classList.remove('was-validated')
+            form.reset()
+        }
+        form.classList.add('was-validated')
     })
 }
 
 const saveNewEpisode = document.getElementById('saveNewEpisode')
 if (saveNewEpisode) {
-    saveNewEpisode.addEventListener('click', () => {
-        // todo
-        const id = '00000'
-        showMessage(200, 'Данныя захаваліся паспяхова!', 'Эпізод блока', '#' + id)
-        const modalElement = document.getElementById('addEpisodeModal')
-        const modal = bootstrap.Modal.getInstance(modalElement)
-        modal.hide()
+    saveNewEpisode.addEventListener('click', event => {
+        const form = document.getElementById('formAddEpisode')
+        if (!form.checkValidity()) {
+            event.preventDefault()
+            event.stopPropagation()
+        } else {
+            // todo
+            const id = '00000'
+            showMessage(200, 'Данныя захаваліся паспяхова!', 'Эпізод блока', '#' + id)
+
+            const modalElement = document.getElementById('addEpisodeModal')
+            bootstrap.Modal.getInstance(modalElement).hide()
+
+            form.classList.remove('was-validated')
+            form.reset()
+        }
+        form.classList.add('was-validated')
     })
 }
 
 const saveNewSubject = document.getElementById('saveNewSubject')
 if (saveNewSubject) {
-    saveNewSubject.addEventListener('click', () => {
-        // todo
-        const id = '00000'
-        showMessage(200, 'Данныя захаваліся паспяхова!', 'Прадмет', '#' + id)
-        const modalElement = document.getElementById('addSubjectModal')
-        const modal = bootstrap.Modal.getInstance(modalElement)
-        modal.hide()
+    saveNewSubject.addEventListener('click', event => {
+        const form = document.getElementById('formAddSubject')
+        if (!form.checkValidity()) {
+            event.preventDefault()
+            event.stopPropagation()
+        } else {
+            // todo
+            const id = '00000'
+            showMessage(200, 'Данныя захаваліся паспяхова!', 'Прадмет', '#' + id)
+
+            const modalElement = document.getElementById('addSubjectModal')
+            bootstrap.Modal.getInstance(modalElement).hide()
+
+            form.classList.remove('was-validated')
+            form.reset()
+        }
+        form.classList.add('was-validated')
     })
 }
 
