@@ -553,11 +553,13 @@
                         <div class="input-group mb-3">
                             <span class="input-group-text">Адкуль</span>
                             <select class="form-select" aria-label="Месца">
-                                <option selected>- выбраць -</option>
-                                <option value="1">в. Дакудава Лідскі раён</option>
-                                <option value="2">в. Дамжарыцы Лепельскі раён</option>
-                                <option value="3">в. Дварчаны Пастаўскі раён</option>
-                                <option value="4">в. Двор-Суша Лепельскі раён</option>
+                                <option selected disabled value="">- выбраць -</option>
+                                {% for geoPoint in geoPoints %}
+                                    <option value="{{ geoPoint.id }}"
+                                            {% if report.geoPoint and report.geoPoint.id == geoPoint.id %}selected{% endif %}>
+                                        {{ geoPoint.getFullBeName() }}
+                                    </option>
+                                {% endfor %}
                             </select>
                             <span class="input-group-text">няма ў сьпісе</span>
                             <input type="text" class="form-control" placeholder="вёска і раён" aria-label="Server">
@@ -581,11 +583,13 @@
                         <div class="input-group mb-3">
                             <span class="input-group-text">Жыве ў</span>
                             <select class="form-select" aria-label="Месца">
-                                <option selected>- выбраць -</option>
-                                <option value="1">в. Дакудава Лідскі раён</option>
-                                <option value="2">в. Дамжарыцы Лепельскі раён</option>
-                                <option value="3">в. Дварчаны Пастаўскі раён</option>
-                                <option value="4">в. Двор-Суша Лепельскі раён</option>
+                                <option selected disabled value="">- выбраць -</option>
+                                {% for geoPoint in geoPoints %}
+                                    <option value="{{ geoPoint.id }}"
+                                            {% if report.geoPoint and report.geoPoint.id == geoPoint.id %}selected{% endif %}>
+                                        {{ geoPoint.getFullBeName() }}
+                                    </option>
+                                {% endfor %}
                             </select>
                             <span class="input-group-text">няма ў сьпісе</span>
                             <input type="text" class="form-control" placeholder="вёска і раён" aria-label="">
