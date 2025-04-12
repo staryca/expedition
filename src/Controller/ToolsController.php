@@ -137,7 +137,7 @@ class ToolsController extends AbstractController
         $data = [];
 
         $informants = $this->informantRepository->findAll();
-        $duplicates = (new InformantService())->getDuplicates($informants);
+        $duplicates = (new PersonService())->getDuplicates($informants);
         $duplArray = [];
         foreach ($duplicates as $value) {
             $duplArray[] = $value[0];
