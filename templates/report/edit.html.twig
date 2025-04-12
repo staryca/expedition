@@ -69,21 +69,21 @@
                         {% else %}
                             {% set date = "now" %}
                         {% endif %}
-                        <span class="input-group-text" id="newReportDate">Дата даследваньня</span>
-                        <input type="date" class="form-control" required aria-describedby="newReportDate"
+                        <label class="input-group-text" for="newReportDate">Дата даследваньня</label>
+                        <input type="date" class="form-control" id="newReportDate" required
                                value="{{ date|date("Y-m-d") }}"
                                max="{{ date|date("Y-m-d") }}"
                                min="{{ date|date_modify("-20 days")|date("Y-m-d") }}">
                     </div>
 
                     <div class="input-group mb-3">
-                        <span class="input-group-text" id="newReportNotes">Агульныя заўвагі</span>
-                        <input type="text" class="form-control" value="{{ report.notes }}" aria-describedby="newReportNotes">
+                        <label class="input-group-text" for="newReportNotes">Агульныя заўвагі</label>
+                        <input type="text" class="form-control" value="{{ report.notes }}" id="newReportNotes">
                     </div>
 
                     <div class="input-group mb-3">
-                        <span class="input-group-text" id="newReportCode">Код</span>
-                        <input type="text" class="form-control" value="{{ report.code }}" aria-describedby="newReportCode">
+                        <label class="input-group-text" for="newReportCode">Код</label>
+                        <input type="text" class="form-control" value="{{ report.code }}" id="newReportCode">
                         <span class="input-group-text">
                               Будзе як назва папкі для файлаў да гэтага блоку
                         </span>
@@ -215,22 +215,22 @@
 
                     <div class="mb-3">
                         <div class="input-group">
-                            <span class="input-group-text" id="blockNotesUsers">Заўвагі да даследвальнікаў</span>
-                            <input type="text" class="form-control" value="{{ block.userNotes }}" aria-describedby="blockNotesUsers">
+                            <label class="input-group-text" for="blockNotesUsers">Заўвагі да даследвальнікаў</label>
+                            <input type="text" class="form-control" value="{{ block.userNotes }}" id="blockNotesUsers">
                         </div>
                     </div>
 
                     <div class="mb-3">
                         <div class="input-group">
-                            <span class="input-group-text" id="blockNotesPhoto">Заўвагі к фота</span>
-                            <input type="text" class="form-control" value="{{ block.photoNotes }}" aria-describedby="blockNotesPhoto">
+                            <label class="input-group-text" for="blockNotesPhoto">Заўвагі к фота</label>
+                            <input type="text" class="form-control" value="{{ block.photoNotes }}" id="blockNotesPhoto">
                         </div>
                     </div>
 
                     <div class="mb-3">
                         <div class="input-group">
-                            <span class="input-group-text" id="blockNotesVideo">Заўвагі к відэа</span>
-                            <input type="text" class="form-control" value="{{ block.videoNotes }}" aria-describedby="blockNotesVideo">
+                            <label class="input-group-text" for="blockNotesVideo">Заўвагі к відэа</label>
+                            <input type="text" class="form-control" value="{{ block.videoNotes }}" id="blockNotesVideo">
                         </div>
                     </div>
 
@@ -469,8 +469,8 @@
 
                         <div class="mb-3">
                             <div class="input-group">
-                                <span class="input-group-text" id="newOrgName">Назва</span>
-                                <input type="text" class="form-control" aria-describedby="newOrgName" required>
+                                <label class="input-group-text" for="newOrgName">Назва</label>
+                                <input type="text" class="form-control" id="newOrgName" required>
                                 <div class="invalid-feedback">
                                     Калі ласка, напішыце назву арганізацыі
                                 </div>
@@ -479,15 +479,15 @@
 
                         <div class="mb-3">
                             <div class="input-group">
-                                <span class="input-group-text" id="newOrgDesc">Апісаньне</span>
-                                <input type="text" class="form-control" aria-describedby="newOrgDesc">
+                                <label class="input-group-text" for="newOrgDesc">Апісаньне</label>
+                                <input type="text" class="form-control" id="newOrgDesc">
                             </div>
                         </div>
 
                         <div class="mb-3">
                             <div class="input-group">
-                                <span class="input-group-text" id="newOrgAddress">Адрас</span>
-                                <input type="text" class="form-control" aria-describedby="newOrgAddress">
+                                <label class="input-group-text" for="newOrgAddress">Адрас</label>
+                                <input type="text" class="form-control" id="newOrgAddress">
                             </div>
                         </div>
 
@@ -509,8 +509,8 @@
 
                         <div class="mb-3">
                             <div class="input-group">
-                                <span class="input-group-text" id="newOrgNotes">Заўвагі</span>
-                                <input type="text" class="form-control" aria-describedby="newOrgNotes">
+                                <label class="input-group-text" for="newOrgNotes">Заўвагі</label>
+                                <input type="text" class="form-control" id="newOrgNotes">
                             </div>
                         </div>
                     </form>
@@ -535,8 +535,8 @@
                     <form id="formAddInformant">
                         <div class="mb-3">
                             <div class="input-group">
-                                <span class="input-group-text" id="informantName">Імя</span>
-                                <input type="text" class="form-control" aria-describedby="informantName" required>
+                                <label class="input-group-text" for="informantName">Імя</label>
+                                <input type="text" class="form-control" id="informantName" required>
                                 <div class="invalid-feedback">
                                     Калі ласка, напішыце імя
                                 </div>
@@ -545,10 +545,12 @@
 
                         <div class="mb-3">
                             <div class="input-group">
-                                <span class="input-group-text" id="informantBirthYear">Год нараджэньня</span>
-                                <input type="number" class="form-control"
-                                       aria-describedby="informantBirthYear"
+                                <label class="input-group-text" for="informantBirthYear">Год нараджэньня</label>
+                                <input type="number" class="form-control" id="informantBirthYear"
                                        min="1850" max="2020" size="4">
+                                <div class="invalid-feedback">
+                                    Калі ласка, напішыце дакладна год
+                                </div>
                             </div>
                         </div>
 
@@ -621,8 +623,8 @@
 
                         <div class="mb-3">
                             <div class="input-group">
-                                <span class="input-group-text" id="informantNotes">Заўвагі</span>
-                                <input type="text" class="form-control" aria-describedby="informantNotes">
+                                <label class="input-group-text" for="informantNotes">Заўвагі</label>
+                                <input type="text" class="form-control" id="informantNotes">
                             </div>
                         </div>
 
