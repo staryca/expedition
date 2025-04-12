@@ -6,7 +6,6 @@ namespace App\Controller;
 
 use App\Entity\Type\GenderType;
 use App\Repository\InformantRepository;
-use App\Service\InformantService;
 use App\Service\PersonService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -136,7 +135,7 @@ class ToolsController extends AbstractController
     {
         $data = [];
 
-        $informants = $this->informantRepository->findAll();
+        $informants = $this->informantRepository->findSortedByName();
         $duplicates = (new PersonService())->getDuplicates($informants);
         $duplArray = [];
         foreach ($duplicates as $value) {

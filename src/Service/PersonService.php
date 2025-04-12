@@ -1002,18 +1002,11 @@ class PersonService
     }
 
     /**
-     * @param array<Informant> $informants
+     * @param array<Informant> $informants Sorted by firstname
      * @return array Array of arrays with pairs of informants
      */
     public function getDuplicates(array $informants): array
     {
-        usort($informants, function ($a, $b) {
-            if ($a instanceof Informant && $b instanceof Informant) {
-                return strcmp($a->getFirstName(), $b->getFirstName());
-            }
-            return 0;
-        });
-
         $result = [];
 
         for ($i = 0; $i < count($informants) - 1; $i++) {
