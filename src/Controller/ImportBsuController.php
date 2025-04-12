@@ -664,7 +664,7 @@ class ImportBsuController extends AbstractController
 
         $reportsDataGroupByLocation = [];
         foreach ($reportsData as $reportData) {
-            $key = ($reportData->geoPoint ? $reportData->geoPoint->getId() : $reportData->geoNotes)
+            $key = ($reportData->geoPoint ? $reportData->geoPoint->getId() : $reportData->place)
                 . '-' . $reportData->dateAction?->format('Y');
             if (!isset($reportsDataGroupByLocation[$key])) {
                 $reportsDataGroupByLocation[$key][] = $reportData->code;

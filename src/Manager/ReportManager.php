@@ -260,7 +260,7 @@ class ReportManager
             }
             $report->setGeoPoint($reportsData[$reportBlockCodes['0']]->geoPoint);
             if (null === $reportsData[$reportBlockCodes['0']]->geoPoint) {
-                $report->setGeoNotes($reportsData[$reportBlockCodes['0']]->geoNotes);
+                $report->setGeoNotes($reportsData[$reportBlockCodes['0']]->place);
             }
 
             foreach ($reportBlockCodes as $code) {
@@ -426,7 +426,7 @@ class ReportManager
             }
             $report->setGeoPoint($reportData->geoPoint);
             if (null === $reportData->geoPoint) {
-                $report->setGeoNotes($reportData->geoNotes);
+                $report->setGeoNotes($reportData->place);
             }
             $report->setLat($reportData->lat);
             $report->setLon($reportData->lon);
@@ -528,7 +528,7 @@ class ReportManager
 
                     $informantDb->setGeoPointCurrent($reportData->geoPoint);
                     if (null === $reportData->geoPoint) {
-                        $informantDb->setPlaceCurrent($reportData->geoNotes);
+                        $informantDb->setPlaceCurrent($reportData->place);
                     }
 
                     $informantDb->setGeoPointBirth($informant->geoPoint);

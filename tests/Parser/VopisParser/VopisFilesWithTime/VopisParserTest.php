@@ -125,20 +125,20 @@ class VopisParserTest extends TestCase
         $this->assertCount(4, $reports);
 
         $this->assertCount(2, $reports[0]->blocks);
-        $this->assertEquals('в. Адамаўка, Лепельскі р-н', $reports[0]->geoNotes);
+        $this->assertEquals('в. Адамаўка, Лепельскі р-н', $reports[0]->place);
         $this->assertCount(0, $reports[0]->blocks[0]->informants);
         $this->assertCount(0, $reports[0]->blocks[1]->informants);
 
         $this->assertCount(1, $reports[1]->blocks);
-        $this->assertEquals('в. Сталюгі, Лепельскі р-н', $reports[1]->geoNotes);
+        $this->assertEquals('в. Сталюгі, Лепельскі р-н', $reports[1]->place);
         $this->assertCount(0, $reports[1]->blocks[0]->informants);
 
         $this->assertCount(1, $reports[2]->blocks);
-        $this->assertEquals('в. Сялец, Лепельскі р-н', $reports[2]->geoNotes);
+        $this->assertEquals('в. Сялец, Лепельскі р-н', $reports[2]->place);
         $this->assertCount(0, $reports[2]->blocks[0]->informants);
 
         $this->assertCount(1, $reports[3]->blocks);
-        $this->assertEquals('', $reports[3]->geoNotes);
+        $this->assertEquals('', $reports[3]->place);
         $this->assertCount(2, $reports[3]->blocks[0]->informants);
         $this->assertEquals('Чарнуха Яніна', $reports[3]->blocks[0]->informants[0]->name);
         $this->assertEquals('муж яе', $reports[3]->blocks[0]->informants[1]->name);

@@ -77,7 +77,7 @@ class LocationService
                 } elseif (str_contains($part, 'Беларусь')) {
                     continue;
                 } elseif (empty($place)) {
-                    $place = trim($part);
+                    $place = trim($part, " `\t\n\r\0\x0B");
                 }
             }
         }
@@ -141,8 +141,8 @@ class LocationService
         }
 
         $place = str_replace(
-            array('и', 'Дя', 'тё', 'Б. ', 'В. ', ' е', '  ', "'"),
-            array('і', 'Дзя', 'цё', 'Вялікая ', 'Вялікая ', ' Е', ' ', '’'),
+            array('и', 'Дя', 'тё', 'Б. ', 'В. ', ' е', '  ', "'", '`'),
+            array('і', 'Дзя', 'цё', 'Вялікая ', 'Вялікая ', ' Е', ' ', '’', ''),
             $place
         );
         [$place, $place2] = $this->textHelper->getNames($place);

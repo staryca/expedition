@@ -92,7 +92,7 @@ class VopisParserTest extends TestCase
         $this->assertCount(1, $reports);
 
         $this->assertCount(1, $reports[0]->blocks);
-        $this->assertEquals('в. Крывыя, Талачынскі раён', $reports[0]->geoNotes);
+        $this->assertEquals('в. Крывыя, Талачынскі раён', $reports[0]->place);
         $this->assertCount(1, $reports[0]->blocks[0]->informants);
         $this->assertEquals('Конюшка Ганна Маркаўна', $reports[0]->blocks[0]->informants[0]->name);
     }

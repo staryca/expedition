@@ -64,6 +64,16 @@ class SearchDtoByFullPlaceTest extends TestCase
         $this->assertEquals('Казла', $dto->names[1]);
     }
 
+    public function testWithCommaAsSymbal(): void
+    {
+        $dto = $this->locationService->getSearchDtoByFullPlace('в. Ю`ркава, Глыбоцкі раён');
+
+        $this->assertNull($dto->region);
+        $this->assertEquals('Глыбоцкі раён', $dto->district);
+        $this->assertEquals(GeoPointType::BE_VILLAGE_LONGS, $dto->prefixes);
+        $this->assertCount(1, $dto->names);
+        $this->assertEquals('Юркава', $dto->names[0]);
+    }
     public function testWithComma(): void
     {
         $dto = $this->locationService->getSearchDtoByFullPlace('в. Параф\'янава, Сітцаўскі сельсавет, Докшыцкі раён

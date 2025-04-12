@@ -60,18 +60,21 @@ class VopisDetailedHandler
         $user = $this->userRepository->find(self::USER_LEADER_ID);
 
         $hashReports = [];
-        $hashBlocks = [];
         /** @var array<ReportDataDto> $reports */
         $reports = [];
+        $reportKey = -1;
         $blockKey = -1;
 
         foreach ($subjects as $subject) {
             foreach ($subject->files as $file) {
                 foreach ($file->markers as $markerKey => $marker) {
                     /* for Report */
+                    if (count($hashReports) === 0 && $marker->isEmptyPlace()) {
+                        throw new \Exception('First record without place!');
+                    }
                     $hashReport = ($marker->dateAction?->format('Ymd'))
-                        . '_' . $marker->geoPoint?->getId()
-                        . '_' . $marker->place;
+                        . '_'
+                        . ($marker->isEmptyPlace() ? $reports[$reportKey]->getPlaceHash() : $marker->getPlaceHash());
                     if (isset($hashReports[$hashReport])) {
                         $reportKey = $hashReports[$hashReport];
                         if ($reportKey + 1 !== count($hashReports)) {
@@ -84,7 +87,7 @@ class VopisDetailedHandler
 
                         $reports[$reportKey] = new ReportDataDto();
                         $reports[$reportKey]->geoPoint = $marker->geoPoint;
-                        $reports[$reportKey]->geoNotes = $marker->place;
+                        $reports[$reportKey]->place = $marker->place;
                         $reports[$reportKey]->dateCreated = CarbonImmutable::now();
                         $reports[$reportKey]->dateAction = $marker->dateAction;
 
@@ -98,6 +101,11 @@ class VopisDetailedHandler
                     $marker->reportKey = $reportKey;
 
                     /* for ReportBlock */
+                    if ($blockKey > 0 && !isset($reports[$reportKey]->blocks[$blockKey])) {
+                        throw new \Exception(
+                            sprintf('Block key %s not found. Marker: %s', $blockKey, $marker->informantsText)
+                        );
+                    }
                     if (
                         $blockKey < 0
                         || $reports[$reportKey]->blocks[$blockKey]->organizationKey !== $marker->organizationKey

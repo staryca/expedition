@@ -57,7 +57,7 @@ class BsuParserTest extends TestCase
 
         $reportData = $this->bsuParser->createReportData($dto);
         $this->assertEquals($id, (int) $reportData->code);
-        $this->assertEquals('в. Палаткова Гродзенскі раён', $reportData->geoNotes);
+        $this->assertEquals('в. Палаткова Гродзенскі раён', $reportData->place);
         $this->assertNotNull($reportData->geoPoint);
 
         $personsBsu = $this->bsuParser->getBsuPersonsFromAuthors($dto->authors, $reportData);

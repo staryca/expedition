@@ -15,4 +15,9 @@ class PlaceDto
     {
         return '@' . $this->geoPoint?->getId() . '!!' . $this->place;
     }
+
+    public function isEmptyPlace(): bool
+    {
+        return !$this->geoPoint && empty($this->place);
+    }
 }

@@ -45,7 +45,7 @@ class ImportDocController extends AbstractController
         $episodes = [];
         foreach ($reportsData as $reportKey => $reportData) {
             if (null === $reportData->geoPoint) {
-                $data['errors_geo_point'][] = $reportData->geoNotes;
+                $data['errors_geo_point'][] = $reportData->place;
             }
 
             $hasLeader = false;

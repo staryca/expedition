@@ -105,7 +105,7 @@ class DocParser
                     if (null !== $geoPoint) {
                         $reports[$reportKey]->geoPoint = $geoPoint;
                     } else {
-                        $reports[$reportKey]->geoNotes = $text;
+                        $reports[$reportKey]->place = $text;
                     }
                 }
 

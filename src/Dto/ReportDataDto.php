@@ -9,15 +9,11 @@ use App\Entity\Type\UserRoleType;
 use App\Parser\Columns\KoboReportColumns;
 use Carbon\Carbon;
 
-class ReportDataDto
+class ReportDataDto extends PlaceDto
 {
     public ?\DateTimeInterface $dateCreated = null;
 
     public ?\DateTimeInterface $dateAction = null;
-
-    public ?GeoPoint $geoPoint = null;
-
-    public ?string $geoNotes = null;
 
     public ?string $code = null;
 
@@ -52,9 +48,9 @@ class ReportDataDto
             } else {
                 $place .= ', ' . $data[KoboReportColumns::DISTRICT];
             }
-            $dto->geoNotes = $place;
+            $dto->place = $place;
         } else {
-            $dto->geoNotes = $data[KoboReportColumns::PLACE];
+            $dto->place = $data[KoboReportColumns::PLACE];
         }
         $dto->lat = $data[KoboReportColumns::LAT] ? str_replace(',', '.', $data[KoboReportColumns::LAT]) : null;
         $dto->lon = $data[KoboReportColumns::LON] ? str_replace(',', '.', $data[KoboReportColumns::LON]) : null;
