@@ -1,6 +1,5 @@
 <?php
 
-
 namespace App\Tests\Service\PersonService;
 
 use App\Entity\GeoPoint;
@@ -8,7 +7,6 @@ use App\Entity\Informant;
 use App\Helper\TextHelper;
 use App\Service\PersonService;
 use PHPUnit\Framework\TestCase;
-
 
 class GetDuplicates extends TestCase
 {

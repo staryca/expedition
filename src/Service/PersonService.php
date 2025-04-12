@@ -1018,8 +1018,9 @@ class PersonService
                     $informant1->getGeoPointBirth() === $informant2->getGeoPointBirth() ||
                     $informant1->getGeoPointCurrent() === $informant2->getGeoPointCurrent()
                 ) {
-                    if ($informant1->getGeoPointCurrent() && $informant1->getGeoPointBirth())
+                    if ($informant1->getGeoPointCurrent() && $informant1->getGeoPointBirth()) {
                         $result[] = [$informant1, $informant2];
+                    }
                 }
             }
         }
