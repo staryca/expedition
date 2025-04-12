@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Dto;
 
-use App\Entity\GeoPoint;
 use App\Entity\Type\UserRoleType;
 use App\Parser\Columns\KoboReportColumns;
 use Carbon\Carbon;
