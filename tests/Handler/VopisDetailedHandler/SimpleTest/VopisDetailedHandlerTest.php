@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Handler\VopisDetailedHandler;
+namespace App\Tests\Handler\VopisDetailedHandler\SimpleTest;
 
 use App\Dto\FileMarkerDto;
 use App\Dto\InformantDto;
@@ -116,17 +116,17 @@ class VopisDetailedHandlerTest extends TestCase
         $this->assertCount(4, $reportsData);
 
         $report = $reportsData[0];
-        $this->assertEquals('в. Груздава, Пастаўскі раён', $report->geoNotes);
+        $this->assertEquals('в. Груздава, Пастаўскі раён', $report->place);
         $this->assertEquals('23/10/1987', $report->dateAction->format('d/m/Y'));
         $this->assertCount(1, $report->blocks);
 
         $report = $reportsData[1];
-        $this->assertEquals('в. Груздава, Пастаўскі раён', $report->geoNotes);
+        $this->assertEquals('в. Груздава, Пастаўскі раён', $report->place);
         $this->assertEquals('26/10/1987', $report->dateAction->format('d/m/Y'));
         $this->assertCount(1, $report->blocks);
 
         $report = $reportsData[2];
-        $this->assertEquals('в. Пожарцы, Пастаўскі раён', $report->geoNotes);
+        $this->assertEquals('в. Пожарцы, Пастаўскі раён', $report->place);
         $this->assertEquals('27/10/1987', $report->dateAction->format('d/m/Y'));
         $this->assertCount(2, $report->blocks);
         $this->assertCount(2, $report->blocks[0]->informantKeys);
@@ -134,7 +134,7 @@ class VopisDetailedHandlerTest extends TestCase
         $this->assertContains(2, $report->blocks[0]->informantKeys);
 
         $report = $reportsData[3];
-        $this->assertEquals('в. Велеўшчына, Лепельскі раён', $report->geoNotes);
+        $this->assertEquals('в. Велеўшчына, Лепельскі раён', $report->place);
         $this->assertEquals('28/10/1987', $report->dateAction->format('d/m/Y'));
         $this->assertCount(1, $report->blocks);
         $this->assertCount(0, $report->blocks[0]->informantKeys);

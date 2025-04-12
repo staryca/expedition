@@ -9,9 +9,9 @@ class TextHelper
     public static function replaceLetters(string $string): string
     {
         return str_replace(
-            ['i', 'a', 'o', 'e', 'c', 'y', 'x', 'p', 'B', 'A', 'I', 'O', 'E', 'C', 'X', 'P', ' ',
+            ['i', 'a', 'o', 'e', 'c', 'y', 'x', 'p', 'B', 'A', 'I', 'O', 'E', 'C', 'X', 'P', ' ', '',
                 'ы́', 'о́', 'а́', 'е́', 'э́', 'і́', 'у́', 'ю́', 'я́', 'О́', 'А́', 'Е́', 'Э́', 'І́', 'У́', 'Ю́', 'Я́'],
-            ['і', 'а', 'о', 'е', 'с', 'у', 'х', 'р', 'В', 'А', 'І', 'О', 'Е', 'С', 'Х', 'Р', ' ',
+            ['і', 'а', 'о', 'е', 'с', 'у', 'х', 'р', 'В', 'А', 'І', 'О', 'Е', 'С', 'Х', 'Р', ' ', '',
                 'ы', 'о', 'а', 'е', 'э', 'і', 'у', 'ю', 'я', 'О', 'А', 'Е', 'Э', 'І', 'У', 'Ю', 'Я'],
             trim($string)
         );
@@ -140,7 +140,7 @@ class TextHelper
 
     public static function cleanManySpaces(string $text): string
     {
-        $text = str_replace(["\r", "\n", ';;', ' '], [";", ";", ';', ' '], $text);
+        $text = str_replace(["\r", "\n", ';;', ' ', ''], [";", ";", ';', ' ', ''], $text);
 
         return trim(preg_replace('!\s+!', ' ', $text));
     }

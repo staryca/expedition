@@ -94,10 +94,10 @@ class KoboParser
         foreach ($csv->getRecords($header) as $record) {
             $reportDto = ReportDataDto::fromKobo($record);
 
-            $location = $this->locationService->detectLocationByFullPlace($reportDto->geoNotes);
+            $location = $this->locationService->detectLocationByFullPlace($reportDto->place);
             if ($location !== null) {
                 $reportDto->geoPoint = $location;
-                $reportDto->geoNotes = null;
+                $reportDto->place = null;
             }
 
             foreach ($reportDto->users as $userDto) {

@@ -53,8 +53,8 @@ class ImportKoboController extends AbstractController
         $data['report_block_no_additional'] = [];
         $data['report_block_no_type'] = [];
         foreach ($reports as $report) {
-            if ($report->geoNotes !== null) {
-                $data['not_detected_locations'][] = $report->geoNotes;
+            if ($report->place !== null) {
+                $data['not_detected_locations'][] = $report->place;
             }
             if ([] === $report->userRoles) {
                 $data['no_users'][] = $report->geoPoint?->getName() . ': ' . $report->dateAction->format('d.m.Y');

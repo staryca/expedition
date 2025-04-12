@@ -87,12 +87,10 @@ class PersonService
                 $notes = [];
                 $informant = null;
                 foreach ($parts as $part) {
-                    if (null === $informant) {
-                        $informant = $this->getPersonByFullName($part);
-                        if (null !== $informant) {
-                            $this->addInformants($dto->informants, $informant);
-                            continue;
-                        }
+                    $informant = $this->getPersonByFullName($part);
+                    if (null !== $informant) {
+                        $this->addInformants($dto->informants, $informant);
+                        continue;
                     }
                     if (empty($name)) {
                         $name = trim($part, " .,;\t\n\r\0\x0B");

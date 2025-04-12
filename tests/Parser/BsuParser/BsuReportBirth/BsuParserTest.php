@@ -49,7 +49,7 @@ class BsuParserTest extends TestCase
 
         $reportData = $this->bsuParser->createReportData($dto);
         $this->assertEquals($id, (int) $reportData->code);
-        $this->assertEquals('Столбун Веткаўскі раён', $reportData->geoNotes);
+        $this->assertEquals('Столбун Веткаўскі раён', $reportData->place);
         $this->assertNull($reportData->geoPoint);
         $this->assertCount(1, $reportData->blocks);
         $this->assertEquals('А на гарэ лён', $reportData->blocks[$id]->description);

@@ -39,6 +39,7 @@ class VopisDetailedParser
         $keySubject = -1;
         $keyFile = -2;
         $isPrevSubject = false;
+        $isPrevFile = false;
 
         $csv = Reader::createFromString($content);
         $csv->setDelimiter(';');
@@ -46,66 +47,82 @@ class VopisDetailedParser
         $csv->setHeaderOffset(0);
         $header = $csv->getHeader();
         foreach ($csv->getRecords($header) as $key => $record) {
-            if (mb_strlen($record[VopisDetailedColumns::NAME_TIME]) < 3) {
+            $nameTime = trim($record[VopisDetailedColumns::NAME_TIME]);
+            if ($nameTime !== '' && mb_strlen($nameTime) < 3) {
                 continue;
             }
+            $content = trim($record[VopisDetailedColumns::CONTENT]);
+            if ($nameTime === '' && $content === '') {
+                continue;
+            }
+
             if (
                 $keySubject < 0
                 || (
                     $record[VopisDetailedColumns::INFORMANTS] === ''
-                    && $record[VopisDetailedColumns::CONTENT] === ''
+                    && $content === ''
                 )
             ) {
                 if (!$isPrevSubject) {
-                    $name = trim($record[VopisDetailedColumns::NAME_TIME]);
-                    if ($keySubject < 0 || $subjects[$keySubject]->name !== $name) {
+                    if ($keySubject < 0 || $subjects[$keySubject]->name !== $nameTime) {
                         $keySubject++;
                         $subjects[$keySubject] = new SubjectDto();
                         $subjects[$keySubject]->type = SubjectType::TYPE_AUDIO;
-                        $subjects[$keySubject]->name = $name;
+                        $subjects[$keySubject]->name = $nameTime;
                         $keyFile = -1;
                     }
                     $isPrevSubject = true;
-                } else {
+                    $isPrevFile = false;
+                } elseif (!$isPrevFile) {
                     $keyFile++;
-                    $name = TextHelper::replaceLetters($record[VopisDetailedColumns::NAME_TIME]);
+                    $name = TextHelper::replaceLetters($nameTime);
                     $subjects[$keySubject]->files[$keyFile] = new FileDto($name);
                     $subjects[$keySubject]->files[$keyFile]->type = FileType::TYPE_AUDIO;
-                    $isPrevSubject = false;
+                    $isPrevFile = true;
+                } else {
+                    $note = TextHelper::replaceLetters($nameTime);
+                    $notes = $subjects[$keySubject]->files[$keyFile]->notes;
+                    $notes .= (empty($notes) ? '' : "\n") . $note;
+                    $subjects[$keySubject]->files[$keyFile]->notes = $notes;
                 }
             } else {
+                $isPrevSubject = false;
                 if (!isset($subjects[$keySubject], $subjects[$keySubject]->files[$keyFile])) {
                     throw new \Exception(sprintf(
                         'Subject not found (%d, %d) row #%d: %s',
                         $keySubject,
                         $keyFile,
                         $key,
-                        $record[VopisDetailedColumns::CONTENT]
+                        $content
                     ));
                 }
 
                 $marker = new FileMarkerDto();
 
-                $time = trim($record[VopisDetailedColumns::NAME_TIME]);
-                $marker->timeFrom = ($time[1] === ':' ? '0' : '') . $time;
+                if ('' !== $nameTime) {
+                    $marker->timeFrom = ($nameTime[1] === ':' ? '0' : '') . $nameTime;
+                }
 
                 $date = trim($record[VopisDetailedColumns::DATE]);
                 if ($date !== '') {
-                    $marker->dateAction = Carbon::createFromFormat('d.m.Y', $date);
+                    if (strlen($date) === 4) {
+                        $marker->dateAction = Carbon::createFromDate($date, 1, 1); // 01/01 as unknown
+                    } else {
+                        $marker->dateAction = Carbon::createFromFormat('d.m.Y', $date);
+                    }
                 }
 
-                $name = trim($record[VopisDetailedColumns::CONTENT]);
                 $notes = trim($record[VopisDetailedColumns::ADDITIONAL]);
-                $pos = mb_strpos($name, ') ');
+                $pos = mb_strpos($content, ') ');
                 if ($pos !== false && $pos < 3) {
-                    $name = trim(mb_substr($name, $pos + 1));
+                    $content = trim(mb_substr($content, $pos + 1));
                 }
-                $category = CategoryType::findId($name, '', false);
+                $category = CategoryType::findId($content, '', false);
                 if ($category !== null) {
                     $marker->category = $category;
                 } else {
                     $marker->category = CategoryType::findId($notes, '') ?? CategoryType::OTHER;
-                    $marker->name = $name;
+                    $marker->name = $content;
                     $marker->notes = $notes;
                     if ($marker->category === CategoryType::OTHER) {
                         $marker->category = CategoryType::STORY;

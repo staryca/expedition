@@ -41,7 +41,7 @@ class ImportVopisController extends AbstractController
 
         $data['reports_location_errors'] = [];
         foreach ($reports as $report) {
-            if (null !== $report->geoNotes) {
+            if (null !== $report->place) {
                 $data['reports_location_errors'][] = $report;
             }
         }

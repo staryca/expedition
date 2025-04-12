@@ -96,7 +96,7 @@ class KoboParserTest extends TestCase
 
         $report = $reports[46];
         $this->assertEquals('20210813_Kruk_01_Ордзеж_01', $report->code);
-        $this->assertEquals('в. Ордзеж, Лёзненскі раён (Крынковский c/c)', $report->geoNotes);
+        $this->assertEquals('в. Ордзеж, Лёзненскі раён (Крынковский c/c)', $report->place);
         $this->assertEquals('2021-08-13', $report->dateCreated->format('Y-m-d'));
         $this->assertEquals('2021-08-13', $report->dateAction->format('Y-m-d'));
         $this->assertCount(2, $report->users);
@@ -109,7 +109,7 @@ class KoboParserTest extends TestCase
 
         $report = $reports[47];
         $this->assertEquals('20210813_Kruk_01_Ордзеж_02', $report->code);
-        $this->assertEquals('в. Ордзеж, Лёзненскі раён (Крынковский c/c)', $report->geoNotes);
+        $this->assertEquals('в. Ордзеж, Лёзненскі раён (Крынковский c/c)', $report->place);
         $this->assertEquals('2021-08-13', $report->dateCreated->format('Y-m-d'));
         $this->assertEquals('2021-08-13', $report->dateAction->format('Y-m-d'));
         $this->assertCount(2, $report->users);
@@ -126,7 +126,7 @@ class KoboParserTest extends TestCase
 
         $report = $reports[48];
         $this->assertEquals('1-01', $report->code);
-        $this->assertEquals('гп Лёзна, Лёзненскі раён, Віцебская вобласць, Беларусь', $report->geoNotes);
+        $this->assertEquals('гп Лёзна, Лёзненскі раён, Віцебская вобласць, Беларусь', $report->place);
         $this->assertEquals('2021-08-13', $report->dateCreated->format('Y-m-d'));
         $this->assertEquals('2021-08-13', $report->dateAction->format('Y-m-d'));
         $this->assertEquals('55.019993', $report->lat);
@@ -140,7 +140,7 @@ class KoboParserTest extends TestCase
 
         $report = $reports[49];
         $this->assertEquals('1-02', $report->code);
-        $this->assertEquals('гп Лёзна, Лёзненскі раён, Віцебская вобласць, Беларусь', $report->geoNotes);
+        $this->assertEquals('гп Лёзна, Лёзненскі раён, Віцебская вобласць, Беларусь', $report->place);
         $this->assertEquals('2021-08-13', $report->dateCreated->format('Y-m-d'));
         $this->assertEquals('2021-08-13', $report->dateAction->format('Y-m-d'));
         $this->assertEquals('55.020622', $report->lat);

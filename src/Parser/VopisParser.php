@@ -148,12 +148,12 @@ class VopisParser
                     if (
                         $reportKey === -1
                         || $reports[$reportKey]->geoPoint !== $marker->geoPoint
-                        || $reports[$reportKey]->geoNotes !== $marker->place
+                        || $reports[$reportKey]->place !== $marker->place
                     ) {
                         $reportKey++;
                         $reports[$reportKey] = new ReportDataDto();
                         $reports[$reportKey]->geoPoint = $marker->geoPoint;
-                        $reports[$reportKey]->geoNotes = $marker->place;
+                        $reports[$reportKey]->place = $marker->place;
                         $reports[$reportKey]->dateCreated = $dateCreated;
                         $blockKey = 0;
                     } else {

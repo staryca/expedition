@@ -175,7 +175,7 @@ class BsuParser
 
         $location = trim(($dto->dc['DCTERMS.spatial'] ?? '') . ' ' . $dto->locationText);
         $notes = empty($location) ? '- ' . $dto->title : $location;
-        $reportData->geoNotes = $notes;
+        $reportData->place = $notes;
         $reportData->geoPoint =
             $this->locationService->detectLocation($dto->dc['DCTERMS.spatial'] ?? '', $dto->locationText);
 
@@ -334,7 +334,7 @@ class BsuParser
             }
             $personBsu = (new PersonBsuDto())->make($person);
             $personBsu->geoPoint = $reportData->geoPoint;
-            $personBsu->place = $reportData->geoNotes;
+            $personBsu->place = $reportData->place;
             $personBsu->codeReport = $reportData->code;
 
             $result[] = $personBsu;

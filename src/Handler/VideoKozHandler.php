@@ -170,7 +170,7 @@ class VideoKozHandler
                         $report->dateAction?->format('Y-m-d') === $videoItem->dateAction?->format('Y-m-d')
                         && (
                             ($report->geoPoint && $videoItem->geoPoint && $report->geoPoint->getId() === $videoItem->geoPoint->getId())
-                            || (!$report->geoPoint && !$videoItem->geoPoint && $report->geoNotes === $videoItem->place)
+                            || (!$report->geoPoint && !$videoItem->geoPoint && $report->place === $videoItem->place)
                         )
                     ) {
                         $key = $keyForSearch;
@@ -182,7 +182,7 @@ class VideoKozHandler
                     $reportKey++;
                     $reports[$reportKey] = new ReportDataDto();
                     $reports[$reportKey]->geoPoint = $videoItem->geoPoint;
-                    $reports[$reportKey]->geoNotes = $videoItem->place;
+                    $reports[$reportKey]->place = $videoItem->place;
                     $reports[$reportKey]->dateCreated = CarbonImmutable::now();
                     $reports[$reportKey]->dateAction = $videoItem->dateAction;
 
