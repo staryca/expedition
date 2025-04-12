@@ -564,8 +564,7 @@ class ReportManager
             foreach ($reportData->userRoles as $userRole) {
                 if (null !== $userRole->user) {
                     foreach ($userRole->roles as $role) {
-                        $userReport = new UserReport($report);
-                        $userReport->setParticipant($userRole->user);
+                        $userReport = new UserReport($report, $userRole->user);
                         $userReport->setRole($role);
 
                         $report->addUserReport($userReport);
