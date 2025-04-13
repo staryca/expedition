@@ -276,6 +276,34 @@ class OrganizationTest extends TestCase
         $this->assertNull($informant->birth);
     }
 
+    public function testParseOrganizationOnlyNamesWithNotes(): void
+    {
+        $organization = new OrganizationDto();
+        $organization->name = 'Уладзімір Ануфрыевіч Крывенька (баян), Станіслаў Пятровіч Мялец [Мелец] (скрыпка), Віктар Антонавіч Буйко (лыжкі)';
+
+        $this->personService->parseOrganization($organization);
+
+        $this->assertEquals('', $organization->name);
+        $this->assertEquals('', $organization->informantText);
+
+        $this->assertCount(3, $organization->informants);
+
+        $informant = $organization->informants[0];
+        $this->assertEquals('Крывенька Уладзімір Ануфрыевіч', $informant->name);
+        $this->assertEquals('баян', $informant->notes);
+        $this->assertNull($informant->birth);
+
+        $informant = $organization->informants[1];
+        $this->assertEquals('Мялец Станіслаў Пятровіч [Мелец]', $informant->name);
+        $this->assertEquals('скрыпка', $informant->notes);
+        $this->assertNull($informant->birth);
+
+        $informant = $organization->informants[2];
+        $this->assertEquals('Буйко Віктар Антонавіч', $informant->name);
+        $this->assertEquals('лыжкі', $informant->notes);
+        $this->assertNull($informant->birth);
+    }
+
     public function testParseOrganizationKozManyInformantsSimple(): void
     {
         $organization = new OrganizationDto();
