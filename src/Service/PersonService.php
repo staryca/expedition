@@ -223,13 +223,25 @@ class PersonService
             }
         }
         if ($informant) {
-            foreach ($partsNote as $key => $part) {
+            $parts = [];
+            foreach ($partsNote as $part) {
                 if (str_contains($part, 'г.н.')) {
                     $informant->birth = (int) trim($part);
-                    unset($partsNote[$key]);
+                } else {
+                    [$note, $name2] = $this->textHelper->getNames($part);
+                    if ($name2 !== '') {
+                        $informant->name .= ' [' . $name2 . ']';
+                    }
+                    [$note1, $note2] = $this->textHelper->getNotes($note);
+                    if ($note1 !== '') {
+                        $parts[] = $note1;
+                    }
+                    if ($note2 !== '') {
+                        $parts[] = $note2;
+                    }
                 }
             }
-            $notes = trim(implode(' ', $partsNote), " .;,\t\n\r\0\x0B");
+            $notes = trim(implode(' ', $parts), " .;,\t\n\r\0\x0B");
             $notes = str_replace([' ,', ' .'], [',', '.'], $notes);
             $informant->notes = $notes;
         }
