@@ -9,6 +9,7 @@ use App\Dto\NameGenderDto;
 use App\Dto\OrganizationDto;
 use App\Dto\PersonBsuDto;
 use App\Dto\StudentDto;
+use App\Entity\Informant;
 use App\Entity\Type\GenderType;
 use App\Helper\TextHelper;
 use Carbon\Carbon;
@@ -1040,5 +1041,32 @@ class PersonService
         $dto->setName(trim(implode(' ', $resultParts)));
 
         return $middleNames;
+    }
+
+    /**
+     * @param array<Informant> $informants Sorted by firstname
+     * @return array<array<Informant>> Array of arrays with pairs of informants
+     */
+    public function getDuplicates(array $informants): array
+    {
+        $result = [];
+
+        for ($i = 0; $i < count($informants) - 1; $i++) {
+            $informant1 = $informants[$i];
+            $informant2 = $informants[$i + 1];
+
+            if ($informant1->getFirstName() === $informant2->getFirstName()) {
+                if (
+                    $informant1->getGeoPointBirth() === $informant2->getGeoPointBirth() ||
+                    $informant1->getGeoPointCurrent() === $informant2->getGeoPointCurrent()
+                ) {
+                    if ($informant1->getGeoPointCurrent() && $informant1->getGeoPointBirth()) {
+                        $result[] = [$informant1, $informant2];
+                    }
+                }
+            }
+        }
+
+        return $result;
     }
 }

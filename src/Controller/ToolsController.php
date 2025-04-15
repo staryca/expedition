@@ -129,4 +129,36 @@ class ToolsController extends AbstractController
             'data' => $data,
         ]);
     }
+
+    #[Route('/import/tools/duplicate_informant_names', name: 'app_import_tools_duplicate_informant_names')]
+    public function duplicateInformantNames(): Response
+    {
+        $data = [];
+
+        $informants = $this->informantRepository->findSortedByName();
+        $duplicates = $this->personService->getDuplicates($informants);
+
+        foreach ($duplicates as $informants) {
+            $informant = $informants[0];
+            $item['name1'] = $informant->getFirstName()
+                . ' (' . GenderType::TYPES_MIDDLE[$informant->getGender()] . ')'
+                . ($informant->getYearBirth() ? ', ' . $informant->getYearBirth() . ' г.н.' : '');
+            $item['birth1'] = $informant->getBirthPlaceBe();
+            $item['current1'] = $informant->getCurrentPlaceBe();
+
+            $informant = $informants[1];
+            $item['name2'] = $informant->getFirstName()
+                . ' (' . GenderType::TYPES_MIDDLE[$informant->getGender()] . ')'
+                . ($informant->getYearBirth() ? ', ' . $informant->getYearBirth() . ' г.н.' : '');
+            $item['birth2'] = $informant->getBirthPlaceBe();
+            $item['current2'] = $informant->getCurrentPlaceBe();
+
+            $data[] = $item;
+        }
+
+        return $this->render('import/show.table.result.html.twig', [
+            'headers' => ['Імя 1', 'Нараджэньне 1', 'Зараз 1', 'Імя 2', 'Нараджэньне 2', 'Зараз 2'],
+            'data' => $data,
+        ]);
+    }
 }
