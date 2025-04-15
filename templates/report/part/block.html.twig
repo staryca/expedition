@@ -1,0 +1,179 @@
+<h3>Блок {{ blockIndex }}</h3>
+<div class="card mb-3" id="block{{ blockIndex }}body">
+    <div class="card-header">
+        Асноўная інфармацыя блока {{ blockIndex }}
+    </div>
+
+    <div class="card-body">
+        <form>
+            <input type="hidden" id="editReportBlock{{ blockIndex }}" value="{{ block.id }}">
+            <div class="input-group mb-3">
+                <span class="input-group-text">Тып</span>
+                <select class="form-select" aria-label="Тып">
+                    {% for id, name in constant('App\\Entity\\Type\\ReportBlockType::TYPES') %}
+                        <option value="{{ id }}" {% if id == block.type %}selected="selected"{% endif %}>
+                            {{ name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="input-group mb-3">
+                <span class="input-group-text">Вопіс блока</span>
+                <textarea class="form-control" aria-label="With textarea">{{ block.description }}</textarea>
+            </div>
+
+            <div class="mb-3">
+                <div class="input-group">
+                    <span class="input-group-text">Арганізацыя / гурт</span>
+                    <select class="form-select" aria-label="Арганізацыя">
+                        <option selected>- выбраць -</option>
+                        {% if block.organization %}
+                            <option selected value="{{ block.organization.id }}">{{ block.organization.name }}</option>
+                        {% endif %}
+                    </select>
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addOrgModal">Дадаць новую</button>
+
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <div class="input-group">
+                    <label class="input-group-text" for="blockNotesUsers">Заўвагі да даследвальнікаў</label>
+                    <input type="text" class="form-control" value="{{ block.userNotes }}" id="blockNotesUsers">
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <div class="input-group">
+                    <label class="input-group-text" for="blockNotesPhoto">Заўвагі к фота</label>
+                    <input type="text" class="form-control" value="{{ block.photoNotes }}" id="blockNotesPhoto">
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <div class="input-group">
+                    <label class="input-group-text" for="blockNotesVideo">Заўвагі к відэа</label>
+                    <input type="text" class="form-control" value="{{ block.videoNotes }}" id="blockNotesVideo">
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <button type="button" class="btn btn-success edit-report-block"
+                        data-index="{{ blockIndex }}"
+                        id="editReportBlock{{ blockIndex }}SaveAction">Захаваць</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card mb-3" id="block{{ blockIndex }}informants">
+    <div class="card-header">
+        Інфарманты блока {{ blockIndex }}
+    </div>
+
+    <div class="card-body">
+        {% for informant in block.informants %}
+            <p id="editBlock{{ blockIndex }}Informant{{ informant.id }}">
+                {% include 'part/informant.full.html.twig'
+                    with {'informant': informant, 'geoPoint': report.geoPoint, 'isLink' : false} %}
+                <button type="button" class="btn btn-danger edit-block-informant"
+                        data-index="{{ informant.id }}" data-block="{{ blockIndex }}">Выдаліць</button>
+            </p>
+        {% endfor %}
+        <hr>
+        <p>
+            Дадаць новага інфарманта
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addInformantModal">
+                Дадаць
+            </button>
+        </p>
+    </div>
+</div>
+
+<div class="card mb-3" id="block{{ blockIndex }}tags">
+    <div class="card-header">
+        Краткае апісаньне эпізодаў блока {{ blockIndex }}
+    </div>
+
+    <div class="card-body">
+        {% if block.getContentFile() %}
+            {% for marker in block.getContentFile().fileMarkers %}
+                <p id="editBlock{{ blockIndex }}Marker{{ marker.id }}">
+                    {% if marker.isCategoryNotOther() %}
+                        {{ marker.getCategoryName() }}{% if marker.name %}:{% else %}.{% endif %}
+                    {% endif %}
+                    {{ marker.name }}
+                    {% for tag in marker.tags %}
+                        <span class="badge text-bg-secondary">{{ tag.name }}</span>
+                    {% endfor %}
+                    {{ marker.notes }}
+                    <button type="submit" class="btn btn-danger edit-block-marker"
+                            data-index="{{ marker.id }}" data-block="{{ blockIndex }}">Выдаліць</button>
+                </p>
+            {% endfor %}
+        {% endif %}
+        <hr>
+        <p>
+            Дадаць новы эпізод
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addEpisodeModal">
+                Дадаць
+            </button>
+        </p>
+    </div>
+</div>
+
+<div class="card mb-3" id="block{{ blockIndex }}items">
+    <div class="card-header">
+        Прадметы блока {{ blockIndex }}
+    </div>
+
+    <div class="card-body">
+        {% for subject in block.subjects %}
+            <p id="editBlock{{ blockIndex }}Subject{{ subject.id }}">
+                {{ subject.getTypeName() }}: <b>{{ subject.name }}</b>
+                <button type="submit" class="btn btn-danger edit-block-subject"
+                        data-index="{{ subject.id }}" data-block="{{ blockIndex }}">Выдаліць</button>
+            </p>
+        {% endfor %}
+        <hr>
+        <p>
+            Дадаць новы прадмет
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addSubjectModal">
+                Дадаць
+            </button>
+        </p>
+
+    </div>
+</div>
+
+<div class="card mb-3" id="block{{ blockIndex }}tasks">
+    <div class="card-header">
+        Планы, задачы, наводкі блока {{ blockIndex }}
+    </div>
+
+    <div class="card-body">
+        {% for task in block.tasks %}
+            <p id="editBlock{{ blockIndex }}Task{{ task.id }}">
+                {% if task.status == constant('App\\Entity\\Type\\TaskStatus::TIP') %}
+                    Наводка:
+                {% endif %}
+                {{ task.content }}
+                {% if task.informant %}
+                    Інфармант: {{ task.informant.firstName }}
+                {% endif %}
+                <button type="submit" class="btn btn-danger edit-block-task"
+                        data-index="{{ task.id }}" data-block="{{ blockIndex }}">Выдаліць</button>
+            </p>
+        {% endfor %}
+        <hr>
+        <p>
+            Дадаць новы план, задачу, наводку
+            <button type="button" class="btn btn-primary"
+                    data-bs-toggle="modal" data-bs-target="#addTaskPlanModal"
+                    data-type-modal="block" data-block-index="{{ blockIndex }}">
+                Дадаць
+            </button>
+        </p>
+    </div>
+</div>

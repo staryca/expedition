@@ -2,29 +2,47 @@
 const reportSaveAction = document.getElementById('reportSaveAction')
 if (reportSaveAction) {
     reportSaveAction.addEventListener('click', () => {
-        // todo
-        const id = document.getElementById('editReportId').value
+        let id = document.getElementById('editReportId').value
+        // todo: save report
+        if (!id) id = '00000';
         showMessage(200, 'Данныя захаваліся паспяхова!', 'Справаздача', '#' + id)
     })
+}
+
+const addTaskPlanModal = document.getElementById('addTaskPlanModal')
+if (addTaskPlanModal) {
+    addTaskPlanModal.addEventListener('show.bs.modal', event => {
+        const button = event.relatedTarget
+        const type = button.getAttribute('data-type-modal')
+        let text = type === 'report' ? 'справаздачы' : 'блока ' + button.getAttribute('data-block-index')
+
+        // Update the modal's content.
+        const notesElement = document.getElementById('addTaskPlanModalNotes')
+        notesElement.textContent = 'Для ' + text
+    })
+}
+
+function addActionUserRole(element) {
+    const id = element.getAttribute('data-index')
+    element.addEventListener('click', () => {
+        // todo
+        showMessage(400, 'Данныя выдалены паспяхова!', 'Роля', '#' + id)
+        document.getElementById('editUserReport' + id).remove()
+    })
+}
+const allReportUserRoles = document.getElementsByClassName("report-user-role");
+for (let i = 0; i < allReportUserRoles.length; i++) {
+    addActionUserRole(allReportUserRoles[i])
 }
 
 const allEditReportBlocks = document.getElementsByClassName("edit-report-block");
 for (let i = 0; i < allEditReportBlocks.length; i++) {
     const index = allEditReportBlocks[i].getAttribute('data-index')
     document.getElementById('editReportBlock' + index + 'SaveAction').addEventListener('click', () => {
-        // todo
-        const id = document.getElementById('editReportBlock' + index).value
+        let id = document.getElementById('editReportBlock' + index).value
+        // todo: save main block info
+        if (!id) id = '00000';
         showMessage(200, 'Данныя захаваліся паспяхова!', 'Блок ' + index, '#' + id)
-    })
-}
-
-const allReportUserRoles = document.getElementsByClassName("report-user-role");
-for (let i = 0; i < allReportUserRoles.length; i++) {
-    const id = allReportUserRoles[i].getAttribute('data-index')
-    allReportUserRoles[i].addEventListener('click', () => {
-        // todo
-        showMessage(400, 'Данныя выдалены паспяхова!', 'Роля', '#' + id)
-        document.getElementById('editUserReport' + id).remove()
     })
 }
 
@@ -91,8 +109,17 @@ if (saveReportUser) {
             event.preventDefault()
             event.stopPropagation()
         } else {
-            // todo
-            const id = '00000'
+            // todo: save user role
+            let html = document.getElementById('createNewUserRoleTemplate').innerHTML
+            html = html.replaceAll('USERFULLNAME', form.querySelector('select[name="user"]').value)
+            const id = Math.round(Math.random() * 99999)
+            html = html.replaceAll('USERROLEID', '' + id)
+            html = html.replaceAll('USERROLENAME', 'roles' + (Math.random() * 10))
+            let element = document.getElementById('allUserRoles')
+            element.insertAdjacentHTML('afterbegin', html)
+            let newUserRole = document.getElementById('editUserReport' + id).querySelector('button')
+            addActionUserRole(newUserRole)
+
             showMessage(200, 'Данныя захаваліся паспяхова!', 'Даследвальнік', '#' + id)
 
             const modalElement = document.getElementById('addReportUserModal')
@@ -212,6 +239,29 @@ if (saveNewSubject) {
             form.reset()
         }
         form.classList.add('was-validated')
+    })
+}
+
+// create new block
+const createNewBlock = document.getElementById('createNewBlock')
+if (createNewBlock) {
+    createNewBlock.addEventListener('click', event => {
+        let i = 1;
+        let element = document.getElementById('block' + i + 'body')
+        while (element) {
+            i = i + 1
+            element = document.getElementById('block' + i + 'body')
+        }
+
+        let html = document.getElementById('blockMenuTemplate').innerHTML
+        html = html.replaceAll('NUMBERBLOCK', '' + i)
+        let menuElement = document.getElementById('createNewBlock')
+        menuElement.insertAdjacentHTML('beforebegin', html)
+
+        html = document.getElementById('createNewBlockTemplate').innerHTML
+        html = html.replaceAll('NUMBERBLOCK', '' + i)
+        let mainElement = document.getElementById('mainBlock')
+        mainElement.insertAdjacentHTML('beforeend', html)
     })
 }
 
