@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Tests\Service\PersonService;
 
 use App\Entity\GeoPoint;
@@ -19,17 +21,31 @@ class GetDuplicates extends TestCase
         $this->personService = new PersonService(new TextHelper());
     }
 
-    /** @dataProvider dataInformants
-     * @param array<Informant> $informants
+    /**
+     * @dataProvider dataInformants
+     * @param array $informantData1
+     * @param array $informantData2
+     * @param bool $expectedDuplicates
      */
-    public function testGetDuplicates(array $informants)
+    public function testGetDuplicates(array $informantData1, array $informantData2, bool $expectedDuplicates): void
     {
-        $result = $this->personService->getDuplicates($informants);
+        $informant1 = new Informant();
+        $informant1->setFirstName($informantData1[0]);
+        $informant1->setGeoPointBirth($informantData1[1]);
+        $informant1->setGeoPointCurrent($informantData1[2]);
 
-        $this->assertCount(2, $result, 'Должно быть два массива с дубликатами');
+        $informant2 = new Informant();
+        $informant2->setFirstName($informantData2[0]);
+        $informant2->setGeoPointBirth($informantData2[1]);
+        $informant2->setGeoPointCurrent($informantData2[2]);
 
-        $this->assertContains([$informants[0], $informants[1]], $result, 'Результат должен содержать дубликаты 1 и 2 информантов');
-        $this->assertContains([$informants[1], $informants[2]], $result, 'Результат должен содержать дубликаты 2 и 3 информантов');
+        $result = $this->personService->getDuplicates([$informant1, $informant2]);
+
+        $this->assertEquals(
+            $expectedDuplicates,
+            count($result) > 0,
+            sprintf('Error for %s and %s!', $informant1->getFirstName(), $informant2->getFirstName())
+        );
     }
 
     private function dataInformants(): array
@@ -37,25 +53,42 @@ class GetDuplicates extends TestCase
         $geo1 = (new GeoPoint('First'));
         $geo2 = (new GeoPoint('Second'));
         $geo3 = (new GeoPoint('Third'));
-        $inf1 = (new Informant())
-            ->setFirstName('Danik')
-            ->setGeoPointBirth($geo1);
-        $inf2 = (new Informant())
-            ->setFirstName('Danik')
-            ->setGeoPointBirth($geo1)
-            ->setGeoPointCurrent($geo3);
-        $inf3 = (new Informant())
-            ->setFirstName('Danik')
-            ->setGeoPointBirth($geo2)
-            ->setGeoPointCurrent($geo3);
-        $inf4 = (new Informant())
-            ->setFirstName('Nadia')
-            ->setGeoPointBirth($geo2)
-            ->setGeoPointCurrent($geo3);
 
         return [
             [
-                [$inf1, $inf2, $inf3, $inf4]
+                ['Name', $geo1, $geo2],
+                ['NameDiff', $geo1, $geo2],
+                false
+            ],
+            [
+                ['NameWithoutGeo', null, null],
+                ['NameWithoutGeo', null, null],
+                false
+            ],
+            [
+                ['NameWithGeo1Null', $geo1, null],
+                ['NameWithGeo1Null', $geo1, null],
+                true
+            ],
+            [
+                ['NameWithGeo2Null', null, $geo2],
+                ['NameWithGeo2Null', null, $geo2],
+                true
+            ],
+            [
+                ['NameWithGeo1AndNull', $geo1, null],
+                ['NameWithGeo1AndNull', null, $geo1],
+                true
+            ],
+            [
+                ['NameWithDiffGeo', $geo1, null],
+                ['NameWithDiffGeo', $geo2, $geo3],
+                false
+            ],
+            [
+                ['NameWithGeo2AndNull', null, $geo2],
+                ['NameWithGeo2AndNull', $geo2, null],
+                true
             ],
         ];
     }

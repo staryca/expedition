@@ -1003,7 +1003,7 @@ class PersonService
 
     /**
      * @param array<Informant> $informants Sorted by firstname
-     * @return array Array of arrays with pairs of informants
+     * @return array<array<Informant>> Array of arrays with pairs of informants
      */
     public function getDuplicates(array $informants): array
     {

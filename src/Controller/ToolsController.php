@@ -136,38 +136,28 @@ class ToolsController extends AbstractController
         $data = [];
 
         $informants = $this->informantRepository->findSortedByName();
-        $duplicates = (new PersonService())->getDuplicates($informants);
-        $duplArray = [];
-        foreach ($duplicates as $value) {
-            $duplArray[] = $value[0];
-            $duplArray[] = $value[1];
-        }
+        $duplicates = $this->personService->getDuplicates($informants);
 
-        foreach ($duplArray as $informant) {
-            $dto = $informant->getNameAndGender();
-            $item['before_gender'] = GenderType::TYPES_MIDDLE[$dto->gender];
-            $item['before_name'] = $dto->getName();
-            $dto->gender = GenderType::UNKNOWN;
+        foreach ($duplicates as $informants) {
+            $informant = $informants[0];
+            $item['name1'] = $informant->getFirstName()
+                . ' (' . GenderType::TYPES_MIDDLE[$informant->getGender()] . ')'
+                . ($informant->getYearBirth() ? ', ' . $informant->getYearBirth() . ' г.н.' : '');
+            $item['birth1'] = $informant->getBirthPlaceBe();
+            $item['current1'] = $informant->getCurrentPlaceBe();
 
-            $middleNames = $this->personService->fixNameAndGender($dto);
-            $item['after_gender'] = GenderType::TYPES_MIDDLE[$dto->gender];
-            $item['after_name'] = $dto->getName();
+            $informant = $informants[1];
+            $item['name2'] = $informant->getFirstName()
+                . ' (' . GenderType::TYPES_MIDDLE[$informant->getGender()] . ')'
+                . ($informant->getYearBirth() ? ', ' . $informant->getYearBirth() . ' г.н.' : '');
+            $item['birth2'] = $informant->getBirthPlaceBe();
+            $item['current2'] = $informant->getCurrentPlaceBe();
 
-            $item['compare'] =
-                $item['before_gender'] !== GenderType::TYPES_MIDDLE[GenderType::UNKNOWN]
-                && $item['after_gender'] !== $item['before_gender']
-                && $item['after_gender'] !== GenderType::TYPES_MIDDLE[GenderType::UNKNOWN]
-            ;
-
-            $item['middle_names'] = implode(', ', $middleNames);
-
-            if ($item['before_name'] !== $item['after_name'] || $item['after_gender'] !== $item['before_gender']) {
-                $data[] = $item;
-            }
+            $data[] = $item;
         }
 
         return $this->render('import/show.table.result.html.twig', [
-            'headers' => ['Імя до', 'Пол до', 'Імя пасля', 'Пол пасля', 'Супадзеньне пола', 'Імя па бацьку'],
+            'headers' => ['Імя 1', 'Нараджэньне 1', 'Зараз 1', 'Імя 2', 'Нараджэньне 2', 'Зараз 2'],
             'data' => $data,
         ]);
     }
