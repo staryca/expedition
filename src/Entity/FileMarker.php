@@ -59,6 +59,9 @@ class FileMarker
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $decoding = null;
 
+    #[ORM\Column(nullable: true)]
+    private ?array $additional = null;
+
     public function __construct()
     {
         $this->tags = new ArrayCollection();
@@ -204,5 +207,23 @@ class FileMarker
         $this->decoding = $decoding;
 
         return $this;
+    }
+
+    public function getYoutubeTitle(): string
+    {
+        $additional = $this->getAdditional();
+        $title = $this->name;
+
+        return $title;
+    }
+
+    public function getAdditional(): array
+    {
+        return $this->additional ?? [];
+    }
+
+    public function addAdditional(string $key, string $value): void
+    {
+        $this->additional[$key] = $value;
     }
 }
