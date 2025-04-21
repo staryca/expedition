@@ -386,6 +386,23 @@ class Informant
         return trim($this->geoPointBirth?->getLongBeName() . ' ' . $this->placeBirth);
     }
 
+    public function hasBirthOrCurrentPlace(?GeoPoint ...$places): bool
+    {
+        foreach ($places as $place) {
+            if (
+                $place
+                && (
+                    $this->geoPointBirth?->getId() === $place->getId()
+                    || $this->geoPointCurrent?->getId() === $place->getId()
+                )
+            ) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     /**
      * @return Collection<int, Task>
      */

@@ -1013,15 +1013,11 @@ class PersonService
             $informant1 = $informants[$i];
             $informant2 = $informants[$i + 1];
 
-            if ($informant1->getFirstName() === $informant2->getFirstName()) {
-                if (
-                    $informant1->getGeoPointBirth() === $informant2->getGeoPointBirth() ||
-                    $informant1->getGeoPointCurrent() === $informant2->getGeoPointCurrent()
-                ) {
-                    if ($informant1->getGeoPointCurrent() && $informant1->getGeoPointBirth()) {
-                        $result[] = [$informant1, $informant2];
-                    }
-                }
+            if (
+                $this->isSameNames($informant1->getFirstName(), $informant2->getFirstName())
+                && $informant1->hasBirthOrCurrentPlace($informant2->getGeoPointBirth(), $informant2->getGeoPointCurrent())
+            ) {
+                $result[] = [$informant1, $informant2];
             }
         }
 

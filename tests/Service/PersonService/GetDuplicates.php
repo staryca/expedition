@@ -61,33 +61,33 @@ class GetDuplicates extends TestCase
                 false
             ],
             [
-                ['NameWithoutGeo', null, null],
-                ['NameWithoutGeo', null, null],
+                ['Name Without Geo', null, null],
+                ['Name Without Geo', null, null],
                 false
             ],
             [
-                ['NameWithGeo1Null', $geo1, null],
-                ['NameWithGeo1Null', $geo1, null],
+                ['NameWith Geo1 Null', $geo1, null],
+                ['NameWith Geo1 Null', $geo1, null],
                 true
             ],
             [
-                ['NameWithGeo2Null', null, $geo2],
-                ['NameWithGeo2Null', null, $geo2],
+                ['NameWith Geo2 Null', null, $geo2],
+                ['NameWith Geo2 Null', null, $geo2],
                 true
             ],
             [
-                ['NameWithGeo1AndNull', $geo1, null],
-                ['NameWithGeo1AndNull', null, $geo1],
+                ['NameWith Geo1 AndNull', $geo1, null],
+                ['NameWith Geo1 AndNull', null, $geo1],
                 true
             ],
             [
-                ['NameWithDiffGeo', $geo1, null],
-                ['NameWithDiffGeo', $geo2, $geo3],
+                ['NameWith DiffGeo', $geo1, null],
+                ['NameWith DiffGeo', $geo2, $geo3],
                 false
             ],
             [
-                ['NameWithGeo2AndNull', null, $geo2],
-                ['NameWithGeo2AndNull', $geo2, null],
+                ['NameWith Geo2 AndNull', null, $geo2],
+                ['NameWith Geo2 AndNull', $geo2, null],
                 true
             ],
         ];
