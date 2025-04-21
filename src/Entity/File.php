@@ -127,6 +127,11 @@ class File
         return $this;
     }
 
+    public function getFullFileName(): string
+    {
+        return ($this->path ? $this->path . '/' : '') . ($this->filename ?? '');
+    }
+
     public function isProcessed(): ?bool
     {
         return $this->isProcessed;
