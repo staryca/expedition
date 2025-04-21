@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Entity\Expedition;
+use App\Entity\Type\CategoryType;
 use App\Repository\ExpeditionRepository;
+use App\Repository\FileMarkerRepository;
 use App\Repository\ReportRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -16,6 +18,7 @@ class ExpeditionController extends AbstractController
     public function __construct(
         private readonly ExpeditionRepository $expeditionRepository,
         private readonly ReportRepository $reportRepository,
+        private readonly FileMarkerRepository $fileMarkerRepository,
     ) {
     }
 
@@ -40,9 +43,13 @@ class ExpeditionController extends AbstractController
 
         $reports = $this->reportRepository->findByExpedition($expedition);
 
+        $statistics = $this->fileMarkerRepository->getStatistics($expedition);
+
         return $this->render('expedition/show.html.twig', [
             'expedition' => $expedition,
             'reports' => $reports,
+            'statistics' => $statistics,
+            'categories' => CategoryType::TYPES,
         ]);
     }
 }

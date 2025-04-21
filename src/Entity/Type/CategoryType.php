@@ -119,9 +119,16 @@ class CategoryType
         self::OTHER => ['Цікавыя словы, дыялекты', 'Дыялекты', 'Цікавыя выразы'],
     ];
 
+    public const SYSTEM_TYPES = [
+        self::ABOUT_RECORD,
+        self::ABOUT_INFORMANT,
+        self::ABOUT_OTHER_INFORMANTS,
+        self::CHANGE_INFORMANTS,
+    ];
+
     public static function isTypeNextBlock(int $type): bool
     {
-        return in_array($type, [self::ABOUT_RECORD, self::CHANGE_INFORMANTS]);
+        return in_array($type, [self::ABOUT_RECORD, self::CHANGE_INFORMANTS], true);
     }
 
     public static function findId(string $text, string $textNext, bool $isAll = true): ?int

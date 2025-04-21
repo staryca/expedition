@@ -48,6 +48,17 @@
                 {% endif %}
             </p>
 
+            <p>
+                {% set all = 0 %}
+                {% for category, count in statistics %}
+                    <a href="#">{{ categories[category] }} ({{ count }})</a>{% if not loop.last %},{% else %}.{% endif %}
+                    {% set all = all + count %}
+                {% endfor %}
+                {% if all > 0 %}
+                    Усяго: {{ all }}
+                {% endif %}
+            </p>
+
             {% set geoMapData = expedition.getGeoMapData() %}
             {% if geoMapData.center %}
                 <div id="map"></div>

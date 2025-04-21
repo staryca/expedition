@@ -4,8 +4,12 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Entity\Expedition;
 use App\Entity\Type\GenderType;
 use App\Handler\VideoKozHandler;
+use App\Parser\Columns\VideoKozColumns;
+use App\Repository\ExpeditionRepository;
+use App\Repository\ReportRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -17,6 +21,8 @@ class ImportVideoKozController extends AbstractController
 
     public function __construct(
         private readonly VideoKozHandler $videoKozHandler,
+        private readonly ExpeditionRepository $expeditionRepository,
+        private readonly ReportRepository $reportRepository,
     ) {
     }
 
@@ -91,6 +97,63 @@ class ImportVideoKozController extends AbstractController
 
         return $this->render('import/show.json.result.html.twig', [
             'data' => $reports,
+        ]);
+    }
+
+    #[Route('/import/video_koz/list', name: 'app_import_video_koz_list')]
+    public function list(): Response
+    {
+        /** @var Expedition|null $expedition */
+        $expedition = $this->expeditionRepository->find(self::EXPEDITION_ID);
+        if (!$expedition) {
+            throw $this->createNotFoundException('The expedition does not exist');
+        }
+
+        $reports = $this->reportRepository->findByExpedition($expedition);
+
+        $data = [];
+        foreach ($reports as $report) {
+            foreach ($report->getBlocks() as $block) {
+                foreach ($block->getFileMarkers() as $fileMarker) {
+                    $item = [];
+                    $item['file'] = $fileMarker->getFile()?->getFullFileName();
+                    $item['category'] = $fileMarker->getCategoryName();
+                    $item['name'] = $fileMarker->getName();
+                    $item['name_local'] = $fileMarker->getName();
+                    $item['dance_type'] = $fileMarker->getAdditional()['danceType'] ?? '';
+                    $item['improvisation'] = $fileMarker->getAdditional()['improvisation'] ?? '';
+                    $item['ritual'] = $fileMarker->getAdditional()['ritual'] ?? '';
+                    $item['location'] = $report->getGeoPlace();
+                    $item['date'] = $report->getTextDateAction();
+                    $item['description'] = $fileMarker->getNotes();
+                    $item['org'] = $block->getOrganization()?->getName();
+                    $item['informants'] = $block->getInformants()->count() . ' persons';
+                    $item['texts'] = $fileMarker->getDecoding();
+                    $item['tmkb'] = $fileMarker->getAdditional()['tmkb'] ?? '';
+
+                    $data[] = $item;
+                }
+            }
+        }
+
+        return $this->render('import/show.table.result.html.twig', [
+            'headers' => [
+                VideoKozColumns::FILENAME,
+                VideoKozColumns::TYPE_RECORD,
+                VideoKozColumns::BASE_NAME,
+                VideoKozColumns::LOCAL_NAME,
+                VideoKozColumns::TYPE_DANCE,
+                VideoKozColumns::IMPROVISATION,
+                VideoKozColumns::RITUAL,
+                VideoKozColumns::VILLAGE,
+                VideoKozColumns::DATE_RECORD,
+                VideoKozColumns::DESCRIPTION,
+                VideoKozColumns::ORGANIZATION,
+                VideoKozColumns::INFORMANTS,
+                VideoKozColumns::TEXTS,
+                VideoKozColumns::TMKB,
+            ],
+            'data' => $data,
         ]);
     }
 }
