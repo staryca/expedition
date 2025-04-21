@@ -33,4 +33,16 @@ class InformantRepository extends ServiceEntityRepository
             ->getResult()
         ;
     }
+
+    /**
+     * @return array<Informant>
+     */
+    public function findSortedByName(): array
+    {
+        return $this->createQueryBuilder('i')
+            ->orderBy('i.firstName', 'ASC')
+            ->getQuery()
+            ->getResult()
+        ;
+    }
 }
