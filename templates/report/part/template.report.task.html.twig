@@ -1,0 +1,35 @@
+<div class="d-none" id="createNewReportTaskTemplate">
+    <p id="editReportTask_TASK_ID">
+        TASK_TYPE
+        TASK_CONTENT
+        TASK_INFORMANT
+        <button type="submit" class="btn btn-danger" data-index="TASK_ID">Выдаліць</button>
+    </p>
+</div>
+
+<script type="application/javascript">
+    function addActionReportTask(element) {
+        const id = element.getAttribute('data-index')
+        element.addEventListener('click', () => {
+            // todo: remove report task
+            showMessage(400, 'Данныя выдалены паспяхова!', 'Планы, задачы, наводкі', '#' + id)
+            document.getElementById('editReportTask_' + id).remove()
+        })
+    }
+
+    function addReportTaskBlock(status, id, content, informant) {
+        let html = document.getElementById('createNewReportTaskTemplate').innerHTML
+        const type = ('' + status === '{{ constant('App\\Entity\\Type\\TaskStatus::TIP') }}') ? 'Наводка:' : ''
+        html = html.replaceAll('TASK_TYPE', type)
+        html = html.replaceAll('TASK_ID', '' + id)
+        html = html.replaceAll('TASK_CONTENT', content)
+        const informantContent = (informant !== '') ? 'Інфармант: ' + informant : ''
+        html = html.replaceAll('TASK_INFORMANT', informantContent)
+
+        let element = document.getElementById('allReportTasks')
+        element.insertAdjacentHTML('afterbegin', html)
+
+        let newReportTask = document.getElementById('editReportTask_' + id).querySelector('button')
+        addActionReportTask(newReportTask)
+    }
+</script>

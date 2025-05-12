@@ -22,19 +22,6 @@ if (addTaskPlanModal) {
     })
 }
 
-function addActionUserRole(element) {
-    const id = element.getAttribute('data-index')
-    element.addEventListener('click', () => {
-        // todo
-        showMessage(400, 'Данныя выдалены паспяхова!', 'Роля', '#' + id)
-        document.getElementById('editUserReport' + id).remove()
-    })
-}
-const allReportUserRoles = document.getElementsByClassName("report-user-role");
-for (let i = 0; i < allReportUserRoles.length; i++) {
-    addActionUserRole(allReportUserRoles[i])
-}
-
 const allEditReportBlocks = document.getElementsByClassName("edit-report-block");
 for (let i = 0; i < allEditReportBlocks.length; i++) {
     const index = allEditReportBlocks[i].getAttribute('data-index')
@@ -43,16 +30,6 @@ for (let i = 0; i < allEditReportBlocks.length; i++) {
         // todo: save main block info
         if (!id) id = '00000';
         showMessage(200, 'Данныя захаваліся паспяхова!', 'Блок ' + index, '#' + id)
-    })
-}
-
-const allReportTasks = document.getElementsByClassName("report-task");
-for (let i = 0; i < allReportTasks.length; i++) {
-    const id = allReportTasks[i].getAttribute('data-index')
-    allReportTasks[i].addEventListener('click', () => {
-        // todo
-        showMessage(400, 'Данныя выдалены паспяхова!', 'Планы, задачы, наводкі', '#' + id)
-        document.getElementById('editReportTask' + id).remove()
     })
 }
 
@@ -101,37 +78,6 @@ for (let i = 0; i < allBlockTasks.length; i++) {
 }
 
 // save in dialogs
-const saveReportUser = document.getElementById('saveReportUser')
-if (saveReportUser) {
-    saveReportUser.addEventListener('click', event => {
-        const form = document.getElementById('formAddReportUser')
-        if (!form.checkValidity()) {
-            event.preventDefault()
-            event.stopPropagation()
-        } else {
-            // todo: save user role
-            let html = document.getElementById('createNewUserRoleTemplate').innerHTML
-            html = html.replaceAll('USERFULLNAME', form.querySelector('select[name="user"]').value)
-            const id = Math.round(Math.random() * 99999)
-            html = html.replaceAll('USERROLEID', '' + id)
-            html = html.replaceAll('USERROLENAME', 'roles' + (Math.random() * 10))
-            let element = document.getElementById('allUserRoles')
-            element.insertAdjacentHTML('afterbegin', html)
-            let newUserRole = document.getElementById('editUserReport' + id).querySelector('button')
-            addActionUserRole(newUserRole)
-
-            showMessage(200, 'Данныя захаваліся паспяхова!', 'Даследвальнік', '#' + id)
-
-            const modalElement = document.getElementById('addReportUserModal')
-            bootstrap.Modal.getInstance(modalElement).hide()
-
-            form.classList.remove('was-validated')
-            form.reset()
-        }
-        form.classList.add('was-validated')
-    })
-}
-
 const saveReportTask = document.getElementById('saveReportTask')
 if (saveReportTask) {
     saveReportTask.addEventListener('click', event => {
@@ -142,6 +88,10 @@ if (saveReportTask) {
         } else {
             // todo
             const id = '00000'
+            const status = form.querySelector('select[name="status"]').value
+            const content = form.querySelector('textarea[name="content"]').value
+            addReportTaskBlock(status, id, content, '')
+
             showMessage(200, 'Данныя захаваліся паспяхова!', 'План, задача, наводка', '#' + id)
 
             const modalElement = document.getElementById('addTaskPlanModal')
@@ -211,28 +161,6 @@ if (saveNewEpisode) {
             showMessage(200, 'Данныя захаваліся паспяхова!', 'Эпізод блока', '#' + id)
 
             const modalElement = document.getElementById('addEpisodeModal')
-            bootstrap.Modal.getInstance(modalElement).hide()
-
-            form.classList.remove('was-validated')
-            form.reset()
-        }
-        form.classList.add('was-validated')
-    })
-}
-
-const saveNewSubject = document.getElementById('saveNewSubject')
-if (saveNewSubject) {
-    saveNewSubject.addEventListener('click', event => {
-        const form = document.getElementById('formAddSubject')
-        if (!form.checkValidity()) {
-            event.preventDefault()
-            event.stopPropagation()
-        } else {
-            // todo
-            const id = '00000'
-            showMessage(200, 'Данныя захаваліся паспяхова!', 'Прадмет', '#' + id)
-
-            const modalElement = document.getElementById('addSubjectModal')
             bootstrap.Modal.getInstance(modalElement).hide()
 
             form.classList.remove('was-validated')
