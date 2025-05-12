@@ -128,14 +128,8 @@
         Прадметы блока {{ blockIndex }}
     </div>
 
-    <div class="card-body">
-        {% for subject in block.subjects %}
-            <p id="editBlock{{ blockIndex }}Subject{{ subject.id }}">
-                {{ subject.getTypeName() }}: <b>{{ subject.name }}</b>
-                <button type="submit" class="btn btn-danger edit-block-subject"
-                        data-index="{{ subject.id }}" data-block="{{ blockIndex }}">Выдаліць</button>
-            </p>
-        {% endfor %}
+    <div class="card-body" id="allBlock{{ blockIndex }}Subjects">
+        {# list of subjects #}
         <hr>
         <p>
             Дадаць новы прадмет
@@ -144,6 +138,13 @@
             </button>
         </p>
 
+        {% include('report/part/template.block.subject.html.twig') %}
+
+        {% for subject in block.subjects %}
+        <script type="application/javascript">
+            addSubjectBlock('{{ blockIndex }}', '{{ subject.id }}', '{{ subject.getTypeName() }}', '{{ subject.name }}')
+        </script>
+        {% endfor %}
     </div>
 </div>
 

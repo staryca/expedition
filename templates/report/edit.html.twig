@@ -123,28 +123,7 @@
             </div>
 
             <div class="card-body" id="allUserRoles">
-                {% for userRoles in report.getUserReportsGroupsByUser() %}
-                    <p>
-                        {% for userRole in userRoles %}
-                            {% if loop.index == 1 %} <u>{{ userRole.participant.gelFullName() }}</u>: {% endif %}
-                            <span id="editUserReport{{ userRole.id }}">
-                                {{ userRole.getRoleName() }}
-                                <button type="button" class="btn btn-danger report-user-role" data-index="{{ userRole.id }}">Выдаліць</button>
-                                {% if not loop.last %},{% endif %}
-                            </span>
-                        {% endfor %}
-                    </p>
-                {% endfor %}
-                <div class="d-none" id="createNewUserRoleTemplate">
-                    <p>
-                        <u>USERFULLNAME</u>:
-                        <span id="editUserReportUSERROLEID">
-                            USERROLENAME
-                            <button type="button" class="btn btn-danger report-user-role" data-index="USERROLEID">Выдаліць</button>
-                        </span>
-                    </p>
-                </div>
-
+                {# list of user roles #}
                 <hr>
                 <p>
                     Дадаць удзельніка і яго ролі
@@ -153,6 +132,25 @@
                     </button>
                 </p>
             </div>
+
+            {% include('report/part/template.user.role.html.twig') %}
+
+            <script type="application/javascript">
+                {% for userRoles in report.getUserReportsGroupsByUser() %}
+                    {% set userName = '' %}
+                    {% set id = '' %}
+                    {% set roles = '' %}
+                    {% for userRole in userRoles %}
+                        {% set userName = userRole.participant.gelFullName() %}
+                        {% set id = userRole.participant.getId() %}
+
+                        {% if loop.index > 1 %} {% set roles = roles ~ ', ' %} {% endif %}
+                        {% set roles = roles ~ userRole.getRoleName() %}
+                    {% endfor %}
+
+                    addUserRoleBlock('{{ userName }}', '{{ id }}', '{{ roles }}')
+                {% endfor %}
+            </script>
         </div>
 
         <div class="card mb-3" id="reportTasks">
@@ -160,19 +158,8 @@
                 Планы, задачы, наводкі
             </div>
 
-            <div class="card-body">
-                {% for task in report.tasks %}
-                    <p id="editReportTask{{ task.id }}">
-                        {% if task.status == constant('App\\Entity\\Type\\TaskStatus::TIP') %}
-                            Наводка:
-                        {% endif %}
-                        {{ task.content }}
-                        {% if task.informant %}
-                            Інфармант: {{ task.informant.firstName }}
-                        {% endif %}
-                        <button type="submit" class="btn btn-danger report-task" data-index="{{ task.id }}">Выдаліць</button>
-                    </p>
-                {% endfor %}
+            <div class="card-body" id="allReportTasks">
+                {# list of report tasks #}
                 <hr>
                 <p>
                     Дадаць новы план, задачу, наводку
@@ -183,6 +170,15 @@
                     </button>
                 </p>
             </div>
+
+            {% include('report/part/template.report.task.html.twig') %}
+
+            {% for task in report.tasks %}
+            <script type="application/javascript">
+                addReportTaskBlock('{{ task.status }}', '{{ task.id }}', '{{ task.content }}', '{% if task.informant %} {{ task.informant.firstName }} {% endif %}')
+            </script>
+            {% endfor %}
+
         </div>
 
         {% for block in report.blocks %}
@@ -252,7 +248,7 @@
                     <form id="formAddTaskPlan">
                         <div class="input-group mb-3">
                             <span class="input-group-text" id="taskType">Тып</span>
-                            <select class="form-select" aria-label="Type of task" required>
+                            <select class="form-select" aria-label="Type of task" name="status" required>
                                 {% for id, name in constant('App\\Entity\\Type\\TaskStatus::STATUSES') %}
                                     <option value="{{ id }}">{{ name }}</option>
                                 {% endfor %}
@@ -264,7 +260,7 @@
 
                         <div class="input-group mb-3">
                             <span class="input-group-text">Тэкст</span>
-                            <textarea class="form-control" aria-label="Text of task" required></textarea>
+                            <textarea class="form-control" aria-label="Text of task" name="content" required></textarea>
                             <div class="invalid-feedback">
                                 Калі ласка, напішыце тэкст задачы
                             </div>
@@ -556,7 +552,7 @@
                     <form id="formAddSubject">
                         <div class="input-group mb-3">
                             <span class="input-group-text" id="subjectType">Тып</span>
-                            <select class="form-select" aria-label="Type of subject" required>
+                            <select class="form-select" aria-label="Type of subject" name="type" required>
                                 {% for id, name in constant('App\\Entity\\Type\\SubjectType::TYPES') %}
                                     <option value="{{ id }}">{{ name }}</option>
                                 {% endfor %}
@@ -568,7 +564,7 @@
 
                         <div class="input-group mb-3">
                             <span class="input-group-text">Назва</span>
-                            <textarea class="form-control" aria-label="Name of subject" required></textarea>
+                            <textarea class="form-control" aria-label="Name of subject" name="name" required></textarea>
                             <div class="invalid-feedback">
                                 Калі ласка, напішыце назву
                             </div>

@@ -1,0 +1,64 @@
+<div class="d-none" id="createNewSubjectTemplate">
+    <p id="editBlock_BLOCK_INDEX_Subject_SUBJECT_ID">
+        SUBJECT_TYPE: <b>SUBJECT_NAME</b>
+        <button type="submit" class="btn btn-danger edit-block-subject"
+                data-index="SUBJECT_ID" data-block="BLOCK_INDEX">Выдаліць</button>
+    </p>
+</div>
+
+<script type="application/javascript">
+    function addActionSubject(element) {
+        const id = element.getAttribute('data-index')
+        const blockIndex = element.getAttribute('data-block')
+        element.addEventListener('click', () => {
+            // todo: remove subject
+            showMessage(400, 'Данныя выдалены паспяхова!', 'Прадмет', '#' + id)
+            document.getElementById('editBlock_' + blockIndex + '_Subject_' + id).remove()
+        })
+    }
+
+    function addSubjectBlock(blockIndex, id, type, name) {
+        let html = document.getElementById('createNewSubjectTemplate').innerHTML
+        html = html.replaceAll('BLOCK_INDEX', blockIndex)
+        html = html.replaceAll('SUBJECT_ID', '' + id)
+        html = html.replaceAll('SUBJECT_TYPE', type)
+        html = html.replaceAll('SUBJECT_NAME', name)
+
+        let element = document.getElementById('allBlock' + blockIndex + 'Subjects')
+        element.insertAdjacentHTML('afterbegin', html)
+
+        let newSubject = document.getElementById('editBlock_' + blockIndex + '_Subject_' + id).querySelector('button')
+        addActionSubject(newSubject)
+    }
+
+    window.addEventListener("load", (event) => {
+        const saveNewSubject = document.getElementById('saveNewSubject')
+        if (saveNewSubject) {
+            saveNewSubject.addEventListener('click', event => {
+                const form = document.getElementById('formAddSubject')
+                if (!form.checkValidity()) {
+                    event.preventDefault()
+                    event.stopPropagation()
+                } else {
+                    // todo: save new subject
+                    const blockIndex = 1
+                    const id = '00000'
+                    // const type = form.querySelector('select[name="type"]').value
+                    const type = form.querySelector('select[name="type"]').selectedOptions[0].text
+                    const name = form.querySelector('textarea[name="name"]').value
+
+                    addSubjectBlock(blockIndex, id, type, name)
+
+                    showMessage(200, 'Данныя захаваліся паспяхова!', 'Прадмет', '#' + id)
+
+                    const modalElement = document.getElementById('addSubjectModal')
+                    bootstrap.Modal.getInstance(modalElement).hide()
+
+                    form.classList.remove('was-validated')
+                    form.reset()
+                }
+                form.classList.add('was-validated')
+            })
+        }
+    });
+</script>

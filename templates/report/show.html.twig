@@ -60,7 +60,7 @@
             {% if report.geoPoint %}
                 <div id="map"></div>
                 <script type="text/javascript">
-                    var geoLatLon = [{{ report.geoPoint.lat }}, {{ report.geoPoint.lon }}];
+                    const geoLatLon = [{{ report.geoPoint.lat }}, {{ report.geoPoint.lon }}];
                 </script>
             {% endif %}
         </div>
