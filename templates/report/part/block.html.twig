@@ -96,30 +96,27 @@
         Краткае апісаньне эпізодаў блока {{ blockIndex }}
     </div>
 
-    <div class="card-body">
-        {% if block.getContentFile() %}
-            {% for marker in block.getContentFile().fileMarkers %}
-                <p id="editBlock{{ blockIndex }}Marker{{ marker.id }}">
-                    {% if marker.isCategoryNotOther() %}
-                        {{ marker.getCategoryName() }}{% if marker.name %}:{% else %}.{% endif %}
-                    {% endif %}
-                    {{ marker.name }}
-                    {% for tag in marker.tags %}
-                        <span class="badge text-bg-secondary">{{ tag.name }}</span>
-                    {% endfor %}
-                    {{ marker.notes }}
-                    <button type="submit" class="btn btn-danger edit-block-marker"
-                            data-index="{{ marker.id }}" data-block="{{ blockIndex }}">Выдаліць</button>
-                </p>
-            {% endfor %}
-        {% endif %}
+    <div class="card-body" id="allBlock{{ blockIndex }}Markers">
+        {# list of markers #}
         <hr>
         <p>
             Дадаць новы эпізод
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addEpisodeModal">
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addEpisodeModal" data-bs-block="{{ blockIndex }}">
                 Дадаць
             </button>
         </p>
+
+        {% include('report/part/template.block.marker.html.twig') %}
+
+        {% if block.getContentFile() %}
+            {% for marker in block.getContentFile().fileMarkers %}
+                <script type="application/javascript">
+                    category = '{% if marker.isCategoryNotOther() %}{{ marker.getCategoryName() }}{% endif %}'
+                    tags = {{ marker.tags|json_encode|raw }};
+                    addMarkerBlock('{{ blockIndex }}', '{{ marker.id }}', category, '{{ marker.name }}', tags, '{{ marker.notes }}')
+                </script>
+            {% endfor %}
+        {% endif %}
     </div>
 </div>
 
