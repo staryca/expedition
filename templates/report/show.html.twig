@@ -60,7 +60,7 @@
             {% if report.geoPoint %}
                 <div id="map"></div>
                 <script type="text/javascript">
-                    var geoLatLon = [{{ report.geoPoint.lat }}, {{ report.geoPoint.lon }}];
+                    const geoLatLon = [{{ report.geoPoint.lat }}, {{ report.geoPoint.lon }}];
                 </script>
             {% endif %}
         </div>
@@ -92,7 +92,7 @@
                                 {{ task.content }}
                                 {% if task.informant %}
                                     Інфармант:
-                                    {% include 'block/informant.full.html.twig'
+                                    {% include 'part/informant.full.html.twig'
                                         with {'informant': task.informant, 'geoPoint': report.geoPoint, 'isLink' : false} %}
                                 {% endif %}
                             </li>
@@ -125,7 +125,7 @@
                 {% if block.organization %}
                     <p>
                         Арганізацыя:
-                        {% include 'block/organization.full.html.twig' with {'organization': block.organization, 'isLink' : false} %}
+                        {% include 'part/organization.full.html.twig' with {'organization': block.organization, 'isLink' : false} %}
                     </p>
                 {% endif %}
 
@@ -133,7 +133,7 @@
                     <ul>Інфарманты:
                         {% for informant in block.informants %}
                             <li>
-                                {% include 'block/informant.full.html.twig'
+                                {% include 'part/informant.full.html.twig'
                                     with {'informant': informant, 'geoPoint': report.geoPoint, 'isLink' : false} %}
                             </li>
                         {% endfor %}
@@ -144,7 +144,7 @@
                     <ul>Прадметы:
                         {% for subject in block.subjects %}
                             <li>
-                                {% include 'block/subject.full.html.twig' with {'subject': subject} %}
+                                {% include 'part/subject.full.html.twig' with {'subject': subject} %}
                             </li>
                         {% endfor %}
                     </ul>
@@ -156,7 +156,7 @@
                         <ol class="list-group list-group-numbered">
                             {% for task in block.tasks %}
                                 <li class="list-group-item">
-                                    {% include 'block/task.full.html.twig' with {'task': task, 'geoPoint': report.geoPoint} %}
+                                    {% include 'part/task.full.html.twig' with {'task': task, 'geoPoint': report.geoPoint} %}
                                 </li>
                             {% endfor %}
                         </ol>
@@ -192,7 +192,7 @@
                         
                     {% for file in files %}
                         <p>
-                            {% include 'block/file.full.html.twig'
+                            {% include 'part/file.full.html.twig'
                                 with {'file': file, 'code': report.code, 'mediaFolder': mediaFolder} %}
                         </p>
 

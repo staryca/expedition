@@ -2,9 +2,23 @@
 const reportSaveAction = document.getElementById('reportSaveAction')
 if (reportSaveAction) {
     reportSaveAction.addEventListener('click', () => {
-        // todo
-        const id = document.getElementById('editReportId').value
+        let id = document.getElementById('editReportId').value
+        // todo: save report
+        if (!id) id = '00000';
         showMessage(200, 'Данныя захаваліся паспяхова!', 'Справаздача', '#' + id)
+    })
+}
+
+const addTaskPlanModal = document.getElementById('addTaskPlanModal')
+if (addTaskPlanModal) {
+    addTaskPlanModal.addEventListener('show.bs.modal', event => {
+        const button = event.relatedTarget
+        const type = button.getAttribute('data-type-modal')
+        let text = type === 'report' ? 'справаздачы' : 'блока ' + button.getAttribute('data-block-index')
+
+        // Update the modal's content.
+        const notesElement = document.getElementById('addTaskPlanModalNotes')
+        notesElement.textContent = 'Для ' + text
     })
 }
 
@@ -12,29 +26,10 @@ const allEditReportBlocks = document.getElementsByClassName("edit-report-block")
 for (let i = 0; i < allEditReportBlocks.length; i++) {
     const index = allEditReportBlocks[i].getAttribute('data-index')
     document.getElementById('editReportBlock' + index + 'SaveAction').addEventListener('click', () => {
-        // todo
-        const id = document.getElementById('editReportBlock' + index).value
+        let id = document.getElementById('editReportBlock' + index).value
+        // todo: save main block info
+        if (!id) id = '00000';
         showMessage(200, 'Данныя захаваліся паспяхова!', 'Блок ' + index, '#' + id)
-    })
-}
-
-const allReportUserRoles = document.getElementsByClassName("report-user-role");
-for (let i = 0; i < allReportUserRoles.length; i++) {
-    const id = allReportUserRoles[i].getAttribute('data-index')
-    allReportUserRoles[i].addEventListener('click', () => {
-        // todo
-        showMessage(400, 'Данныя выдалены паспяхова!', 'Роля', '#' + id)
-        document.getElementById('editUserReport' + id).remove()
-    })
-}
-
-const allReportTasks = document.getElementsByClassName("report-task");
-for (let i = 0; i < allReportTasks.length; i++) {
-    const id = allReportTasks[i].getAttribute('data-index')
-    allReportTasks[i].addEventListener('click', () => {
-        // todo
-        showMessage(400, 'Данныя выдалены паспяхова!', 'Планы, задачы, наводкі', '#' + id)
-        document.getElementById('editReportTask' + id).remove()
     })
 }
 
@@ -46,28 +41,6 @@ for (let i = 0; i < allBlockInformants.length; i++) {
         // todo
         showMessage(400, 'Данныя выдалены паспяхова!', 'Інфармант', '#' + id)
         document.getElementById('editBlock' + block + 'Informant' + id).remove()
-    })
-}
-
-const allBlockMarkers = document.getElementsByClassName("edit-block-marker");
-for (let i = 0; i < allBlockMarkers.length; i++) {
-    const id = allBlockMarkers[i].getAttribute('data-index')
-    const block = allBlockMarkers[i].getAttribute('data-block')
-    allBlockMarkers[i].addEventListener('click', () => {
-        // todo
-        showMessage(400, 'Данныя выдалены паспяхова!', 'Эпізод', '#' + id)
-        document.getElementById('editBlock' + block + 'Marker' + id).remove()
-    })
-}
-
-const allBlockSubjects = document.getElementsByClassName("edit-block-subject");
-for (let i = 0; i < allBlockSubjects.length; i++) {
-    const id = allBlockSubjects[i].getAttribute('data-index')
-    const block = allBlockSubjects[i].getAttribute('data-block')
-    allBlockSubjects[i].addEventListener('click', () => {
-        // todo
-        showMessage(400, 'Данныя выдалены паспяхова!', 'Прадмет', '#' + id)
-        document.getElementById('editBlock' + block + 'Subject' + id).remove()
     })
 }
 
@@ -83,28 +56,6 @@ for (let i = 0; i < allBlockTasks.length; i++) {
 }
 
 // save in dialogs
-const saveReportUser = document.getElementById('saveReportUser')
-if (saveReportUser) {
-    saveReportUser.addEventListener('click', event => {
-        const form = document.getElementById('formAddReportUser')
-        if (!form.checkValidity()) {
-            event.preventDefault()
-            event.stopPropagation()
-        } else {
-            // todo
-            const id = '00000'
-            showMessage(200, 'Данныя захаваліся паспяхова!', 'Даследвальнік', '#' + id)
-
-            const modalElement = document.getElementById('addReportUserModal')
-            bootstrap.Modal.getInstance(modalElement).hide()
-
-            form.classList.remove('was-validated')
-            form.reset()
-        }
-        form.classList.add('was-validated')
-    })
-}
-
 const saveReportTask = document.getElementById('saveReportTask')
 if (saveReportTask) {
     saveReportTask.addEventListener('click', event => {
@@ -115,6 +66,10 @@ if (saveReportTask) {
         } else {
             // todo
             const id = '00000'
+            const status = form.querySelector('select[name="status"]').value
+            const content = form.querySelector('textarea[name="content"]').value
+            addReportTaskBlock(status, id, content, '')
+
             showMessage(200, 'Данныя захаваліся паспяхова!', 'План, задача, наводка', '#' + id)
 
             const modalElement = document.getElementById('addTaskPlanModal')
@@ -149,69 +104,69 @@ if (saveNewOrganization) {
     })
 }
 
-const saveNewInformant = document.getElementById('saveNewInformant')
-if (saveNewInformant) {
-    saveNewInformant.addEventListener('click', event => {
-        const form = document.getElementById('formAddInformant')
-        if (!form.checkValidity()) {
-            event.preventDefault()
-            event.stopPropagation()
-        } else {
-            // todo
-            const id = '00000'
-            showMessage(200, 'Данныя захаваліся паспяхова!', 'Інфармант', '#' + id)
-
-            const modalElement = document.getElementById('addInformantModal')
-            bootstrap.Modal.getInstance(modalElement).hide()
-
-            form.classList.remove('was-validated')
-            form.reset()
+// create new block
+const createNewBlock = document.getElementById('createNewBlock')
+if (createNewBlock) {
+    createNewBlock.addEventListener('click', event => {
+        let i = 1;
+        let element = document.getElementById('block' + i + 'body')
+        while (element) {
+            i = i + 1
+            element = document.getElementById('block' + i + 'body')
         }
-        form.classList.add('was-validated')
+
+        let html = document.getElementById('blockMenuTemplate').innerHTML
+        html = html.replaceAll('NUMBERBLOCK', '' + i)
+        let menuElement = document.getElementById('createNewBlock')
+        menuElement.insertAdjacentHTML('beforebegin', html)
+
+        html = document.getElementById('createNewBlockTemplate').innerHTML
+        html = html.replaceAll('NUMBERBLOCK', '' + i)
+        let mainElement = document.getElementById('mainBlock')
+        mainElement.insertAdjacentHTML('beforeend', html)
     })
 }
 
-const saveNewEpisode = document.getElementById('saveNewEpisode')
-if (saveNewEpisode) {
-    saveNewEpisode.addEventListener('click', event => {
-        const form = document.getElementById('formAddEpisode')
-        if (!form.checkValidity()) {
-            event.preventDefault()
-            event.stopPropagation()
-        } else {
-            // todo
-            const id = '00000'
-            showMessage(200, 'Данныя захаваліся паспяхова!', 'Эпізод блока', '#' + id)
+// Modal functions
+const addSubjectModal = document.getElementById('addSubjectModal')
+if (addSubjectModal) {
+    addSubjectModal.addEventListener('show.bs.modal', event => {
+        const button = event.relatedTarget
+        const blockIndex = button.getAttribute('data-bs-block')
 
-            const modalElement = document.getElementById('addEpisodeModal')
-            bootstrap.Modal.getInstance(modalElement).hide()
+        let addSubjectModalLabel = document.getElementById('addSubjectModalLabel')
+        addSubjectModalLabel.innerText = 'Дадаць новы прадмет для блока ' + blockIndex
 
-            form.classList.remove('was-validated')
-            form.reset()
-        }
-        form.classList.add('was-validated')
+        let blockIndexInput = addSubjectModal.querySelector('input[name="blockIndex"]')
+        blockIndexInput.value = blockIndex
     })
 }
 
-const saveNewSubject = document.getElementById('saveNewSubject')
-if (saveNewSubject) {
-    saveNewSubject.addEventListener('click', event => {
-        const form = document.getElementById('formAddSubject')
-        if (!form.checkValidity()) {
-            event.preventDefault()
-            event.stopPropagation()
-        } else {
-            // todo
-            const id = '00000'
-            showMessage(200, 'Данныя захаваліся паспяхова!', 'Прадмет', '#' + id)
+const addEpisodeModal = document.getElementById('addEpisodeModal')
+if (addEpisodeModal) {
+    addEpisodeModal.addEventListener('show.bs.modal', event => {
+        const button = event.relatedTarget
+        const blockIndex = button.getAttribute('data-bs-block')
 
-            const modalElement = document.getElementById('addSubjectModal')
-            bootstrap.Modal.getInstance(modalElement).hide()
+        let addSubjectModalLabel = document.getElementById('addEpisodeModalLabel')
+        addSubjectModalLabel.innerText = 'Дадаць новы эпізод для блока ' + blockIndex
 
-            form.classList.remove('was-validated')
-            form.reset()
-        }
-        form.classList.add('was-validated')
+        let blockIndexInput = addEpisodeModal.querySelector('input[name="blockIndex"]')
+        blockIndexInput.value = blockIndex
+    })
+}
+
+const addInformantModal = document.getElementById('addInformantModal')
+if (addInformantModal) {
+    addInformantModal.addEventListener('show.bs.modal', event => {
+        const button = event.relatedTarget
+        const blockIndex = button.getAttribute('data-bs-block')
+
+        let addInformantModalLabel = document.getElementById('addInformantModalLabel')
+        addInformantModalLabel.innerText = 'Дадаць новага інфарманта для блока ' + blockIndex
+
+        let blockIndexInput = addInformantModal.querySelector('input[name="blockIndex"]')
+        blockIndexInput.value = blockIndex
     })
 }
 

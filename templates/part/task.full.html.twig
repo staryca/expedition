@@ -9,6 +9,6 @@
 
 {% if task.informant %}
     Інфармант:
-    {% include 'block/informant.full.html.twig'
+    {% include 'part/informant.full.html.twig'
         with {'informant': task.informant, 'geoPoint': geoPoint, 'isLink' : true} %}
 {% endif %}

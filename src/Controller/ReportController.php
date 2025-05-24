@@ -6,6 +6,7 @@ namespace App\Controller;
 
 use App\Entity\Expedition;
 use App\Entity\Report;
+use App\Entity\ReportBlock;
 use App\Repository\ExpeditionRepository;
 use App\Repository\GeoPointRepository;
 use App\Repository\ReportRepository;
@@ -83,6 +84,7 @@ class ReportController extends AbstractController
 
         return $this->render('report/edit.html.twig', [
             'report' => $report ?? new Report($expedition),
+            'newBlock' => new ReportBlock(),
             'users' => $this->userRepository->getList(),
             'geoPoints' => $geoPoints,
         ]);

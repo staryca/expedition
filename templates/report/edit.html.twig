@@ -36,24 +36,25 @@
 
 {% block body %}
     <div class="sidenav bg-body-secondary text-primary">
-        <a class="" href="#reportBody"><i class="bi bi-file-text"></i></a>
-        <a class="" href="#reportUsers"><i class="bi bi-file-earmark-person"></i></a>
-        <a class="" href="#reportTasks"><i class="bi bi-calendar-event"></i></a>
+        <a class="" href="#reportBody" title="Асноўная інфармацыя справаздачы"><i class="bi bi-file-text"></i></a>
+        <a class="" href="#reportTasks" title="Планы і задачы ўсёй справаздачы"><i class="bi bi-calendar-event"></i></a>
+        <hr >
 
         {% for block in report.blocks %}
-            <a class="" href="#block{{ loop.index }}body"><i class="bi bi-{{ loop.index }}-square"></i></a>
-            <a class="" href="#block{{ loop.index }}informants"><i class="bi bi-person-vcard"></i></a>
-            <a class="" href="#block{{ loop.index }}tags"><i class="bi bi-tag"></i></a>
-            <a class="" href="#block{{ loop.index }}items"><i class="bi bi-box-seam"></i></a>
+            {% include('report/part/menu.html.twig') with {'blockIndex': loop.index} %}
         {% endfor %}
 
-        <a class="" href="#blockAdd"><i class="bi bi-plus-square"></i></a>
+        <a class="text-success" id="createNewBlock" title="Дадаць новы блок"><i class="bi bi-plus-square"></i></a>
 
         <hr >
-        <a class="" href="{{ path('report_new_for_active_expedition') }}"><i class="bi bi-file-earmark-plus"></i></a>
+        <a class="" data-bs-toggle="modal" data-bs-target="#toNewReport" title="Дадаць новую справаздачу"><i class="bi bi-file-earmark-plus"></i></a>
     </div>
 
-    <div class="main">
+    <div class="d-none" id="blockMenuTemplate">
+        {% include('report/part/menu.html.twig') with {'blockIndex': 'NUMBERBLOCK'} %}
+    </div>
+
+    <div class="main" id="mainBlock">
         <h2>{% if report.id %}Справаздача #{{ report.id }}{% else %}Новая справаздача{% endif %} для экспедыцыі {{ report.expedition.name }}</h2>
         <div class="card mb-3" id="reportBody">
             <div class="card-header">
@@ -92,7 +93,7 @@
                     <div class="input-group mb-3">
                         <span class="input-group-text">Месца</span>
                         <select class="form-select" aria-label="new report location">
-                            <option selected>- выбраць -</option>
+                            <option selected>- невядома -</option>
                             {% set selected = report.geoPoint == null %}
                             {% for geoPoint in geoPoints %}
                                 <option value="{{ geoPoint.id }}"
@@ -121,19 +122,8 @@
                 Даследвальнікі
             </div>
 
-            <div class="card-body">
-                {% for userRoles in report.getUserReportsGroupsByUser() %}
-                    <p>
-                        {% for userRole in userRoles %}
-                            {% if loop.index == 1 %} <u>{{ userRole.participant.gelFullName() }}</u>: {% endif %}
-                            <span id="editUserReport{{ userRole.id }}">
-                                {{ userRole.getRoleName() }}
-                                <button type="button" class="btn btn-danger report-user-role" data-index="{{ userRole.id }}">Выдаліць</button>
-                                {% if not loop.last %},{% endif %}
-                            </span>
-                        {% endfor %}
-                    </p>
-                {% endfor %}
+            <div class="card-body" id="allUserRoles">
+                {# list of user roles #}
                 <hr>
                 <p>
                     Дадаць удзельніка і яго ролі
@@ -142,6 +132,25 @@
                     </button>
                 </p>
             </div>
+
+            {% include('report/part/template.user.role.html.twig') %}
+
+            <script type="application/javascript">
+                {% for userRoles in report.getUserReportsGroupsByUser() %}
+                    {% set userName = '' %}
+                    {% set id = '' %}
+                    {% set roles = '' %}
+                    {% for userRole in userRoles %}
+                        {% set userName = userRole.participant.gelFullName() %}
+                        {% set id = userRole.participant.getId() %}
+
+                        {% if loop.index > 1 %} {% set roles = roles ~ ', ' %} {% endif %}
+                        {% set roles = roles ~ userRole.getRoleName() %}
+                    {% endfor %}
+
+                    addUserRoleBlock('{{ userName }}', '{{ id }}', '{{ roles }}')
+                {% endfor %}
+            </script>
         </div>
 
         <div class="card mb-3" id="reportTasks">
@@ -149,211 +158,37 @@
                 Планы, задачы, наводкі
             </div>
 
-            <div class="card-body">
-                {% for task in report.tasks %}
-                    <p id="editReportTask{{ task.id }}">
-                        {% if task.status == constant('App\\Entity\\Type\\TaskStatus::TIP') %}
-                            Наводка:
-                        {% endif %}
-                        {{ task.content }}
-                        {% if task.informant %}
-                            Інфармант: {{ task.informant.firstName }}
-                        {% endif %}
-                        <button type="submit" class="btn btn-danger report-task" data-index="{{ task.id }}">Выдаліць</button>
-                    </p>
-                {% endfor %}
+            <div class="card-body" id="allReportTasks">
+                {# list of report tasks #}
                 <hr>
                 <p>
                     Дадаць новы план, задачу, наводку
-                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTaskPlanModal">
+                    <button type="button" class="btn btn-primary"
+                            data-bs-toggle="modal" data-bs-target="#addTaskPlanModal"
+                            data-type-modal="report">
                         Дадаць
                     </button>
                 </p>
             </div>
+
+            {% include('report/part/template.report.task.html.twig') %}
+
+            {% for task in report.tasks %}
+            <script type="application/javascript">
+                addReportTaskBlock('{{ task.status }}', '{{ task.id }}', '{{ task.content }}', '{% if task.informant %} {{ task.informant.firstName }} {% endif %}')
+            </script>
+            {% endfor %}
+
         </div>
 
         {% for block in report.blocks %}
             {% set blockIndex = loop.index %}
-        <h3>Блок {{ blockIndex }}</h3>
-        <div class="card mb-3" id="block{{ blockIndex }}body">
-            <div class="card-header">
-                Блок {{ blockIndex }}: асноўная інфармацыя
-            </div>
-
-            <div class="card-body">
-                <form>
-                    <input type="hidden" id="editReportBlock{{ blockIndex }}" value="{{ block.id }}">
-                    <div class="input-group mb-3">
-                        <span class="input-group-text">Тып</span>
-                        <select class="form-select" aria-label="Тып">
-                            {% for id, name in constant('App\\Entity\\Type\\ReportBlockType::TYPES') %}
-                                <option value="{{ id }}" {% if id == block.type %}selected="selected"{% endif %}>
-                                    {{ name }}
-                                </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-
-                    <div class="input-group mb-3">
-                        <span class="input-group-text">Вопіс блока</span>
-                        <textarea class="form-control" aria-label="With textarea">{{ block.description }}</textarea>
-                    </div>
-
-                    <div class="mb-3">
-                        <div class="input-group">
-                            <span class="input-group-text">Арганізацыя / гурт</span>
-                            <select class="form-select" aria-label="Арганізацыя">
-                                <option selected>- выбраць -</option>
-                                {% if block.organization %}
-                                    <option selected value="{{ block.organization.id }}">{{ block.organization.name }}</option>
-                                {% endif %}
-                            </select>
-                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addOrgModal">Дадаць новую</button>
-
-                        </div>
-                    </div>
-
-                    <div class="mb-3">
-                        <div class="input-group">
-                            <label class="input-group-text" for="blockNotesUsers">Заўвагі да даследвальнікаў</label>
-                            <input type="text" class="form-control" value="{{ block.userNotes }}" id="blockNotesUsers">
-                        </div>
-                    </div>
-
-                    <div class="mb-3">
-                        <div class="input-group">
-                            <label class="input-group-text" for="blockNotesPhoto">Заўвагі к фота</label>
-                            <input type="text" class="form-control" value="{{ block.photoNotes }}" id="blockNotesPhoto">
-                        </div>
-                    </div>
-
-                    <div class="mb-3">
-                        <div class="input-group">
-                            <label class="input-group-text" for="blockNotesVideo">Заўвагі к відэа</label>
-                            <input type="text" class="form-control" value="{{ block.videoNotes }}" id="blockNotesVideo">
-                        </div>
-                    </div>
-
-                    <div class="mb-3">
-                        <button type="button" class="btn btn-success edit-report-block"
-                                data-index="{{ blockIndex }}"
-                                id="editReportBlock{{ blockIndex }}SaveAction">Захаваць</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <div class="card mb-3" id="block{{ blockIndex }}informants">
-            <div class="card-header">
-                Інфарманты
-            </div>
-
-            <div class="card-body">
-                {% for informant in block.informants %}
-                    <p id="editBlock{{ blockIndex }}Informant{{ informant.id }}">
-                        {% include 'block/informant.full.html.twig'
-                            with {'informant': informant, 'geoPoint': report.geoPoint, 'isLink' : false} %}
-                        <button type="button" class="btn btn-danger edit-block-informant"
-                                data-index="{{ informant.id }}" data-block="{{ blockIndex }}">Выдаліць</button>
-                    </p>
-                {% endfor %}
-                <hr>
-                <p>
-                    Дадаць новага інфарманта
-                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addInformantModal">
-                        Дадаць
-                    </button>
-                </p>
-            </div>
-        </div>
-
-        <div class="card mb-3" id="block{{ blockIndex }}tags">
-            <div class="card-header">
-                Краткае апісаньне эпізодаў блока
-            </div>
-
-            <div class="card-body">
-                {% if block.getContentFile() %}
-                    {% for marker in block.getContentFile().fileMarkers %}
-                        <p id="editBlock{{ blockIndex }}Marker{{ marker.id }}">
-                            {% if marker.isCategoryNotOther() %}
-                                {{ marker.getCategoryName() }}{% if marker.name %}:{% else %}.{% endif %}
-                            {% endif %}
-                            {{ marker.name }}
-                            {% for tag in marker.tags %}
-                                <span class="badge text-bg-secondary">{{ tag.name }}</span>
-                            {% endfor %}
-                            {{ marker.notes }}
-                            <button type="submit" class="btn btn-danger edit-block-marker"
-                                    data-index="{{ marker.id }}" data-block="{{ blockIndex }}">Выдаліць</button>
-                        </p>
-                    {% endfor %}
-                {% endif %}
-                <hr>
-                <p>
-                    Дадаць новы эпізод
-                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addEpisodeModal">
-                        Дадаць
-                    </button>
-                </p>
-            </div>
-        </div>
-
-        <div class="card mb-3" id="block{{ blockIndex }}items">
-            <div class="card-header">
-                Прадметы
-            </div>
-
-            <div class="card-body">
-                {% for subject in block.subjects %}
-                    <p id="editBlock{{ blockIndex }}Subject{{ subject.id }}">
-                        {{ subject.getTypeName() }}: <b>{{ subject.name }}</b>
-                        <button type="submit" class="btn btn-danger edit-block-subject"
-                                data-index="{{ subject.id }}" data-block="{{ blockIndex }}">Выдаліць</button>
-                    </p>
-                {% endfor %}
-                <hr>
-                <p>
-                    Дадаць новы прадмет
-                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addSubjectModal">
-                        Дадаць
-                    </button>
-                </p>
-
-            </div>
-        </div>
-
-        <div class="card mb-3" id="reportTasks">
-            <div class="card-header">
-                Планы, задачы, наводкі
-            </div>
-
-            <div class="card-body">
-                {% for task in block.tasks %}
-                    <p id="editBlock{{ blockIndex }}Task{{ task.id }}">
-                        {% if task.status == constant('App\\Entity\\Type\\TaskStatus::TIP') %}
-                            Наводка:
-                        {% endif %}
-                        {{ task.content }}
-                        {% if task.informant %}
-                            Інфармант: {{ task.informant.firstName }}
-                        {% endif %}
-                        <button type="submit" class="btn btn-danger edit-block-task"
-                                data-index="{{ task.id }}" data-block="{{ blockIndex }}">Выдаліць</button>
-                    </p>
-                {% endfor %}
-                <hr>
-                <p>
-                    Дадаць новы план, задачу, наводку
-                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTaskPlanModal">
-                        Дадаць
-                    </button>
-                </p>
-            </div>
-        </div>
-
+            {% include('report/part/block.html.twig') with {'blockIndex': loop.index, 'block': block} %}
         {% endfor %}
 
+        <div class="d-none" id="createNewBlockTemplate">
+            {% include('report/part/block.html.twig') with {'blockIndex': 'NUMBERBLOCK', 'block': newBlock} %}
+        </div>
     </div>
 
     <!-- Modals -->
@@ -370,7 +205,7 @@
                     <form id="formAddReportUser">
                         <div class="input-group mb-3">
                             <span class="input-group-text">Імя</span>
-                            <select class="form-select" aria-label="Name of user" required>
+                            <select name="user" class="form-select" aria-label="Name of user" required>
                                 <option selected disabled value="">- выбярыце са сьпіса -</option>
                                 {% for id, name in users %}
                                     <option value="{{ id }}">{{ name }}</option>
@@ -384,7 +219,8 @@
                         <div class="input-group mb-3">
                             {% for role, name in constant('App\\Entity\\Type\\UserRoleType::ROLES') %}
                                 <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="checkbox" id="role{{ role }}" name="{{ role }}" value="1">
+                                    <input class="form-check-input roles" type="checkbox"
+                                           id="role{{ role }}" name="{{ role }}" value="{{ role }}">
                                     <label class="form-check-label" for="role{{ role }}">{{ name }}</label>
                                 </div>
                             {% endfor %}
@@ -408,10 +244,11 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
+                    <p id="addTaskPlanModalNotes"></p>
                     <form id="formAddTaskPlan">
                         <div class="input-group mb-3">
                             <span class="input-group-text" id="taskType">Тып</span>
-                            <select class="form-select" aria-label="Type of task" required>
+                            <select class="form-select" aria-label="Type of task" name="status" required>
                                 {% for id, name in constant('App\\Entity\\Type\\TaskStatus::STATUSES') %}
                                     <option value="{{ id }}">{{ name }}</option>
                                 {% endfor %}
@@ -423,7 +260,7 @@
 
                         <div class="input-group mb-3">
                             <span class="input-group-text">Тэкст</span>
-                            <textarea class="form-control" aria-label="Text of task" required></textarea>
+                            <textarea class="form-control" aria-label="Text of task" name="content" required></textarea>
                             <div class="invalid-feedback">
                                 Калі ласка, напішыце тэкст задачы
                             </div>
@@ -533,10 +370,12 @@
                 </div>
                 <div class="modal-body">
                     <form id="formAddInformant">
+                        <input type="hidden" name="blockIndex" value="">
+
                         <div class="mb-3">
                             <div class="input-group">
                                 <label class="input-group-text" for="informantName">Імя</label>
-                                <input type="text" class="form-control" id="informantName" required>
+                                <input type="text" class="form-control" id="informantName" name="name" required>
                                 <div class="invalid-feedback">
                                     Калі ласка, напішыце імя
                                 </div>
@@ -546,7 +385,7 @@
                         <div class="mb-3">
                             <div class="input-group">
                                 <label class="input-group-text" for="informantBirthYear">Год нараджэньня</label>
-                                <input type="number" class="form-control" id="informantBirthYear"
+                                <input type="number" class="form-control" id="informantBirthYear" name="birthYear"
                                        min="1850" max="2020" size="4">
                                 <div class="invalid-feedback">
                                     Калі ласка, напішыце дакладна год
@@ -556,7 +395,7 @@
 
                         <div class="input-group mb-3">
                             <span class="input-group-text">Адкуль</span>
-                            <select class="form-select" aria-label="Месца">
+                            <select class="form-select" aria-label="Месца" name="birthPoint">
                                 <option selected disabled value="">- выбраць -</option>
                                 {% for geoPoint in geoPoints %}
                                     <option value="{{ geoPoint.id }}"
@@ -568,7 +407,7 @@
                         </div>
                         <div class="input-group mb-3">
                             <span class="input-group-text">няма ў сьпісе</span>
-                            <input type="text" class="form-control" placeholder="вёска і раён" aria-label="Server">
+                            <input type="text" class="form-control" placeholder="вёска і раён" name="birthPlace" aria-label="Birth place">
                         </div>
 
                         <div class="mb-3">
@@ -588,7 +427,7 @@
 
                         <div class="input-group mb-3">
                             <span class="input-group-text">Жыве ў</span>
-                            <select class="form-select" aria-label="Месца">
+                            <select class="form-select" aria-label="Месца" name="livePoint">
                                 <option selected disabled value="">- выбраць -</option>
                                 {% for geoPoint in geoPoints %}
                                     <option value="{{ geoPoint.id }}"
@@ -600,7 +439,7 @@
                         </div>
                         <div class="input-group mb-3">
                             <span class="input-group-text">няма ў сьпісе</span>
-                            <input type="text" class="form-control" placeholder="вёска і раён" aria-label="">
+                            <input type="text" class="form-control" placeholder="вёска і раён" name="livePlace" aria-label="live place">
                         </div>
 
                         <div class="mb-3">
@@ -624,25 +463,7 @@
                         <div class="mb-3">
                             <div class="input-group">
                                 <label class="input-group-text" for="informantNotes">Заўвагі</label>
-                                <input type="text" class="form-control" id="informantNotes">
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="informantNotLive"
-                                       id="informantLive" value="0">
-                                <label class="form-check-label" for="informantLive">жыве</label>
-                            </div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="informantNotLive"
-                                       id="informantDead" value="1">
-                                <label class="form-check-label" for="informantDead">памёр/ла</label>
-                            </div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="informantNotLive"
-                                       id="informantLiveUnknown" value="-1" checked>
-                                <label class="form-check-label" for="informantLiveUnknown">невядома</label>
+                                <input type="text" class="form-control" id="informantNotes" name="notes">
                             </div>
                         </div>
                     </form>
@@ -666,9 +487,11 @@
                 </div>
                 <div class="modal-body">
                     <form id="formAddEpisode">
+                        <input type="hidden" name="blockIndex" value="">
+
                         <div class="input-group mb-3">
                             <span class="input-group-text" id="taskType">Тып</span>
-                            <select class="form-select" aria-label="Type of episode" required>
+                            <select class="form-select" aria-label="Type of episode" name="category" required>
                                 {% for id, name in constant('App\\Entity\\Type\\CategoryType::TYPES') %}
                                     <option value="{{ id }}"
                                             {% if id == constant('App\\Entity\\Type\\CategoryType::STORY') %}selected{% endif %}>
@@ -683,7 +506,7 @@
 
                         <div class="input-group mb-3">
                             <span class="input-group-text">Эпізод</span>
-                            <textarea class="form-control" aria-label="Text of episode" required></textarea>
+                            <textarea class="form-control" aria-label="Text of episode" name="name" required></textarea>
                             <div class="invalid-feedback">
                                 Калі ласка, апішыце эпізод
                             </div>
@@ -691,7 +514,12 @@
 
                         <div class="input-group mb-3">
                             <span class="input-group-text">Тэгі</span>
-                            <input type="text" class="form-control" placeholder="" aria-label="Tags of episode">
+                            <input type="text" class="form-control" placeholder="" name="tags" aria-label="Tags of episode">
+                        </div>
+
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Заўвагі</span>
+                            <textarea class="form-control" aria-label="Notes of episode" name="notes"></textarea>
                         </div>
                     </form>
                 </div>
@@ -713,9 +541,11 @@
                 </div>
                 <div class="modal-body">
                     <form id="formAddSubject">
+                        <input type="hidden" name="blockIndex" value="">
+
                         <div class="input-group mb-3">
                             <span class="input-group-text" id="subjectType">Тып</span>
-                            <select class="form-select" aria-label="Type of subject" required>
+                            <select class="form-select" aria-label="Type of subject" name="type" required>
                                 {% for id, name in constant('App\\Entity\\Type\\SubjectType::TYPES') %}
                                     <option value="{{ id }}">{{ name }}</option>
                                 {% endfor %}
@@ -727,7 +557,7 @@
 
                         <div class="input-group mb-3">
                             <span class="input-group-text">Назва</span>
-                            <textarea class="form-control" aria-label="Name of subject" required></textarea>
+                            <textarea class="form-control" aria-label="Name of subject" name="name" required></textarea>
                             <div class="invalid-feedback">
                                 Калі ласка, напішыце назву
                             </div>
@@ -735,13 +565,33 @@
 
                         <div class="input-group mb-3">
                             <span class="input-group-text">Заўвагі</span>
-                            <textarea class="form-control" aria-label="Notes of subject"></textarea>
+                            <textarea class="form-control" aria-label="Notes of subject" name="notes"></textarea>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыць</button>
                     <button type="button" class="btn btn-success" id="saveNewSubject">Дадаць</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for new report -->
+    <div class="modal fade" id="toNewReport" tabindex="-1" aria-labelledby="toNewReportLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="toNewReportLabel">Рэадагаваньне справаздачы</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Вы захавалі ўсе змены гэтай справаздачы? Пры пераходзе на стварэньне новай справаздачы
+                    ўсе змены гэтай справаздачы не будуць аўтаматычна захованы.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Адмена</button>
+                    <a class="btn btn-success" href="{{ path('report_new_for_active_expedition') }}">Перайсьці</a>
                 </div>
             </div>
         </div>

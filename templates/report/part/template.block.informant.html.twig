@@ -1,0 +1,73 @@
+<div class="d-none" id="createNewInformantTemplate">
+    <p id="editBlock_BLOCK_INDEX_Informant_INFORMANT_ID">
+        <b>INFORMANT_NAME</b>
+        INFORMANT_BIRTH_YEAR
+        INFORMANT_BIRTH_LOCATION
+        INFORMANT_LIVE_LOCATION
+        <small>INFORMANT_NOTES</small>
+
+        <button type="submit" class="btn btn-danger"
+                data-index="INFORMANT_ID" data-block="BLOCK_INDEX">Выдаліць</button>
+    </p>
+</div>
+
+<script type="application/javascript">
+    function addActionInformant(element) {
+        const id = element.getAttribute('data-index')
+        const blockIndex = element.getAttribute('data-block')
+        element.addEventListener('click', () => {
+            // todo: remove marker
+            showMessage(400, 'Данныя выдалены паспяхова!', 'Інфармант', '#' + id)
+            document.getElementById('editBlock_' + blockIndex + '_Informant_' + id).remove()
+        })
+    }
+
+    function addInformantBlock(blockIndex, id, name, birthYear, notes) {
+        let html = document.getElementById('createNewInformantTemplate').innerHTML
+        html = html.replaceAll('BLOCK_INDEX', blockIndex)
+        html = html.replaceAll('INFORMANT_ID', '' + id)
+        html = html.replaceAll('INFORMANT_NAME', name)
+        const birth = birthYear === '' ? '' : birthYear + ' г.н.'
+        html = html.replaceAll('INFORMANT_BIRTH_YEAR', birth)
+        html = html.replaceAll('INFORMANT_BIRTH_LOCATION', '')
+        html = html.replaceAll('INFORMANT_LIVE_LOCATION', '')
+        html = html.replaceAll('INFORMANT_NOTES', notes)
+
+        let element = document.getElementById('allBlock' + blockIndex + 'Informants')
+        element.insertAdjacentHTML('afterbegin', html)
+
+        let newInformant = document.getElementById('editBlock_' + blockIndex + '_Informant_' + id).querySelector('button')
+        addActionInformant(newInformant)
+    }
+
+    window.addEventListener("load", (event) => {
+        const saveNewInformant = document.getElementById('saveNewInformant')
+        if (saveNewInformant) {
+            saveNewInformant.addEventListener('click', event => {
+                const form = document.getElementById('formAddInformant')
+                if (!form.checkValidity()) {
+                    event.preventDefault()
+                    event.stopPropagation()
+                } else {
+                    // todo: save new marker
+                    const blockIndex = form.querySelector('input[name="blockIndex"]').value
+                    const id = '00000'
+                    const name = form.querySelector('input[name="name"]').value
+                    const birthYear = form.querySelector('input[name="birthYear"]').value
+                    const notes = form.querySelector('input[name="notes"]').value
+
+                    addInformantBlock(blockIndex, id, name, birthYear, notes)
+
+                    showMessage(200, 'Данныя захаваліся паспяхова!', 'Інфармант', '#' + id)
+
+                    const modalElement = document.getElementById('addInformantModal')
+                    bootstrap.Modal.getInstance(modalElement).hide()
+
+                    form.classList.remove('was-validated')
+                    form.reset()
+                }
+                form.classList.add('was-validated')
+            })
+        }
+    });
+</script>
