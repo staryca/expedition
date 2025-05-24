@@ -193,6 +193,21 @@ if (createNewBlock) {
     })
 }
 
+// Modal functions
+const addSubjectModal = document.getElementById('addSubjectModal')
+if (addSubjectModal) {
+    addSubjectModal.addEventListener('show.bs.modal', event => {
+        const button = event.relatedTarget
+        const blockIndex = button.getAttribute('data-bs-block')
+
+        let addSubjectModalLabel = document.getElementById('addSubjectModalLabel')
+        addSubjectModalLabel.innerText = 'Дадаць новы прадмет для блока ' + blockIndex
+
+        let blockIndexInput = addSubjectModal.querySelector('input[name="blockIndex"]')
+        blockIndexInput.value = blockIndex
+    })
+}
+
 // Base functions
 function showMessage(code, message, title, subtitle) {
     const uuid = self.crypto.randomUUID()

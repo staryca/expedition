@@ -550,6 +550,8 @@
                 </div>
                 <div class="modal-body">
                     <form id="formAddSubject">
+                        <input type="hidden" name="blockIndex" value="">
+
                         <div class="input-group mb-3">
                             <span class="input-group-text" id="subjectType">Тып</span>
                             <select class="form-select" aria-label="Type of subject" name="type" required>
@@ -572,7 +574,7 @@
 
                         <div class="input-group mb-3">
                             <span class="input-group-text">Заўвагі</span>
-                            <textarea class="form-control" aria-label="Notes of subject"></textarea>
+                            <textarea class="form-control" aria-label="Notes of subject" name="notes"></textarea>
                         </div>
                     </form>
                 </div>
