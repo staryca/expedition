@@ -104,28 +104,6 @@ if (saveNewOrganization) {
     })
 }
 
-const saveNewInformant = document.getElementById('saveNewInformant')
-if (saveNewInformant) {
-    saveNewInformant.addEventListener('click', event => {
-        const form = document.getElementById('formAddInformant')
-        if (!form.checkValidity()) {
-            event.preventDefault()
-            event.stopPropagation()
-        } else {
-            // todo
-            const id = '00000'
-            showMessage(200, 'Данныя захаваліся паспяхова!', 'Інфармант', '#' + id)
-
-            const modalElement = document.getElementById('addInformantModal')
-            bootstrap.Modal.getInstance(modalElement).hide()
-
-            form.classList.remove('was-validated')
-            form.reset()
-        }
-        form.classList.add('was-validated')
-    })
-}
-
 // create new block
 const createNewBlock = document.getElementById('createNewBlock')
 if (createNewBlock) {
@@ -174,6 +152,20 @@ if (addEpisodeModal) {
         addSubjectModalLabel.innerText = 'Дадаць новы эпізод для блока ' + blockIndex
 
         let blockIndexInput = addEpisodeModal.querySelector('input[name="blockIndex"]')
+        blockIndexInput.value = blockIndex
+    })
+}
+
+const addInformantModal = document.getElementById('addInformantModal')
+if (addInformantModal) {
+    addInformantModal.addEventListener('show.bs.modal', event => {
+        const button = event.relatedTarget
+        const blockIndex = button.getAttribute('data-bs-block')
+
+        let addInformantModalLabel = document.getElementById('addInformantModalLabel')
+        addInformantModalLabel.innerText = 'Дадаць новага інфарманта для блока ' + blockIndex
+
+        let blockIndexInput = addInformantModal.querySelector('input[name="blockIndex"]')
         blockIndexInput.value = blockIndex
     })
 }
