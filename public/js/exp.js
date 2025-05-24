@@ -44,28 +44,6 @@ for (let i = 0; i < allBlockInformants.length; i++) {
     })
 }
 
-const allBlockMarkers = document.getElementsByClassName("edit-block-marker");
-for (let i = 0; i < allBlockMarkers.length; i++) {
-    const id = allBlockMarkers[i].getAttribute('data-index')
-    const block = allBlockMarkers[i].getAttribute('data-block')
-    allBlockMarkers[i].addEventListener('click', () => {
-        // todo
-        showMessage(400, 'Данныя выдалены паспяхова!', 'Эпізод', '#' + id)
-        document.getElementById('editBlock' + block + 'Marker' + id).remove()
-    })
-}
-
-const allBlockSubjects = document.getElementsByClassName("edit-block-subject");
-for (let i = 0; i < allBlockSubjects.length; i++) {
-    const id = allBlockSubjects[i].getAttribute('data-index')
-    const block = allBlockSubjects[i].getAttribute('data-block')
-    allBlockSubjects[i].addEventListener('click', () => {
-        // todo
-        showMessage(400, 'Данныя выдалены паспяхова!', 'Прадмет', '#' + id)
-        document.getElementById('editBlock' + block + 'Subject' + id).remove()
-    })
-}
-
 const allBlockTasks = document.getElementsByClassName("edit-block-task");
 for (let i = 0; i < allBlockTasks.length; i++) {
     const id = allBlockTasks[i].getAttribute('data-index')
@@ -148,28 +126,6 @@ if (saveNewInformant) {
     })
 }
 
-const saveNewEpisode = document.getElementById('saveNewEpisode')
-if (saveNewEpisode) {
-    saveNewEpisode.addEventListener('click', event => {
-        const form = document.getElementById('formAddEpisode')
-        if (!form.checkValidity()) {
-            event.preventDefault()
-            event.stopPropagation()
-        } else {
-            // todo
-            const id = '00000'
-            showMessage(200, 'Данныя захаваліся паспяхова!', 'Эпізод блока', '#' + id)
-
-            const modalElement = document.getElementById('addEpisodeModal')
-            bootstrap.Modal.getInstance(modalElement).hide()
-
-            form.classList.remove('was-validated')
-            form.reset()
-        }
-        form.classList.add('was-validated')
-    })
-}
-
 // create new block
 const createNewBlock = document.getElementById('createNewBlock')
 if (createNewBlock) {
@@ -204,6 +160,20 @@ if (addSubjectModal) {
         addSubjectModalLabel.innerText = 'Дадаць новы прадмет для блока ' + blockIndex
 
         let blockIndexInput = addSubjectModal.querySelector('input[name="blockIndex"]')
+        blockIndexInput.value = blockIndex
+    })
+}
+
+const addEpisodeModal = document.getElementById('addEpisodeModal')
+if (addEpisodeModal) {
+    addEpisodeModal.addEventListener('show.bs.modal', event => {
+        const button = event.relatedTarget
+        const blockIndex = button.getAttribute('data-bs-block')
+
+        let addSubjectModalLabel = document.getElementById('addEpisodeModalLabel')
+        addSubjectModalLabel.innerText = 'Дадаць новы эпізод для блока ' + blockIndex
+
+        let blockIndexInput = addEpisodeModal.querySelector('input[name="blockIndex"]')
         blockIndexInput.value = blockIndex
     })
 }

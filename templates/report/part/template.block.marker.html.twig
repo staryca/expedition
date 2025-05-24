@@ -1,0 +1,77 @@
+<div class="d-none" id="createNewMarkerTemplate">
+    <p id="editBlock_BLOCK_INDEX_Marker_MARKER_ID">
+        MARKER_CATEGORY <b>MARKER_NAME</b>
+        MARKER_TAGS <span class="badge text-bg-secondary"></span>
+        MARKER_NOTES
+        <button type="submit" class="btn btn-danger"
+                data-index="MARKER_ID" data-block="BLOCK_INDEX">Выдаліць</button>
+    </p>
+</div>
+
+<script type="application/javascript">
+    function addActionMarker(element) {
+        const id = element.getAttribute('data-index')
+        const blockIndex = element.getAttribute('data-block')
+        element.addEventListener('click', () => {
+            // todo: remove marker
+            showMessage(400, 'Данныя выдалены паспяхова!', 'Эпізод блока', '#' + id)
+            document.getElementById('editBlock_' + blockIndex + '_Marker_' + id).remove()
+        })
+    }
+
+    function addMarkerBlock(blockIndex, id, category, name, tags, notes) {
+        let html = document.getElementById('createNewMarkerTemplate').innerHTML
+        html = html.replaceAll('BLOCK_INDEX', blockIndex)
+        html = html.replaceAll('MARKER_ID', '' + id)
+        const cat = category === '' ? '' : category + ':'
+        html = html.replaceAll('MARKER_CATEGORY', cat)
+        html = html.replaceAll('MARKER_NAME', name)
+        html = html.replaceAll('MARKER_NOTES', notes)
+
+        let htmlTags = ''
+        let tagTemplate = document.getElementById('createNewMarkerTemplate').querySelector('span')
+        for (let tag in tags) {
+            tagTemplate.innerText = tag
+            htmlTags += tagTemplate.outerHTML
+        }
+        html = html.replaceAll('MARKER_TAGS', htmlTags)
+
+        let element = document.getElementById('allBlock' + blockIndex + 'Markers')
+        element.insertAdjacentHTML('afterbegin', html)
+
+        let newMarker = document.getElementById('editBlock_' + blockIndex + '_Marker_' + id).querySelector('button')
+        addActionMarker(newMarker)
+    }
+
+    window.addEventListener("load", (event) => {
+        const saveNewEpisode = document.getElementById('saveNewEpisode')
+        if (saveNewEpisode) {
+            saveNewEpisode.addEventListener('click', event => {
+                const form = document.getElementById('formAddEpisode')
+                if (!form.checkValidity()) {
+                    event.preventDefault()
+                    event.stopPropagation()
+                } else {
+                    // todo: save new marker
+                    const blockIndex = form.querySelector('input[name="blockIndex"]').value
+                    const id = '00000'
+                    // const category = form.querySelector('select[name="category"]').value
+                    const categoryText = form.querySelector('select[name="category"]').selectedOptions[0].text
+                    const name = form.querySelector('textarea[name="name"]').value
+                    const notes = form.querySelector('textarea[name="notes"]').value
+
+                    addMarkerBlock(blockIndex, id, categoryText, name, {}, notes)
+
+                    showMessage(200, 'Данныя захаваліся паспяхова!', 'Эпізод блока', '#' + id)
+
+                    const modalElement = document.getElementById('addEpisodeModal')
+                    bootstrap.Modal.getInstance(modalElement).hide()
+
+                    form.classList.remove('was-validated')
+                    form.reset()
+                }
+                form.classList.add('was-validated')
+            })
+        }
+    });
+</script>

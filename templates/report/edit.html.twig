@@ -503,9 +503,11 @@
                 </div>
                 <div class="modal-body">
                     <form id="formAddEpisode">
+                        <input type="hidden" name="blockIndex" value="">
+
                         <div class="input-group mb-3">
                             <span class="input-group-text" id="taskType">Тып</span>
-                            <select class="form-select" aria-label="Type of episode" required>
+                            <select class="form-select" aria-label="Type of episode" name="category" required>
                                 {% for id, name in constant('App\\Entity\\Type\\CategoryType::TYPES') %}
                                     <option value="{{ id }}"
                                             {% if id == constant('App\\Entity\\Type\\CategoryType::STORY') %}selected{% endif %}>
@@ -520,7 +522,7 @@
 
                         <div class="input-group mb-3">
                             <span class="input-group-text">Эпізод</span>
-                            <textarea class="form-control" aria-label="Text of episode" required></textarea>
+                            <textarea class="form-control" aria-label="Text of episode" name="name" required></textarea>
                             <div class="invalid-feedback">
                                 Калі ласка, апішыце эпізод
                             </div>
@@ -528,7 +530,12 @@
 
                         <div class="input-group mb-3">
                             <span class="input-group-text">Тэгі</span>
-                            <input type="text" class="form-control" placeholder="" aria-label="Tags of episode">
+                            <input type="text" class="form-control" placeholder="" name="tags" aria-label="Tags of episode">
+                        </div>
+
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Заўвагі</span>
+                            <textarea class="form-control" aria-label="Notes of episode" name="notes"></textarea>
                         </div>
                     </form>
                 </div>
