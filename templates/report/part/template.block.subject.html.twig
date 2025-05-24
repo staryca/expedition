@@ -41,7 +41,7 @@
                     event.stopPropagation()
                 } else {
                     // todo: save new subject
-                    const blockIndex = 1
+                    const blockIndex = form.querySelector('input[name="blockIndex"]').value
                     const id = '00000'
                     // const type = form.querySelector('select[name="type"]').value
                     const type = form.querySelector('select[name="type"]').selectedOptions[0].text
