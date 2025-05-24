@@ -72,22 +72,23 @@
         Інфарманты блока {{ blockIndex }}
     </div>
 
-    <div class="card-body">
-        {% for informant in block.informants %}
-            <p id="editBlock{{ blockIndex }}Informant{{ informant.id }}">
-                {% include 'part/informant.full.html.twig'
-                    with {'informant': informant, 'geoPoint': report.geoPoint, 'isLink' : false} %}
-                <button type="button" class="btn btn-danger edit-block-informant"
-                        data-index="{{ informant.id }}" data-block="{{ blockIndex }}">Выдаліць</button>
-            </p>
-        {% endfor %}
+    <div class="card-body" id="allBlock{{ blockIndex }}Informants">
+        {# list of informants #}
         <hr>
         <p>
             Дадаць новага інфарманта
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addInformantModal">
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addInformantModal" data-bs-block="{{ blockIndex }}">
                 Дадаць
             </button>
         </p>
+
+        {% include('report/part/template.block.informant.html.twig') %}
+
+        {% for informant in block.informants %}
+            <script type="application/javascript">
+                addInformantBlock('{{ blockIndex }}', '{{ informant.id }}', '{{ informant.firstName }}', '{{ informant.yearBirth }}', '{{ informant.notes }}')
+            </script>
+        {% endfor %}
     </div>
 </div>
 
