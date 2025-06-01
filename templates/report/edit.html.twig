@@ -186,6 +186,9 @@
 
         {% include('report/part/template.block.subject.html.twig') %}
 
+        {% include('report/part/template.block.organization.html.twig') %}
+
+
         {% for block in report.blocks %}
             {% set blockIndex = loop.index %}
             {% include('report/part/block.html.twig') with {'blockIndex': loop.index, 'block': block} %}
@@ -298,9 +301,11 @@
                 </div>
                 <div class="modal-body">
                     <form id="formAddOrg">
+                        <input type="hidden" name="blockIndex" value="">
+
                         <div class="input-group mb-3">
                             <span class="input-group-text">Тып</span>
-                            <select class="form-select" aria-label="Type of org" required>
+                            <select class="form-select" aria-label="Type of org" name="type" required>
                                 {% for id, name in constant('App\\Entity\\Type\\OrganizationType::TYPES') %}
                                     <option value="{{ id }}">{{ name }}</option>
                                 {% endfor %}
@@ -313,7 +318,7 @@
                         <div class="mb-3">
                             <div class="input-group">
                                 <label class="input-group-text" for="newOrgName">Назва</label>
-                                <input type="text" class="form-control" id="newOrgName" required>
+                                <input type="text" class="form-control" name="name" id="newOrgName" required>
                                 <div class="invalid-feedback">
                                     Калі ласка, напішыце назву арганізацыі
                                 </div>
@@ -322,15 +327,15 @@
 
                         <div class="mb-3">
                             <div class="input-group">
-                                <label class="input-group-text" for="newOrgDesc">Апісаньне</label>
-                                <input type="text" class="form-control" id="newOrgDesc">
+                                <span class="input-group-text">Апісаньне</span>
+                                <textarea class="form-control" aria-label="Description of organization" name="description"></textarea>
                             </div>
                         </div>
 
                         <div class="mb-3">
                             <div class="input-group">
-                                <label class="input-group-text" for="newOrgAddress">Адрас</label>
-                                <input type="text" class="form-control" id="newOrgAddress">
+                                <span class="input-group-text">Адрас</span>
+                                <textarea class="form-control" aria-label="Address of organization" name="address"></textarea>
                             </div>
                         </div>
 
@@ -352,8 +357,8 @@
 
                         <div class="mb-3">
                             <div class="input-group">
-                                <label class="input-group-text" for="newOrgNotes">Заўвагі</label>
-                                <input type="text" class="form-control" id="newOrgNotes">
+                                <span class="input-group-text">Заўвагі</span>
+                                <textarea class="form-control" aria-label="Notes of organization" name="notes"></textarea>
                             </div>
                         </div>
                     </form>

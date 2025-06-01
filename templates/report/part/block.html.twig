@@ -26,14 +26,16 @@
             <div class="mb-3">
                 <div class="input-group">
                     <span class="input-group-text">Арганізацыя / гурт</span>
-                    <select class="form-select" aria-label="Арганізацыя">
+                    <select class="form-select" id="editBlockOrganization{{ blockIndex }}" aria-label="Арганізацыя">
                         <option selected>- выбраць -</option>
                         {% if block.organization %}
                             <option selected value="{{ block.organization.id }}">{{ block.organization.name }}</option>
                         {% endif %}
                     </select>
-                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addOrgModal">Дадаць новую</button>
-
+                    <button type="button" class="btn btn-primary"
+                            data-bs-toggle="modal" data-bs-target="#addOrgModal" data-bs-block="{{ blockIndex }}">
+                        Дадаць новую
+                    </button>
                 </div>
             </div>
 

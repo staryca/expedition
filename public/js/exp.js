@@ -20,40 +20,6 @@ for (let i = 0; i < allEditReportBlocks.length; i++) {
     })
 }
 
-const allBlockInformants = document.getElementsByClassName("edit-block-informant");
-for (let i = 0; i < allBlockInformants.length; i++) {
-    const id = allBlockInformants[i].getAttribute('data-index')
-    const block = allBlockInformants[i].getAttribute('data-block')
-    allBlockInformants[i].addEventListener('click', () => {
-        // todo
-        showMessage(400, 'Данныя выдалены паспяхова!', 'Інфармант', '#' + id)
-        document.getElementById('editBlock' + block + 'Informant' + id).remove()
-    })
-}
-
-// save in dialogs
-const saveNewOrganization = document.getElementById('saveNewOrganization')
-if (saveNewOrganization) {
-    saveNewOrganization.addEventListener('click', event => {
-        const form = document.getElementById('formAddOrg')
-        if (!form.checkValidity()) {
-            event.preventDefault()
-            event.stopPropagation()
-        } else {
-            // todo
-            const id = '00000'
-            showMessage(200, 'Данныя захаваліся паспяхова!', 'Арганізацыя', '#' + id)
-
-            const modalElement = document.getElementById('addOrgModal')
-            bootstrap.Modal.getInstance(modalElement).hide()
-
-            form.classList.remove('was-validated')
-            form.reset()
-        }
-        form.classList.add('was-validated')
-    })
-}
-
 // create new block
 const createNewBlock = document.getElementById('createNewBlock')
 if (createNewBlock) {
@@ -133,6 +99,20 @@ if (addTaskPlanModal) {
 
         let addTaskPlanModalLabel = document.getElementById('addTaskPlanModalLabel')
         addTaskPlanModalLabel.innerText = 'Дадаць новую задачу для ' + text
+    })
+}
+
+const addOrgModal = document.getElementById('addOrgModal')
+if (addOrgModal) {
+    addOrgModal.addEventListener('show.bs.modal', event => {
+        const button = event.relatedTarget
+        const blockIndex = button.getAttribute('data-bs-block')
+
+        let addOrgModalLabel = document.getElementById('addOrgModalLabel')
+        addOrgModalLabel.innerText = 'Дадаць новую арганізацыю для блока ' + blockIndex
+
+        let blockIndexInput = addOrgModal.querySelector('input[name="blockIndex"]')
+        blockIndexInput.value = blockIndex
     })
 }
 
