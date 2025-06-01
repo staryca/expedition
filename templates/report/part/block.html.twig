@@ -77,7 +77,8 @@
         <hr>
         <p>
             Дадаць новага інфарманта
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addInformantModal" data-bs-block="{{ blockIndex }}">
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                    data-bs-target="#addInformantModal" data-bs-block="{{ blockIndex }}">
                 Дадаць
             </button>
         </p>
@@ -102,12 +103,11 @@
         <hr>
         <p>
             Дадаць новы эпізод
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addEpisodeModal" data-bs-block="{{ blockIndex }}">
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                    data-bs-target="#addEpisodeModal" data-bs-block="{{ blockIndex }}">
                 Дадаць
             </button>
         </p>
-
-        {% include('report/part/template.block.marker.html.twig') %}
 
         {% if block.getContentFile() %}
             {% for marker in block.getContentFile().fileMarkers %}
@@ -131,12 +131,11 @@
         <hr>
         <p>
             Дадаць новы прадмет
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addSubjectModal" data-bs-block="{{ blockIndex }}">
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                    data-bs-target="#addSubjectModal" data-bs-block="{{ blockIndex }}">
                 Дадаць
             </button>
         </p>
-
-        {% include('report/part/template.block.subject.html.twig') %}
 
         {% for subject in block.subjects %}
         <script type="application/javascript">
@@ -151,28 +150,22 @@
         Планы, задачы, наводкі блока {{ blockIndex }}
     </div>
 
-    <div class="card-body">
-        {% for task in block.tasks %}
-            <p id="editBlock{{ blockIndex }}Task{{ task.id }}">
-                {% if task.status == constant('App\\Entity\\Type\\TaskStatus::TIP') %}
-                    Наводка:
-                {% endif %}
-                {{ task.content }}
-                {% if task.informant %}
-                    Інфармант: {{ task.informant.firstName }}
-                {% endif %}
-                <button type="submit" class="btn btn-danger edit-block-task"
-                        data-index="{{ task.id }}" data-block="{{ blockIndex }}">Выдаліць</button>
-            </p>
-        {% endfor %}
+    <div class="card-body" id="all_{{ blockIndex }}_Tasks">
+        {# list of block tasks #}
         <hr>
         <p>
             Дадаць новы план, задачу, наводку
-            <button type="button" class="btn btn-primary"
-                    data-bs-toggle="modal" data-bs-target="#addTaskPlanModal"
-                    data-type-modal="block" data-block-index="{{ blockIndex }}">
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                    data-bs-target="#addTaskPlanModal" data-bs-block="{{ blockIndex }}">
                 Дадаць
             </button>
         </p>
     </div>
+
+    {% for task in block.tasks %}
+        <script type="application/javascript">
+            addReportTaskBlock('{{ blockIndex }}', '{{ task.status }}', '{{ task.id }}', '{{ task.content }}', '{% if task.informant %} {{ task.informant.firstName }} {% endif %}')
+        </script>
+    {% endfor %}
+
 </div>

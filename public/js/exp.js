@@ -9,19 +9,6 @@ if (reportSaveAction) {
     })
 }
 
-const addTaskPlanModal = document.getElementById('addTaskPlanModal')
-if (addTaskPlanModal) {
-    addTaskPlanModal.addEventListener('show.bs.modal', event => {
-        const button = event.relatedTarget
-        const type = button.getAttribute('data-type-modal')
-        let text = type === 'report' ? 'справаздачы' : 'блока ' + button.getAttribute('data-block-index')
-
-        // Update the modal's content.
-        const notesElement = document.getElementById('addTaskPlanModalNotes')
-        notesElement.textContent = 'Для ' + text
-    })
-}
-
 const allEditReportBlocks = document.getElementsByClassName("edit-report-block");
 for (let i = 0; i < allEditReportBlocks.length; i++) {
     const index = allEditReportBlocks[i].getAttribute('data-index')
@@ -44,44 +31,7 @@ for (let i = 0; i < allBlockInformants.length; i++) {
     })
 }
 
-const allBlockTasks = document.getElementsByClassName("edit-block-task");
-for (let i = 0; i < allBlockTasks.length; i++) {
-    const id = allBlockTasks[i].getAttribute('data-index')
-    const block = allBlockTasks[i].getAttribute('data-block')
-    allBlockTasks[i].addEventListener('click', () => {
-        // todo
-        showMessage(400, 'Данныя выдалены паспяхова!', 'Задача ці наводка блока', '#' + id)
-        document.getElementById('editBlock' + block + 'Task' + id).remove()
-    })
-}
-
 // save in dialogs
-const saveReportTask = document.getElementById('saveReportTask')
-if (saveReportTask) {
-    saveReportTask.addEventListener('click', event => {
-        const form = document.getElementById('formAddTaskPlan')
-        if (!form.checkValidity()) {
-            event.preventDefault()
-            event.stopPropagation()
-        } else {
-            // todo
-            const id = '00000'
-            const status = form.querySelector('select[name="status"]').value
-            const content = form.querySelector('textarea[name="content"]').value
-            addReportTaskBlock(status, id, content, '')
-
-            showMessage(200, 'Данныя захаваліся паспяхова!', 'План, задача, наводка', '#' + id)
-
-            const modalElement = document.getElementById('addTaskPlanModal')
-            bootstrap.Modal.getInstance(modalElement).hide()
-
-            form.classList.remove('was-validated')
-            form.reset()
-        }
-        form.classList.add('was-validated')
-    })
-}
-
 const saveNewOrganization = document.getElementById('saveNewOrganization')
 if (saveNewOrganization) {
     saveNewOrganization.addEventListener('click', event => {
@@ -167,6 +117,22 @@ if (addInformantModal) {
 
         let blockIndexInput = addInformantModal.querySelector('input[name="blockIndex"]')
         blockIndexInput.value = blockIndex
+    })
+}
+
+const addTaskPlanModal = document.getElementById('addTaskPlanModal')
+if (addTaskPlanModal) {
+    addTaskPlanModal.addEventListener('show.bs.modal', event => {
+        const button = event.relatedTarget
+        const blockIndex = button.getAttribute('data-bs-block')
+
+        let blockIndexInput = addTaskPlanModal.querySelector('input[name="blockIndex"]')
+        blockIndexInput.value = blockIndex
+
+        let text = blockIndex === '0' ? 'справаздачы' : 'блока ' + blockIndex
+
+        let addTaskPlanModalLabel = document.getElementById('addTaskPlanModalLabel')
+        addTaskPlanModalLabel.innerText = 'Дадаць новую задачу для ' + text
     })
 }
 

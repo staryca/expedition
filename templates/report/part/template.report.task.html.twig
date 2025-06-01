@@ -1,24 +1,26 @@
 <div class="d-none" id="createNewReportTaskTemplate">
-    <p id="editReportTask_TASK_ID">
+    <p id="edit_BLOCK_INDEX_Task_TASK_ID">
         TASK_TYPE
         TASK_CONTENT
         TASK_INFORMANT
-        <button type="submit" class="btn btn-danger" data-index="TASK_ID">Выдаліць</button>
+        <button type="submit" class="btn btn-danger" data-index="TASK_ID" data-block="BLOCK_INDEX">Выдаліць</button>
     </p>
 </div>
 
 <script type="application/javascript">
     function addActionReportTask(element) {
         const id = element.getAttribute('data-index')
+        const blockIndex = element.getAttribute('data-block')
         element.addEventListener('click', () => {
-            // todo: remove report task
+            // todo: remove block task
             showMessage(400, 'Данныя выдалены паспяхова!', 'Планы, задачы, наводкі', '#' + id)
-            document.getElementById('editReportTask_' + id).remove()
+            document.getElementById('edit_' + blockIndex + '_Task_' + id).remove()
         })
     }
 
-    function addReportTaskBlock(status, id, content, informant) {
+    function addReportTaskBlock(blockIndex, status, id, content, informant) {
         let html = document.getElementById('createNewReportTaskTemplate').innerHTML
+        html = html.replaceAll('BLOCK_INDEX', blockIndex)
         const type = ('' + status === '{{ constant('App\\Entity\\Type\\TaskStatus::TIP') }}') ? 'Наводка:' : ''
         html = html.replaceAll('TASK_TYPE', type)
         html = html.replaceAll('TASK_ID', '' + id)
@@ -26,10 +28,42 @@
         const informantContent = (informant !== '') ? 'Інфармант: ' + informant : ''
         html = html.replaceAll('TASK_INFORMANT', informantContent)
 
-        let element = document.getElementById('allReportTasks')
+        let element = document.getElementById('all_' + blockIndex + '_Tasks')
         element.insertAdjacentHTML('afterbegin', html)
 
-        let newReportTask = document.getElementById('editReportTask_' + id).querySelector('button')
+        let newReportTask = document.getElementById('edit_' + blockIndex + '_Task_' + id).querySelector('button')
         addActionReportTask(newReportTask)
     }
+
+    window.addEventListener("load", (event) => {
+        const saveNewTask = document.getElementById('saveNewTask')
+        if (saveNewTask) {
+            saveNewTask.addEventListener('click', event => {
+                const form = document.getElementById('formAddTaskPlan')
+                if (!form.checkValidity()) {
+                    event.preventDefault()
+                    event.stopPropagation()
+                } else {
+                    // todo: save new task
+                    const blockIndex = form.querySelector('input[name="blockIndex"]').value
+                    const id = '00000'
+                    // const status = form.querySelector('select[name="status"]').value
+                    const status = form.querySelector('select[name="status"]').selectedOptions[0].text
+                    const content = form.querySelector('textarea[name="content"]').value
+                    const informant = '-'
+
+                    addReportTaskBlock(blockIndex, status, id, content, informant)
+
+                    showMessage(200, 'Данныя захаваліся паспяхова!', 'Планы, задачы, наводкі', '#' + id)
+
+                    const modalElement = document.getElementById('addTaskPlanModal')
+                    bootstrap.Modal.getInstance(modalElement).hide()
+
+                    form.classList.remove('was-validated')
+                    form.reset()
+                }
+                form.classList.add('was-validated')
+            })
+        }
+    });
 </script>

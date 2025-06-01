@@ -158,14 +158,14 @@
                 Планы, задачы, наводкі
             </div>
 
-            <div class="card-body" id="allReportTasks">
+            {% set reportTaskIndex = 0 %}
+            <div class="card-body" id="all_{{ reportTaskIndex }}_Tasks">
                 {# list of report tasks #}
                 <hr>
                 <p>
                     Дадаць новы план, задачу, наводку
-                    <button type="button" class="btn btn-primary"
-                            data-bs-toggle="modal" data-bs-target="#addTaskPlanModal"
-                            data-type-modal="report">
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                            data-bs-target="#addTaskPlanModal" data-bs-block="{{ reportTaskIndex }}">
                         Дадаць
                     </button>
                 </p>
@@ -175,11 +175,16 @@
 
             {% for task in report.tasks %}
             <script type="application/javascript">
-                addReportTaskBlock('{{ task.status }}', '{{ task.id }}', '{{ task.content }}', '{% if task.informant %} {{ task.informant.firstName }} {% endif %}')
+                addReportTaskBlock('{{ reportTaskIndex }}', '{{ task.status }}', '{{ task.id }}', '{{ task.content }}', '{% if task.informant %} {{ task.informant.firstName }} {% endif %}')
             </script>
             {% endfor %}
 
         </div>
+
+
+        {% include('report/part/template.block.marker.html.twig') %}
+
+        {% include('report/part/template.block.subject.html.twig') %}
 
         {% for block in report.blocks %}
             {% set blockIndex = loop.index %}
@@ -244,8 +249,9 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <p id="addTaskPlanModalNotes"></p>
                     <form id="formAddTaskPlan">
+                        <input type="hidden" name="blockIndex" value="">
+
                         <div class="input-group mb-3">
                             <span class="input-group-text" id="taskType">Тып</span>
                             <select class="form-select" aria-label="Type of task" name="status" required>
@@ -276,7 +282,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Закрыць</button>
-                    <button type="button" class="btn btn-success" id="saveReportTask">Дадаць</button>
+                    <button type="button" class="btn btn-success" id="saveNewTask">Дадаць</button>
                 </div>
             </div>
         </div>
