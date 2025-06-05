@@ -2,10 +2,47 @@
 const reportSaveAction = document.getElementById('reportSaveAction')
 if (reportSaveAction) {
     reportSaveAction.addEventListener('click', () => {
-        let id = document.getElementById('editReportId').value
-        // todo: save report
-        if (!id) id = '00000';
-        showMessage(200, 'Данныя захаваліся паспяхова!', 'Справаздача', '#' + id)
+
+        const form = document.getElementById("reportEdit");
+        const formData = new FormData(form);
+        const formDataObj = Object.fromEntries(formData.entries());
+        let id = formDataObj.id
+        const isNew = id === ''
+        if (isNew) {
+            delete formDataObj.id
+            formDataObj.dateCreated = (new Date()).toISOString()
+        }
+        if (formDataObj.geoPoint === '') {
+            formDataObj.geoPoint = null
+        }
+
+        const xhr = new XMLHttpRequest();
+        const method = isNew ? 'POST' : 'PATCH';
+        const url = window.location.origin + '/api/reports' + (isNew ? '' : '/' + id);
+
+        xhr.open(method, url, true);
+        xhr.setRequestHeader("Content-type", isNew ? "application/ld+json" : "application/merge-patch+json");
+        xhr.onreadystatechange = () => {
+            if (xhr.readyState === XMLHttpRequest.DONE) {
+                const status = xhr.status;
+                if (status === 0 || (status >= 200 && status < 400)) {
+                    if (isNew) {
+                        let obj = JSON.parse(xhr.responseText)
+                        id = obj.id
+                        document.forms['reportEdit'].id.value = id
+                    }
+                    showMessage(status, 'Данныя захаваліся паспяхова!', 'Справаздача', '#' + id)
+                } else {
+                    let message = 'Данныя не захаваліся!'
+                    if (xhr.getResponseHeader("content-type").indexOf('json') > 0) {
+                        let obj = JSON.parse(xhr.responseText)
+                        message += '</br>' + status + '. ' + obj.description
+                    }
+                    showMessage(status, message, 'Справаздача', '#' + id)
+                }
+            }
+        };
+        xhr.send(JSON.stringify(formDataObj));
     })
 }
 

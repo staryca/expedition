@@ -62,8 +62,10 @@
             </div>
 
             <div class="card-body">
-                <form>
-                    <input type="hidden" id="editReportId" value="{{ report.id }}">
+                <form id="reportEdit">
+                    <input type="hidden" name="expedition" value="/api/expeditions/{{ report.expedition.id }}">
+                    <input type="hidden" name="id" value="{{ report.id }}">
+
                     <div class="input-group mb-3">
                         {% if report.dateAction %}
                             {% set date = report.dateAction %}
@@ -72,6 +74,7 @@
                         {% endif %}
                         <label class="input-group-text" for="newReportDate">Дата даследваньня</label>
                         <input type="date" class="form-control" id="newReportDate" required
+                               name="dateAction"
                                value="{{ date|date("Y-m-d") }}"
                                max="{{ date|date("Y-m-d") }}"
                                min="{{ date|date_modify("-20 days")|date("Y-m-d") }}">
@@ -79,12 +82,12 @@
 
                     <div class="input-group mb-3">
                         <label class="input-group-text" for="newReportNotes">Агульныя заўвагі</label>
-                        <input type="text" class="form-control" value="{{ report.notes }}" id="newReportNotes">
+                        <input type="text" class="form-control" value="{{ report.notes }}" id="newReportNotes" name="notes">
                     </div>
 
                     <div class="input-group mb-3">
                         <label class="input-group-text" for="newReportCode">Код</label>
-                        <input type="text" class="form-control" value="{{ report.code }}" id="newReportCode">
+                        <input type="text" class="form-control" value="{{ report.code }}" id="newReportCode" name="code">
                         <span class="input-group-text">
                               Будзе як назва папкі для файлаў да гэтага блоку
                         </span>
@@ -92,24 +95,31 @@
 
                     <div class="input-group mb-3">
                         <span class="input-group-text">Месца</span>
-                        <select class="form-select" aria-label="new report location">
-                            <option selected>- невядома -</option>
+                        <select class="form-select" aria-label="new report location" name="geoPoint">
+                            <option value="" selected>- невядома -</option>
                             {% set selected = report.geoPoint == null %}
                             {% for geoPoint in geoPoints %}
-                                <option value="{{ geoPoint.id }}"
+                                <option value="/api/geo_points/{{ geoPoint.id }}"
                                         {% if report.geoPoint and report.geoPoint.id == geoPoint.id %}selected{% set selected = true %}{% endif %}>
                                     {{ geoPoint.getFullBeName() }}
                                 </option>
                             {% endfor %}
                             {% if not selected %}
-                                <option selected value="{{ report.geoPoint.id }}">
+                                <option selected value="/api/geo_points/{{ report.geoPoint.id }}">
                                     {{ report.geoPoint.getFullBeName() }}
                                 </option>
                             {% endif %}
                         </select>
+
+                        {% include('report/part/detect.location.html.twig') %}
+
                         <button type="button" class="btn btn-primary">Паглядзець на мапе</button>
                         <span class="input-group-text">няма ў спісе</span>
-                        <input type="text" class="form-control" placeholder="вёска, раён [, вобласць, краіна]" value="{{ report.geoNotes }}" aria-label="new report other location">
+                        <input type="text" class="form-control"
+                               placeholder="вёска, раён [, вобласць, краіна]"
+                               value="{{ report.geoNotes }}"
+                               name="geoNotes"
+                               aria-label="new report other location">
                     </div>
 
                     <button type="button" class="btn btn-success" id="reportSaveAction">Захаваць</button>
@@ -614,7 +624,7 @@
         <div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastBlockMessages">
 
             <div id="toastBlockResult" class="toast" role="alert" aria-live="assertive"
-                 aria-atomic="true" data-bs-delay="2000">
+                 aria-atomic="true" data-bs-delay="4000">
                 <div class="toast-header">
                     <i class="bi bi-database me-2"></i>
                     <strong class="me-auto" id="toastBlockResultTitle">Title</strong>
