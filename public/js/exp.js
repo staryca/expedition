@@ -130,6 +130,9 @@ if (addSubjectModal) {
 
         let blockIndexInput = addSubjectModal.querySelector('input[name="blockIndex"]')
         blockIndexInput.value = blockIndex
+
+        let reportBlockInput = addSubjectModal.querySelector('input[name="reportBlock"]')
+        reportBlockInput.value = '/api/report_blocks/' + document.forms["blockEdit" + blockIndex].id.value
     })
 }
 
