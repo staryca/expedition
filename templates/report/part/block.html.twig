@@ -5,11 +5,13 @@
     </div>
 
     <div class="card-body">
-        <form>
-            <input type="hidden" id="editReportBlock{{ blockIndex }}" value="{{ block.id }}">
+        <form id="blockEdit{{ blockIndex }}">
+            <input type="hidden" name="report" value="/api/reports/{{ report.id }}">
+            <input type="hidden" name="id" value="{{ block.id }}">
+
             <div class="input-group mb-3">
                 <span class="input-group-text">Тып</span>
-                <select class="form-select" aria-label="Тып">
+                <select class="form-select" aria-label="Тып" name="type">
                     {% for id, name in constant('App\\Entity\\Type\\ReportBlockType::TYPES') %}
                         <option value="{{ id }}" {% if id == block.type %}selected="selected"{% endif %}>
                             {{ name }}
@@ -20,16 +22,16 @@
 
             <div class="input-group mb-3">
                 <span class="input-group-text">Вопіс блока</span>
-                <textarea class="form-control" aria-label="With textarea">{{ block.description }}</textarea>
+                <textarea class="form-control" aria-label="With textarea" name="description">{{ block.description }}</textarea>
             </div>
 
             <div class="mb-3">
                 <div class="input-group">
                     <span class="input-group-text">Арганізацыя / гурт</span>
-                    <select class="form-select" id="editBlockOrganization{{ blockIndex }}" aria-label="Арганізацыя">
-                        <option selected>- выбраць -</option>
+                    <select class="form-select" id="editBlockOrganization{{ blockIndex }}" name="organization" aria-label="Арганізацыя">
+                        <option value="">- выбраць -</option>
                         {% if block.organization %}
-                            <option selected value="{{ block.organization.id }}">{{ block.organization.name }}</option>
+                            <option selected value="/api/organizations/{{ block.organization.id }}">{{ block.organization.name }}</option>
                         {% endif %}
                     </select>
                     <button type="button" class="btn btn-primary"
@@ -41,22 +43,22 @@
 
             <div class="mb-3">
                 <div class="input-group">
-                    <label class="input-group-text" for="blockNotesUsers">Заўвагі да даследвальнікаў</label>
-                    <input type="text" class="form-control" value="{{ block.userNotes }}" id="blockNotesUsers">
+                    <label class="input-group-text">Заўвагі да даследвальнікаў</label>
+                    <input type="text" class="form-control" value="{{ block.userNotes }}" name="userNotes" aria-label="userNotes of block">
                 </div>
             </div>
 
             <div class="mb-3">
                 <div class="input-group">
-                    <label class="input-group-text" for="blockNotesPhoto">Заўвагі к фота</label>
-                    <input type="text" class="form-control" value="{{ block.photoNotes }}" id="blockNotesPhoto">
+                    <label class="input-group-text">Заўвагі к фота</label>
+                    <input type="text" class="form-control" value="{{ block.photoNotes }}" name="photoNotes" aria-label="photoNotes of block">
                 </div>
             </div>
 
             <div class="mb-3">
                 <div class="input-group">
-                    <label class="input-group-text" for="blockNotesVideo">Заўвагі к відэа</label>
-                    <input type="text" class="form-control" value="{{ block.videoNotes }}" id="blockNotesVideo">
+                    <label class="input-group-text">Заўвагі к відэа</label>
+                    <input type="text" class="form-control" value="{{ block.videoNotes }}" name="videoNotes" aria-label="videoNotes of block">
                 </div>
             </div>
 

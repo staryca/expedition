@@ -9,7 +9,7 @@
     function addOrganizationBlock(blockIndex, id, type, name, description, location, notes) {
         let html = document.getElementById('createNewOrganizationTemplate').innerHTML
         html = html.replaceAll('BLOCK_INDEX', blockIndex)
-        html = html.replaceAll('ORGANIZATION_ID', '' + id)
+        html = html.replaceAll('ORGANIZATION_ID', '/api/organizations/' + id)
         html = html.replaceAll('ORGANIZATION_NAME', name)
         html = html.replaceAll('ORGANIZATION_LOCATION', location)
 

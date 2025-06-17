@@ -368,7 +368,7 @@ class ReportBlock
     public function getFirstFileOfMarkers(): ?File
     {
         $fileMarker = $this->fileMarkers->first();
-        if ($fileMarker === null) {
+        if (!($fileMarker instanceof FileMarker)) {
             return null;
         }
 
