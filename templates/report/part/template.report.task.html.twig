@@ -43,6 +43,7 @@
                 if (!form.checkValidity()) {
                     event.preventDefault()
                     event.stopPropagation()
+                    form.classList.add('was-validated')
                 } else {
                     // todo: save new task
                     const blockIndex = form.querySelector('input[name="blockIndex"]').value
@@ -62,7 +63,6 @@
                     form.classList.remove('was-validated')
                     form.reset()
                 }
-                form.classList.add('was-validated')
             })
         }
     });

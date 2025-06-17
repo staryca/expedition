@@ -38,6 +38,7 @@
                 if (!form.checkValidity()) {
                     event.preventDefault()
                     event.stopPropagation()
+                    form.classList.add('was-validated')
                 } else {
                     // todo: save user roles
                     const id = form.querySelector('select[name="user"]').value
@@ -58,7 +59,6 @@
                     form.classList.remove('was-validated')
                     form.reset()
                 }
-                form.classList.add('was-validated')
             })
         }
     });

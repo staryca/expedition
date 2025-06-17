@@ -15,7 +15,7 @@
 
         let element = document.getElementById('editBlockOrganization' + blockIndex)
         element.insertAdjacentHTML('afterbegin', html)
-        element.selectedIndex = id
+        element.selectedIndex = '/api/organizations/' + id
     }
 
     window.addEventListener("load", (event) => {
@@ -26,28 +26,58 @@
                 if (!form.checkValidity()) {
                     event.preventDefault()
                     event.stopPropagation()
+                    form.classList.add('was-validated')
                 } else {
-                    // todo: save new organization
-                    const blockIndex = form.querySelector('input[name="blockIndex"]').value
-                    const id = '00000'
-                    // const type = form.querySelector('select[name="type"]').value
-                    const typeText = form.querySelector('select[name="type"]').selectedOptions[0].text
-                    const name = form.querySelector('input[name="name"]').value
-                    const description = form.querySelector('textarea[name="description"]').value
-                    const location = '---'
-                    const notes = form.querySelector('textarea[name="notes"]').value
+                    const formData = new FormData(form);
+                    const formDataObj = Object.fromEntries(formData.entries());
+                    let id = ''
+                    const isNew = id === ''
+                    const index = formDataObj.blockIndex
+                    delete formDataObj.blockIndex
+                    formDataObj.type = parseInt(formDataObj.type)
+                    if (isNew) {
+                        formDataObj.dateCreated = (new Date()).toISOString()
+                    }
+                    if (formDataObj.geoPoint === '') {
+                        formDataObj.geoPoint = null
+                    }
 
-                    addOrganizationBlock(blockIndex, id, typeText, name, description, location, notes)
+                    const xhr = new XMLHttpRequest();
+                    const method = isNew ? 'POST' : 'PATCH';
+                    const url = window.location.origin + '/api/organizations' + (isNew ? '' : '/' + id);
 
-                    showMessage(200, 'Данныя захаваліся паспяхова!', 'Арганізацыя', '#' + id)
+                    xhr.open(method, url, true);
+                    xhr.setRequestHeader("Content-type", isNew ? "application/ld+json" : "application/merge-patch+json");
+                    xhr.onreadystatechange = () => {
+                        if (xhr.readyState === XMLHttpRequest.DONE) {
+                            const status = xhr.status;
+                            if (status === 0 || (status >= 200 && status < 400)) {
+                                let obj = JSON.parse(xhr.responseText)
+                                if (isNew) {
+                                    id = obj.id
+                                }
+                                const typeText = form.querySelector('select[name="type"]').selectedOptions[0].text
+                                const locationText = form.querySelector('select[name="geoPoint"]').selectedOptions[0].text
+                                addOrganizationBlock(index, id, typeText, obj.name, obj.description, locationText, obj.notes)
+                                showMessage(status, 'Данныя захаваліся паспяхова!', 'Блок ' + index, '#' + id)
+                            } else {
+                                let message = 'Данныя не захаваліся!'
+                                if (xhr.getResponseHeader("content-type").indexOf('json') > 0) {
+                                    let obj = JSON.parse(xhr.responseText)
+                                    message += '</br>' + status + '. ' + obj.description
+                                }
+                                showMessage(status, message, 'Блок ' + index, '#' + id)
+                            }
 
-                    const modalElement = document.getElementById('addOrgModal')
-                    bootstrap.Modal.getInstance(modalElement).hide()
+                            const modalElement = document.getElementById('addOrgModal')
+                            bootstrap.Modal.getInstance(modalElement).hide()
 
-                    form.classList.remove('was-validated')
-                    form.reset()
+                            form.classList.remove('was-validated')
+                            form.reset()
+                        }
+                    };
+                    xhr.send(JSON.stringify(formDataObj));
                 }
-                form.classList.add('was-validated')
             })
         }
     });

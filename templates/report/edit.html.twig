@@ -315,7 +315,7 @@
 
                         <div class="input-group mb-3">
                             <span class="input-group-text">Тып</span>
-                            <select class="form-select" aria-label="Type of org" name="type" required>
+                            <select class="form-select" aria-label="Type of organization" name="type" required>
                                 {% for id, name in constant('App\\Entity\\Type\\OrganizationType::TYPES') %}
                                     <option value="{{ id }}">{{ name }}</option>
                                 {% endfor %}
@@ -327,8 +327,8 @@
 
                         <div class="mb-3">
                             <div class="input-group">
-                                <label class="input-group-text" for="newOrgName">Назва</label>
-                                <input type="text" class="form-control" name="name" id="newOrgName" required>
+                                <label class="input-group-text">Назва</label>
+                                <input type="text" class="form-control" name="name" aria-label="Name of organization" required>
                                 <div class="invalid-feedback">
                                     Калі ласка, напішыце назву арганізацыі
                                 </div>
@@ -351,10 +351,10 @@
 
                         <div class="input-group mb-3">
                             <span class="input-group-text">Месца</span>
-                            <select class="form-select" aria-label="Location of org" required>
-                                <option selected disabled value="">- выбраць -</option>
+                            <select class="form-select" aria-label="Location of org" name="geoPoint" required>
+                                <option value="">- выбраць -</option>
                                 {% for geoPoint in geoPoints %}
-                                    <option value="{{ geoPoint.id }}"
+                                    <option value="/api/geo_points/{{ geoPoint.id }}"
                                             {% if report.geoPoint and report.geoPoint.id == geoPoint.id %}selected{% endif %}>
                                         {{ geoPoint.getFullBeName() }}
                                     </option>
