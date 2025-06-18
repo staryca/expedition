@@ -12,9 +12,29 @@
         const id = element.getAttribute('data-index')
         const blockIndex = element.getAttribute('data-block')
         element.addEventListener('click', () => {
-            // todo: remove block task
-            showMessage(400, 'Данныя выдалены паспяхова!', 'Планы, задачы, наводкі', '#' + id)
-            document.getElementById('edit_' + blockIndex + '_Task_' + id).remove()
+
+            const xhr = new XMLHttpRequest();
+            const method = 'DELETE';
+            const url = window.location.origin + '/api/tasks/' + id;
+
+            xhr.open(method, url, true);
+            xhr.onreadystatechange = () => {
+                if (xhr.readyState === XMLHttpRequest.DONE) {
+                    const status = xhr.status;
+                    if (status === 0 || (status >= 200 && status < 400)) {
+                        showMessage(status, 'Данныя выдалены паспяхова!', 'Планы, задачы, наводкі', '#' + id)
+                        document.getElementById('edit_' + blockIndex + '_Task_' + id).remove()
+                    } else {
+                        let message = 'Данныя не выдалены!'
+                        if (xhr.getResponseHeader("content-type").indexOf('json') > 0) {
+                            let obj = JSON.parse(xhr.responseText)
+                            message += '</br>' + status + '. ' + obj.description
+                        }
+                        showMessage(status, message, 'Планы, задачы, наводкі', '#' + id)
+                    }
+                }
+            };
+            xhr.send(JSON.stringify());
         })
     }
 
@@ -45,23 +65,55 @@
                     event.stopPropagation()
                     form.classList.add('was-validated')
                 } else {
-                    // todo: save new task
-                    const blockIndex = form.querySelector('input[name="blockIndex"]').value
-                    const id = '00000'
-                    // const status = form.querySelector('select[name="status"]').value
-                    const status = form.querySelector('select[name="status"]').selectedOptions[0].text
-                    const content = form.querySelector('textarea[name="content"]').value
-                    const informant = '-'
+                    const formData = new FormData(form);
+                    const formDataObj = Object.fromEntries(formData.entries());
+                    let id = ''
+                    const isNew = id === ''
+                    const index = formDataObj.blockIndex
+                    delete formDataObj.blockIndex
+                    formDataObj.status = parseInt(formDataObj.status)
+                    if (formDataObj.report === '') {
+                        formDataObj.report = null
+                    }
+                    if (formDataObj.reportBlock === '') {
+                        formDataObj.reportBlock = null
+                    }
 
-                    addReportTaskBlock(blockIndex, status, id, content, informant)
+                    const xhr = new XMLHttpRequest();
+                    const method = isNew ? 'POST' : 'PATCH';
+                    const url = window.location.origin + '/api/tasks' + (isNew ? '' : '/' + id);
 
-                    showMessage(200, 'Данныя захаваліся паспяхова!', 'Планы, задачы, наводкі', '#' + id)
+                    xhr.open(method, url, true);
+                    xhr.setRequestHeader("Content-type", isNew ? "application/ld+json" : "application/merge-patch+json");
+                    xhr.onreadystatechange = () => {
+                        if (xhr.readyState === XMLHttpRequest.DONE) {
+                            const status = xhr.status;
+                            if (status === 0 || (status >= 200 && status < 400)) {
+                                let obj = JSON.parse(xhr.responseText)
+                                if (isNew) {
+                                    id = obj.id
+                                }
+                                const statusText = form.querySelector('select[name="status"]').selectedOptions[0].text
+                                const informant = '-'
+                                addReportTaskBlock(index, statusText, id, obj.content, informant)
+                                showMessage(status, 'Данныя захаваліся паспяхова!', 'Планы, задачы, наводкі', '#' + id)
+                            } else {
+                                let message = 'Данныя не захаваліся!'
+                                if (xhr.getResponseHeader("content-type").indexOf('json') > 0) {
+                                    let obj = JSON.parse(xhr.responseText)
+                                    message += '</br>' + status + '. ' + obj.description
+                                }
+                                showMessage(status, message, 'Планы, задачы, наводкі', '#' + id)
+                            }
 
-                    const modalElement = document.getElementById('addTaskPlanModal')
-                    bootstrap.Modal.getInstance(modalElement).hide()
+                            const modalElement = document.getElementById('addTaskPlanModal')
+                            bootstrap.Modal.getInstance(modalElement).hide()
 
-                    form.classList.remove('was-validated')
-                    form.reset()
+                            form.classList.remove('was-validated')
+                            form.reset()
+                        }
+                    };
+                    xhr.send(JSON.stringify(formDataObj));
                 }
             })
         }

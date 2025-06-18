@@ -173,8 +173,13 @@ if (addTaskPlanModal) {
         let blockIndexInput = addTaskPlanModal.querySelector('input[name="blockIndex"]')
         blockIndexInput.value = blockIndex
 
-        let text = blockIndex === '0' ? 'справаздачы' : 'блока ' + blockIndex
+        let reportInput = addTaskPlanModal.querySelector('input[name="report"]')
+        reportInput.value = blockIndex === '0' ? '/api/reports/' + document.forms['reportEdit'].id.value : ''
 
+        let reportBlockInput = addTaskPlanModal.querySelector('input[name="reportBlock"]')
+        reportBlockInput.value = blockIndex === '0' ? '' : '/api/report_blocks/' + document.forms["blockEdit" + blockIndex].id.value
+
+        let text = blockIndex === '0' ? 'справаздачы' : 'блока ' + blockIndex
         let addTaskPlanModalLabel = document.getElementById('addTaskPlanModalLabel')
         addTaskPlanModalLabel.innerText = 'Дадаць новую задачу для ' + text
     })

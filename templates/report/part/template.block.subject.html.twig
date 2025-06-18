@@ -24,7 +24,7 @@
                         showMessage(status, 'Данныя выдалены паспяхова!', 'Прадмет', '#' + id)
                         document.getElementById('editBlock_' + blockIndex + '_Subject_' + id).remove()
                     } else {
-                        let message = 'Данныя не захаваліся!'
+                        let message = 'Данныя не выдалены!'
                         if (xhr.getResponseHeader("content-type").indexOf('json') > 0) {
                             let obj = JSON.parse(xhr.responseText)
                             message += '</br>' + status + '. ' + obj.description

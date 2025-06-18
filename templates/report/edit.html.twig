@@ -264,9 +264,11 @@
                 <div class="modal-body">
                     <form id="formAddTaskPlan">
                         <input type="hidden" name="blockIndex" value="">
+                        <input type="hidden" name="report" value="">
+                        <input type="hidden" name="reportBlock" value="">
 
                         <div class="input-group mb-3">
-                            <span class="input-group-text" id="taskType">Тып</span>
+                            <span class="input-group-text">Тып</span>
                             <select class="form-select" aria-label="Type of task" name="status" required>
                                 {% for id, name in constant('App\\Entity\\Type\\TaskStatus::STATUSES') %}
                                     <option value="{{ id }}">{{ name }}</option>
@@ -286,7 +288,7 @@
                         </div>
 
                         <div class="input-group mb-3">
-                            <span class="input-group-text" id="basic-addon1">Інфармант</span>
+                            <span class="input-group-text">Інфармант</span>
                             <select class="form-select" aria-label="Informant of task">
                                 <option selected>- выбраць -</option>
                             </select>
@@ -511,7 +513,7 @@
                         <input type="hidden" name="blockIndex" value="">
 
                         <div class="input-group mb-3">
-                            <span class="input-group-text" id="taskType">Тып</span>
+                            <span class="input-group-text">Тып</span>
                             <select class="form-select" aria-label="Type of episode" name="category" required>
                                 {% for id, name in constant('App\\Entity\\Type\\CategoryType::TYPES') %}
                                     <option value="{{ id }}"
