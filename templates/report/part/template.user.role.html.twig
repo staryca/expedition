@@ -13,7 +13,7 @@
         const id = element.getAttribute('data-index')
         element.addEventListener('click', () => {
             // todo: remove user roles
-            showMessage(400, 'Данныя выдалены паспяхова!', 'Даследвальнік', '#' + id)
+            showMessage(400, 'Даныя выдалены паспяхова!', 'Даследвальнік', '#' + id)
             document.getElementById('editUserReport' + id).remove()
         })
     }
@@ -51,7 +51,7 @@
                     }
                     addUserRoleBlock(userName, id, txt)
 
-                    showMessage(200, 'Данныя захаваліся паспяхова!', 'Даследвальнік', '#' + id)
+                    showMessage(200, 'Даныя захаваліся паспяхова!', 'Даследвальнік', '#' + id)
 
                     const modalElement = document.getElementById('addReportUserModal')
                     bootstrap.Modal.getInstance(modalElement).hide()

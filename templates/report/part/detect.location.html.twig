@@ -5,15 +5,15 @@
     let element = document.getElementById('detectLocation')
     element.addEventListener('click', () => {
         if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(showPosition);
+            navigator.geolocation.getCurrentPosition(showPosition)
         } else {
-            console.log("Geolocation is not supported by this browser.");
+            console.log("Geolocation is not supported by this browser.")
         }
 
         function showPosition(position) {
             // todo: get
             console.log("Latitude: " + position.coords.latitude +
-                "<br>Longitude: " + position.coords.longitude);
+                "<br>Longitude: " + position.coords.longitude)
         }
     })
 

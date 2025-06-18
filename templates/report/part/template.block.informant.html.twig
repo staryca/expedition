@@ -17,7 +17,7 @@
         const blockIndex = element.getAttribute('data-block')
         element.addEventListener('click', () => {
             // todo: remove marker
-            showMessage(400, 'Данныя выдалены паспяхова!', 'Інфармант', '#' + id)
+            showMessage(400, 'Даныя выдалены паспяхова!', 'Інфармант', '#' + id)
             document.getElementById('editBlock_' + blockIndex + '_Informant_' + id).remove()
         })
     }
@@ -59,7 +59,7 @@
 
                     addInformantBlock(blockIndex, id, name, birthYear, notes)
 
-                    showMessage(200, 'Данныя захаваліся паспяхова!', 'Інфармант', '#' + id)
+                    showMessage(200, 'Даныя захаваліся паспяхова!', 'Інфармант', '#' + id)
 
                     const modalElement = document.getElementById('addInformantModal')
                     bootstrap.Modal.getInstance(modalElement).hide()

@@ -37,7 +37,7 @@
 {% block body %}
     <div class="sidenav bg-body-secondary text-primary">
         <a class="" href="#reportBody" title="Асноўная інфармацыя справаздачы"><i class="bi bi-file-text"></i></a>
-        <a class="" href="#reportTasks" title="Планы і задачы ўсёй справаздачы"><i class="bi bi-calendar-event"></i></a>
+        <a class="d-none showThisAfterSaveReport" href="#reportTasks" title="Планы і задачы ўсёй справаздачы"><i class="bi bi-calendar-event"></i></a>
         <hr >
 
         {% for block in report.blocks %}
@@ -127,7 +127,7 @@
             </div>
         </div>
 
-        <div class="card mb-3" id="reportUsers">
+        <div class="card mb-3 d-none showThisAfterSaveReport" id="reportUsers">
             <div class="card-header">
                 Даследвальнікі
             </div>
@@ -163,7 +163,7 @@
             </script>
         </div>
 
-        <div class="card mb-3" id="reportTasks">
+        <div class="card mb-3 d-none showThisAfterSaveReport" id="reportTasks">
             <div class="card-header">
                 Планы, задачы, наводкі
             </div>
@@ -230,7 +230,7 @@
                                 {% endfor %}
                             </select>
                             <div class="invalid-feedback">
-                                Калі ласка, выбярыце даследчыка
+                                Калі ласка, выберыце даследчыка
                             </div>
                         </div>
 

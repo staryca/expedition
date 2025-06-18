@@ -13,19 +13,19 @@
         const blockIndex = element.getAttribute('data-block')
         element.addEventListener('click', () => {
 
-            const xhr = new XMLHttpRequest();
-            const method = 'DELETE';
-            const url = window.location.origin + '/api/tasks/' + id;
+            const xhr = new XMLHttpRequest()
+            const method = 'DELETE'
+            const url = window.location.origin + '/api/tasks/' + id
 
-            xhr.open(method, url, true);
+            xhr.open(method, url, true)
             xhr.onreadystatechange = () => {
                 if (xhr.readyState === XMLHttpRequest.DONE) {
                     const status = xhr.status;
                     if (status === 0 || (status >= 200 && status < 400)) {
-                        showMessage(status, 'Данныя выдалены паспяхова!', 'Планы, задачы, наводкі', '#' + id)
+                        showMessage(status, 'Даныя выдалены паспяхова!', 'Планы, задачы, наводкі', '#' + id)
                         document.getElementById('edit_' + blockIndex + '_Task_' + id).remove()
                     } else {
-                        let message = 'Данныя не выдалены!'
+                        let message = 'Даныя не выдалены!'
                         if (xhr.getResponseHeader("content-type").indexOf('json') > 0) {
                             let obj = JSON.parse(xhr.responseText)
                             message += '</br>' + status + '. ' + obj.description
@@ -34,7 +34,7 @@
                     }
                 }
             };
-            xhr.send(JSON.stringify());
+            xhr.send(JSON.stringify())
         })
     }
 
@@ -65,8 +65,8 @@
                     event.stopPropagation()
                     form.classList.add('was-validated')
                 } else {
-                    const formData = new FormData(form);
-                    const formDataObj = Object.fromEntries(formData.entries());
+                    const formData = new FormData(form)
+                    const formDataObj = Object.fromEntries(formData.entries())
                     let id = ''
                     const isNew = id === ''
                     const index = formDataObj.blockIndex
@@ -79,12 +79,12 @@
                         formDataObj.reportBlock = null
                     }
 
-                    const xhr = new XMLHttpRequest();
-                    const method = isNew ? 'POST' : 'PATCH';
-                    const url = window.location.origin + '/api/tasks' + (isNew ? '' : '/' + id);
+                    const xhr = new XMLHttpRequest()
+                    const method = isNew ? 'POST' : 'PATCH'
+                    const url = window.location.origin + '/api/tasks' + (isNew ? '' : '/' + id)
 
-                    xhr.open(method, url, true);
-                    xhr.setRequestHeader("Content-type", isNew ? "application/ld+json" : "application/merge-patch+json");
+                    xhr.open(method, url, true)
+                    xhr.setRequestHeader("Content-type", isNew ? "application/ld+json" : "application/merge-patch+json")
                     xhr.onreadystatechange = () => {
                         if (xhr.readyState === XMLHttpRequest.DONE) {
                             const status = xhr.status;
@@ -96,9 +96,9 @@
                                 const statusText = form.querySelector('select[name="status"]').selectedOptions[0].text
                                 const informant = '-'
                                 addReportTaskBlock(index, statusText, id, obj.content, informant)
-                                showMessage(status, 'Данныя захаваліся паспяхова!', 'Планы, задачы, наводкі', '#' + id)
+                                showMessage(status, 'Даныя захаваліся паспяхова!', 'Планы, задачы, наводкі', '#' + id)
                             } else {
-                                let message = 'Данныя не захаваліся!'
+                                let message = 'Даныя не захаваліся!'
                                 if (xhr.getResponseHeader("content-type").indexOf('json') > 0) {
                                     let obj = JSON.parse(xhr.responseText)
                                     message += '</br>' + status + '. ' + obj.description
@@ -113,7 +113,7 @@
                             form.reset()
                         }
                     };
-                    xhr.send(JSON.stringify(formDataObj));
+                    xhr.send(JSON.stringify(formDataObj))
                 }
             })
         }

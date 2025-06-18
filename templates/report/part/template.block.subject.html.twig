@@ -12,19 +12,19 @@
         const blockIndex = element.getAttribute('data-block')
         element.addEventListener('click', () => {
 
-            const xhr = new XMLHttpRequest();
-            const method = 'DELETE';
-            const url = window.location.origin + '/api/subjects/' + id;
+            const xhr = new XMLHttpRequest()
+            const method = 'DELETE'
+            const url = window.location.origin + '/api/subjects/' + id
 
-            xhr.open(method, url, true);
+            xhr.open(method, url, true)
             xhr.onreadystatechange = () => {
                 if (xhr.readyState === XMLHttpRequest.DONE) {
                     const status = xhr.status;
                     if (status === 0 || (status >= 200 && status < 400)) {
-                        showMessage(status, 'Данныя выдалены паспяхова!', 'Прадмет', '#' + id)
+                        showMessage(status, 'Даныя выдалены паспяхова!', 'Прадмет', '#' + id)
                         document.getElementById('editBlock_' + blockIndex + '_Subject_' + id).remove()
                     } else {
-                        let message = 'Данныя не выдалены!'
+                        let message = 'Даныя не выдалены!'
                         if (xhr.getResponseHeader("content-type").indexOf('json') > 0) {
                             let obj = JSON.parse(xhr.responseText)
                             message += '</br>' + status + '. ' + obj.description
@@ -33,7 +33,7 @@
                     }
                 }
             };
-            xhr.send(JSON.stringify());
+            xhr.send(JSON.stringify())
         })
     }
 
@@ -69,12 +69,12 @@
                     delete formDataObj.blockIndex
                     formDataObj.type = parseInt(formDataObj.type)
 
-                    const xhr = new XMLHttpRequest();
-                    const method = isNew ? 'POST' : 'PATCH';
-                    const url = window.location.origin + '/api/subjects' + (isNew ? '' : '/' + id);
+                    const xhr = new XMLHttpRequest()
+                    const method = isNew ? 'POST' : 'PATCH'
+                    const url = window.location.origin + '/api/subjects' + (isNew ? '' : '/' + id)
 
-                    xhr.open(method, url, true);
-                    xhr.setRequestHeader("Content-type", isNew ? "application/ld+json" : "application/merge-patch+json");
+                    xhr.open(method, url, true)
+                    xhr.setRequestHeader("Content-type", isNew ? "application/ld+json" : "application/merge-patch+json")
                     xhr.onreadystatechange = () => {
                         if (xhr.readyState === XMLHttpRequest.DONE) {
                             const status = xhr.status;
@@ -85,9 +85,9 @@
                                 }
                                 const typeText = form.querySelector('select[name="type"]').selectedOptions[0].text
                                 addSubjectBlock(index, id, typeText, obj.name)
-                                showMessage(status, 'Данныя захаваліся паспяхова!', 'Прадмет', '#' + id)
+                                showMessage(status, 'Даныя захаваліся паспяхова!', 'Прадмет', '#' + id)
                             } else {
-                                let message = 'Данныя не захаваліся!'
+                                let message = 'Даныя не захаваліся!'
                                 if (xhr.getResponseHeader("content-type").indexOf('json') > 0) {
                                     let obj = JSON.parse(xhr.responseText)
                                     message += '</br>' + status + '. ' + obj.description
@@ -102,7 +102,7 @@
                             form.reset()
                         }
                     };
-                    xhr.send(JSON.stringify(formDataObj));
+                    xhr.send(JSON.stringify(formDataObj))
                 }
             })
         }

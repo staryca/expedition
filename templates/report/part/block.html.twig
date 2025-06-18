@@ -8,10 +8,11 @@
         <form id="blockEdit{{ blockIndex }}">
             <input type="hidden" name="report" value="/api/reports/{{ report.id }}">
             <input type="hidden" name="id" value="{{ block.id }}">
+            <input type="hidden" name="file" value="{% if block.getContentFile() %}{{ block.getContentFile().id }}{% endif %}">
 
             <div class="input-group mb-3">
                 <span class="input-group-text">Тып</span>
-                <select class="form-select" aria-label="Тып" name="type">
+                <select class="form-select" aria-label="Тып" name="type" id="blockType{{ blockIndex }}">
                     {% for id, name in constant('App\\Entity\\Type\\ReportBlockType::TYPES') %}
                         <option value="{{ id }}" {% if id == block.type %}selected="selected"{% endif %}>
                             {{ name }}
@@ -71,7 +72,7 @@
     </div>
 </div>
 
-<div class="card mb-3" id="block{{ blockIndex }}informants">
+<div class="card mb-3 d-none showThisAfterSaveBlock{{ blockIndex }}" id="block{{ blockIndex }}informants">
     <div class="card-header">
         Інфарманты блока {{ blockIndex }}
     </div>
@@ -97,7 +98,7 @@
     </div>
 </div>
 
-<div class="card mb-3" id="block{{ blockIndex }}tags">
+<div class="card mb-3 d-none showThisAfterSaveBlock{{ blockIndex }}" id="block{{ blockIndex }}tags">
     <div class="card-header">
         Краткае апісаньне эпізодаў блока {{ blockIndex }}
     </div>
@@ -125,7 +126,7 @@
     </div>
 </div>
 
-<div class="card mb-3" id="block{{ blockIndex }}items">
+<div class="card mb-3 d-none showThisAfterSaveBlock{{ blockIndex }}" id="block{{ blockIndex }}items">
     <div class="card-header">
         Прадметы блока {{ blockIndex }}
     </div>
@@ -149,7 +150,7 @@
     </div>
 </div>
 
-<div class="card mb-3" id="block{{ blockIndex }}tasks">
+<div class="card mb-3 d-none showThisAfterSaveBlock{{ blockIndex }}" id="block{{ blockIndex }}tasks">
     <div class="card-header">
         Планы, задачы, наводкі блока {{ blockIndex }}
     </div>
