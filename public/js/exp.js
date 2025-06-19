@@ -104,6 +104,7 @@ function addActionBlock(index, savedBlock) {
         formDataObj.type = parseInt(formDataObj.type)
         delete formDataObj.id
         delete formDataObj.file
+        delete formDataObj.informants
         if (isNew) {
             formDataObj.dateCreated = (new Date()).toISOString()
         }

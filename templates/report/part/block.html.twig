@@ -9,6 +9,7 @@
             <input type="hidden" name="report" value="/api/reports/{{ report.id }}">
             <input type="hidden" name="id" value="{{ block.id }}">
             <input type="hidden" name="file" value="{% if block.getContentFile() %}{{ block.getContentFile().id }}{% endif %}">
+            <input type="hidden" name="informants" value="">
 
             <div class="input-group mb-3">
                 <span class="input-group-text">Тып</span>
@@ -87,8 +88,6 @@
                 Дадаць
             </button>
         </p>
-
-        {% include('report/part/template.block.informant.html.twig') %}
 
         {% for informant in block.informants %}
             <script type="application/javascript">

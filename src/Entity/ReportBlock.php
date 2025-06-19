@@ -223,7 +223,7 @@ class ReportBlock
     public function getContentFile(): ?File
     {
         foreach ($this->getFiles() as $file) {
-            if ($file->getType() === 0) {
+            if ($file->getType() === FileType::TYPE_VIRTUAL_CONTENT_LIST) {
                 return $file;
             }
         }

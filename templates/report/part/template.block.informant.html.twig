@@ -16,10 +16,17 @@
         const id = element.getAttribute('data-index')
         const blockIndex = element.getAttribute('data-block')
         element.addEventListener('click', () => {
-            // todo: remove marker
-            showMessage(400, 'Даныя выдалены паспяхова!', 'Інфармант', '#' + id)
-            document.getElementById('editBlock_' + blockIndex + '_Informant_' + id).remove()
+            if (addRemoveInformantFromBlock(blockIndex, id, 'remove')) {
+                showMessage(200, 'Даныя выдалены паспяхова!', 'Інфармант', '#' + id)
+                document.getElementById('editBlock_' + blockIndex + '_Informant_' + id).remove()
+            } else {
+                showMessage(400, 'Даныя ня выдалены!', 'Інфармант', '#' + id)
+            }
         })
+    }
+
+    function addRemoveInformantFromBlock(blockIndex, id, action) {
+        return false
     }
 
     function addInformantBlock(blockIndex, id, name, birthYear, notes) {
@@ -50,22 +57,62 @@
                     event.stopPropagation()
                     form.classList.add('was-validated')
                 } else {
-                    // todo: save new marker
-                    const blockIndex = form.querySelector('input[name="blockIndex"]').value
-                    const id = '00000'
-                    const name = form.querySelector('input[name="name"]').value
-                    const birthYear = form.querySelector('input[name="birthYear"]').value
-                    const notes = form.querySelector('input[name="notes"]').value
+                    const formData = new FormData(form);
+                    const formDataObj = Object.fromEntries(formData.entries());
+                    let id = ''
+                    const isNew = id === ''
+                    const index = formDataObj.blockIndex
+                    delete formDataObj.blockIndex
+                    if (isNew) {
+                        formDataObj.dateCreated = (new Date()).toISOString()
+                    }
+                    formDataObj.yearBirth = parseInt(formDataObj.yearBirth)
+                    formDataObj.gender = parseInt(formDataObj.gender)
+                    formDataObj.nameAndGender = {name: formDataObj.firstName, gender: formDataObj.gender}
+                    if (formDataObj.geoPointBirth === '') {
+                        formDataObj.geoPointBirth = null
+                    }
+                    if (formDataObj.geoPointCurrent === '') {
+                        formDataObj.geoPointCurrent = null
+                    }
 
-                    addInformantBlock(blockIndex, id, name, birthYear, notes)
+                    const xhr = new XMLHttpRequest()
+                    const method = isNew ? 'POST' : 'PATCH'
+                    const url = window.location.origin + '/api/informants' + (isNew ? '' : '/' + id)
 
-                    showMessage(200, 'Даныя захаваліся паспяхова!', 'Інфармант', '#' + id)
+                    xhr.open(method, url, true)
+                    xhr.setRequestHeader("Content-type", isNew ? "application/ld+json" : "application/merge-patch+json")
+                    xhr.onreadystatechange = () => {
+                        if (xhr.readyState === XMLHttpRequest.DONE) {
+                            const status = xhr.status;
+                            if (status === 0 || (status >= 200 && status < 400)) {
+                                let obj = JSON.parse(xhr.responseText)
+                                if (isNew) {
+                                    id = obj.id
+                                }
+                                if (addRemoveInformantFromBlock(index, id, 'add')) {
+                                    addInformantBlock(index, id, obj.firstName, obj.yearBirth, obj.notes)
+                                    showMessage(status, 'Даныя захаваліся паспяхова!', 'Інфармант', '#' + id)
+                                } else {
+                                    showMessage(400, 'Даныя ня захаваліся!', 'Інфармант', '#' + id)
+                                }
+                            } else {
+                                let message = 'Даныя не захаваліся!'
+                                if (xhr.getResponseHeader("content-type").indexOf('json') > 0) {
+                                    let obj = JSON.parse(xhr.responseText)
+                                    message += '</br>' + status + '. ' + obj.description
+                                }
+                                showMessage(status, message, 'Інфармант', '#' + id)
+                            }
 
-                    const modalElement = document.getElementById('addInformantModal')
-                    bootstrap.Modal.getInstance(modalElement).hide()
+                            const modalElement = document.getElementById('addInformantModal')
+                            bootstrap.Modal.getInstance(modalElement).hide()
 
-                    form.classList.remove('was-validated')
-                    form.reset()
+                            form.classList.remove('was-validated')
+                            form.reset()
+                        }
+                    };
+                    xhr.send(JSON.stringify(formDataObj))
                 }
             })
         }

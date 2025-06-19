@@ -56,6 +56,16 @@
 
     <div class="main" id="mainBlock">
         <h2>{% if report.id %}Справаздача #{{ report.id }}{% else %}Новая справаздача{% endif %} для экспедыцыі {{ report.expedition.name }}</h2>
+        <div>
+            {% if report.id %}
+                <a href="{{ path('report_show', {id: report.id}) }}">
+                    <i class="bi bi-eye-fill"></i> Паглядзець
+                </a>
+            {% endif %}
+            &nbsp;&nbsp;&nbsp;&nbsp;
+            <a href="{{ path('expedition_show', {id: report.expedition.id}) }}"><i class="bi bi-list-columns-reverse"></i> Усе справаздачы</a>
+        </div>
+
         <div class="card mb-3" id="reportBody">
             <div class="card-header">
                 Справаздача
@@ -197,6 +207,8 @@
         {% include('report/part/template.block.subject.html.twig') %}
 
         {% include('report/part/template.block.organization.html.twig') %}
+
+        {% include('report/part/template.block.informant.html.twig') %}
 
 
         {% for block in report.blocks %}
@@ -397,8 +409,8 @@
 
                         <div class="mb-3">
                             <div class="input-group">
-                                <label class="input-group-text" for="informantName">Імя</label>
-                                <input type="text" class="form-control" id="informantName" name="name" required>
+                                <label class="input-group-text">Імя</label>
+                                <input type="text" class="form-control" name="firstName" required aria-label="Name of informant">
                                 <div class="invalid-feedback">
                                     Калі ласка, напішыце імя
                                 </div>
@@ -407,8 +419,8 @@
 
                         <div class="mb-3">
                             <div class="input-group">
-                                <label class="input-group-text" for="informantBirthYear">Год нараджэньня</label>
-                                <input type="number" class="form-control" id="informantBirthYear" name="birthYear"
+                                <label class="input-group-text">Год нараджэньня</label>
+                                <input type="number" class="form-control" name="yearBirth" aria-label="Year of birth"
                                        min="1850" max="2020" size="4">
                                 <div class="invalid-feedback">
                                     Калі ласка, напішыце дакладна год
@@ -418,10 +430,10 @@
 
                         <div class="input-group mb-3">
                             <span class="input-group-text">Адкуль</span>
-                            <select class="form-select" aria-label="Месца" name="birthPoint">
-                                <option selected disabled value="">- выбраць -</option>
+                            <select class="form-select" aria-label="Месца" name="geoPointBirth">
+                                <option value="">- выбраць -</option>
                                 {% for geoPoint in geoPoints %}
-                                    <option value="{{ geoPoint.id }}"
+                                    <option value="/api/geo_points/{{ geoPoint.id }}"
                                             {% if report.geoPoint and report.geoPoint.id == geoPoint.id %}selected{% endif %}>
                                         {{ geoPoint.getFullBeName() }}
                                     </option>
@@ -430,30 +442,15 @@
                         </div>
                         <div class="input-group mb-3">
                             <span class="input-group-text">няма ў сьпісе</span>
-                            <input type="text" class="form-control" placeholder="вёска і раён" name="birthPlace" aria-label="Birth place">
-                        </div>
-
-                        <div class="mb-3">
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="inlineRadioOptions" id="informantLive1" value="1">
-                                <label class="form-check-label" for="informantLive1">жыве тут</label>
-                            </div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="inlineRadioOptions" id="informantLive2" value="2">
-                                <label class="form-check-label" for="informantLive2">невядома дзе жыве</label>
-                            </div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="inlineRadioOptions" id="informantLive3" value="3">
-                                <label class="form-check-label" for="informantLive3">жыве ў іншым месцы</label>
-                            </div>
+                            <input type="text" class="form-control" placeholder="вёска і раён" name="placeBirth" aria-label="Birth place">
                         </div>
 
                         <div class="input-group mb-3">
                             <span class="input-group-text">Жыве ў</span>
-                            <select class="form-select" aria-label="Месца" name="livePoint">
-                                <option selected disabled value="">- выбраць -</option>
+                            <select class="form-select" aria-label="Месца" name="geoPointCurrent">
+                                <option value="">- выбраць -</option>
                                 {% for geoPoint in geoPoints %}
-                                    <option value="{{ geoPoint.id }}"
+                                    <option value="/api/geo_points/{{ geoPoint.id }}"
                                             {% if report.geoPoint and report.geoPoint.id == geoPoint.id %}selected{% endif %}>
                                         {{ geoPoint.getFullBeName() }}
                                     </option>
@@ -462,23 +459,23 @@
                         </div>
                         <div class="input-group mb-3">
                             <span class="input-group-text">няма ў сьпісе</span>
-                            <input type="text" class="form-control" placeholder="вёска і раён" name="livePlace" aria-label="live place">
+                            <input type="text" class="form-control" placeholder="вёска і раён" name="placeCurrent" aria-label="live place">
                         </div>
 
                         <div class="mb-3">
                             <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="informantSex"
-                                       id="informantSexM" value="m">
+                                <input class="form-check-input" type="radio" name="gender"
+                                       id="informantSexM" value="{{ constant('App\\Entity\\Type\\GenderType::MALE') }}">
                                 <label class="form-check-label" for="informantSexM">мужчына</label>
                             </div>
                             <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="informantSex"
-                                       id="informantSexF" value="f">
+                                <input class="form-check-input" type="radio" name="gender"
+                                       id="informantSexF" value="{{ constant('App\\Entity\\Type\\GenderType::FEMALE') }}">
                                 <label class="form-check-label" for="informantSexF">жанчына</label>
                             </div>
                             <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="informantSex"
-                                       id="informantSexU" value="u" checked>
+                                <input class="form-check-input" type="radio" name="gender"
+                                       id="informantSexU" value="{{ constant('App\\Entity\\Type\\GenderType::UNKNOWN') }}" checked>
                                 <label class="form-check-label" for="informantSexU">невядома</label>
                             </div>
                         </div>
