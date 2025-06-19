@@ -1,5 +1,6 @@
 <div class="d-none" id="createNewReportTaskTemplate">
     <p id="edit_BLOCK_INDEX_Task_TASK_ID">
+        <i class="bi TASK_ICON"></i>
         TASK_TYPE
         TASK_CONTENT
         TASK_INFORMANT
@@ -10,38 +11,28 @@
 <script type="application/javascript">
     function addActionReportTask(element) {
         const id = element.getAttribute('data-index')
-        const blockIndex = element.getAttribute('data-block')
+        const index = element.getAttribute('data-block')
         element.addEventListener('click', () => {
-
-            const xhr = new XMLHttpRequest()
-            const method = 'DELETE'
-            const url = window.location.origin + '/api/tasks/' + id
-
-            xhr.open(method, url, true)
-            xhr.onreadystatechange = () => {
-                if (xhr.readyState === XMLHttpRequest.DONE) {
-                    const status = xhr.status;
-                    if (status === 0 || (status >= 200 && status < 400)) {
-                        showMessage(status, 'Даныя выдалены паспяхова!', 'Планы, задачы, наводкі', '#' + id)
-                        document.getElementById('edit_' + blockIndex + '_Task_' + id).remove()
-                    } else {
-                        let message = 'Даныя не выдалены!'
-                        if (xhr.getResponseHeader("content-type").indexOf('json') > 0) {
-                            let obj = JSON.parse(xhr.responseText)
-                            message += '</br>' + status + '. ' + obj.description
-                        }
-                        showMessage(status, message, 'Планы, задачы, наводкі', '#' + id)
-                    }
-                }
-            };
-            xhr.send(JSON.stringify())
+            sendRequest(
+                window.location.origin + '/api/tasks/' + id,
+                'DELETE',
+                null,
+                'Планы, задачы, наводкі',
+                id,
+                index,
+                'Даныя не выдалены!'
+            ).then(function (obj) {
+                showMessage(obj.status, 'Даныя выдалены паспяхова!', 'Планы, задачы, наводкі', '#' + obj.id)
+                document.getElementById('edit_' + obj.index + '_Task_' + obj.id).remove()
+            })
         })
     }
 
-    function addReportTaskBlock(blockIndex, status, id, content, informant) {
+    function addReportTaskBlock(blockIndex, status, id, icon, content, informant) {
         let html = document.getElementById('createNewReportTaskTemplate').innerHTML
         html = html.replaceAll('BLOCK_INDEX', blockIndex)
         const type = ('' + status === '{{ constant('App\\Entity\\Type\\TaskStatus::TIP') }}') ? 'Наводка:' : ''
+        html = html.replaceAll('TASK_ICON', icon)
         html = html.replaceAll('TASK_TYPE', type)
         html = html.replaceAll('TASK_ID', '' + id)
         html = html.replaceAll('TASK_CONTENT', content)
@@ -67,7 +58,7 @@
                 } else {
                     const formData = new FormData(form)
                     const formDataObj = Object.fromEntries(formData.entries())
-                    let id = ''
+                    let id = formDataObj.id
                     const isNew = id === ''
                     const index = formDataObj.blockIndex
                     delete formDataObj.blockIndex
@@ -79,41 +70,25 @@
                         formDataObj.reportBlock = null
                     }
 
-                    const xhr = new XMLHttpRequest()
-                    const method = isNew ? 'POST' : 'PATCH'
-                    const url = window.location.origin + '/api/tasks' + (isNew ? '' : '/' + id)
+                    sendRequest(
+                        window.location.origin + '/api/tasks' + (isNew ? '' : '/' + id),
+                        isNew ? 'POST' : 'PATCH',
+                        formDataObj,
+                        'Планы, задачы, наводкі',
+                        id,
+                        index
+                    ).then(function (obj) {
+                        const statusText = form.querySelector('select[name="status"]').selectedOptions[0].text
+                        const informant = '-'
+                        addReportTaskBlock(obj.index, statusText, obj.id, obj.statusIcon , obj.content, informant)
+                        showMessage(obj.status, 'Даныя захаваліся паспяхова!', 'Планы, задачы, наводкі', '#' + obj.id)
 
-                    xhr.open(method, url, true)
-                    xhr.setRequestHeader("Content-type", isNew ? "application/ld+json" : "application/merge-patch+json")
-                    xhr.onreadystatechange = () => {
-                        if (xhr.readyState === XMLHttpRequest.DONE) {
-                            const status = xhr.status;
-                            if (status === 0 || (status >= 200 && status < 400)) {
-                                let obj = JSON.parse(xhr.responseText)
-                                if (isNew) {
-                                    id = obj.id
-                                }
-                                const statusText = form.querySelector('select[name="status"]').selectedOptions[0].text
-                                const informant = '-'
-                                addReportTaskBlock(index, statusText, id, obj.content, informant)
-                                showMessage(status, 'Даныя захаваліся паспяхова!', 'Планы, задачы, наводкі', '#' + id)
-                            } else {
-                                let message = 'Даныя не захаваліся!'
-                                if (xhr.getResponseHeader("content-type").indexOf('json') > 0) {
-                                    let obj = JSON.parse(xhr.responseText)
-                                    message += '</br>' + status + '. ' + obj.description
-                                }
-                                showMessage(status, message, 'Планы, задачы, наводкі', '#' + id)
-                            }
+                        const modalElement = document.getElementById('addTaskPlanModal')
+                        bootstrap.Modal.getInstance(modalElement).hide()
 
-                            const modalElement = document.getElementById('addTaskPlanModal')
-                            bootstrap.Modal.getInstance(modalElement).hide()
-
-                            form.classList.remove('was-validated')
-                            form.reset()
-                        }
-                    };
-                    xhr.send(JSON.stringify(formDataObj))
+                        form.classList.remove('was-validated')
+                        form.reset()
+                    })
                 }
             })
         }

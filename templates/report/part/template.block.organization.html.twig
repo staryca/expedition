@@ -30,7 +30,7 @@
                 } else {
                     const formData = new FormData(form)
                     const formDataObj = Object.fromEntries(formData.entries())
-                    let id = ''
+                    let id = formDataObj.id
                     const isNew = id === ''
                     const index = formDataObj.blockIndex
                     delete formDataObj.blockIndex
@@ -42,41 +42,25 @@
                         formDataObj.geoPoint = null
                     }
 
-                    const xhr = new XMLHttpRequest()
-                    const method = isNew ? 'POST' : 'PATCH'
-                    const url = window.location.origin + '/api/organizations' + (isNew ? '' : '/' + id)
+                    sendRequest(
+                        window.location.origin + '/api/organizations' + (isNew ? '' : '/' + id),
+                        isNew ? 'POST' : 'PATCH',
+                        formDataObj,
+                        'Арганізацыя',
+                        id,
+                        index
+                    ).then(function (obj) {
+                        const typeText = form.querySelector('select[name="type"]').selectedOptions[0].text
+                        const locationText = form.querySelector('select[name="geoPoint"]').selectedOptions[0].text
+                        addOrganizationBlock(obj.index, obj.id, typeText, obj.name, obj.description, locationText, obj.notes)
+                        showMessage(obj.status, 'Даныя захаваліся паспяхова!', 'Арганізацыя', '#' + obj.id)
 
-                    xhr.open(method, url, true)
-                    xhr.setRequestHeader("Content-type", isNew ? "application/ld+json" : "application/merge-patch+json")
-                    xhr.onreadystatechange = () => {
-                        if (xhr.readyState === XMLHttpRequest.DONE) {
-                            const status = xhr.status;
-                            if (status === 0 || (status >= 200 && status < 400)) {
-                                let obj = JSON.parse(xhr.responseText)
-                                if (isNew) {
-                                    id = obj.id
-                                }
-                                const typeText = form.querySelector('select[name="type"]').selectedOptions[0].text
-                                const locationText = form.querySelector('select[name="geoPoint"]').selectedOptions[0].text
-                                addOrganizationBlock(index, id, typeText, obj.name, obj.description, locationText, obj.notes)
-                                showMessage(status, 'Даныя захаваліся паспяхова!', 'Блок ' + index, '#' + id)
-                            } else {
-                                let message = 'Даныя не захаваліся!'
-                                if (xhr.getResponseHeader("content-type").indexOf('json') > 0) {
-                                    let obj = JSON.parse(xhr.responseText)
-                                    message += '</br>' + status + '. ' + obj.description
-                                }
-                                showMessage(status, message, 'Блок ' + index, '#' + id)
-                            }
+                        const modalElement = document.getElementById('addOrgModal')
+                        bootstrap.Modal.getInstance(modalElement).hide()
 
-                            const modalElement = document.getElementById('addOrgModal')
-                            bootstrap.Modal.getInstance(modalElement).hide()
-
-                            form.classList.remove('was-validated')
-                            form.reset()
-                        }
-                    };
-                    xhr.send(JSON.stringify(formDataObj))
+                        form.classList.remove('was-validated')
+                        form.reset()
+                    })
                 }
             })
         }

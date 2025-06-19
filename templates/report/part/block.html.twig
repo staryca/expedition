@@ -168,7 +168,7 @@
 
     {% for task in block.tasks %}
         <script type="application/javascript">
-            addReportTaskBlock('{{ blockIndex }}', '{{ task.status }}', '{{ task.id }}', '{{ task.content }}', '{% if task.informant %} {{ task.informant.firstName }} {% endif %}')
+            addReportTaskBlock('{{ blockIndex }}', '{{ task.status }}', '{{ task.id }}', '{{ task.getStatusIcon() }}', '{{ task.content }}', '{% if task.informant %} {{ task.informant.firstName }} {% endif %}')
         </script>
     {% endfor %}
 

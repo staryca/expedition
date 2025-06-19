@@ -1,3 +1,42 @@
+const sendRequest = function (url, method, data, title, id, index, errorMessage) {
+    return new Promise(function (resolve) {
+        const xhr = new XMLHttpRequest()
+        xhr.open(method, url, true)
+        if (method !== 'DELETE') {
+            xhr.setRequestHeader("Content-type", method === 'POST' ? "application/ld+json" : "application/merge-patch+json")
+        }
+        xhr.onreadystatechange = () => {
+            if (xhr.readyState === XMLHttpRequest.DONE) {
+                const status = xhr.status;
+                let obj = {}
+                if (xhr.getResponseHeader("content-type")
+                    && xhr.getResponseHeader("content-type").indexOf('json') > 0
+                    && xhr.responseText
+                    && xhr.responseText.length > 2
+                ) {
+                    obj = JSON.parse(xhr.responseText)
+                }
+                if (obj.id === undefined) {
+                    obj.id = id
+                }
+                if (status === 0 || (status >= 200 && status < 400)) {
+                    obj.status = status
+                    obj.isNew = method === 'POST'
+                    obj.index = index
+                    resolve(obj)
+                } else {
+                    let message = errorMessage === undefined ? 'Даныя не захаваліся!' : errorMessage
+                    if (obj.description !== undefined) {
+                        message += '</br>' + status + '. ' + obj.description
+                    }
+                    showMessage(status, message, title, '#' + id)
+                }
+            }
+        };
+        xhr.send(JSON.stringify(data))
+    })
+}
+
 // save for actions on the page
 const reportSaveAction = document.getElementById('reportSaveAction')
 if (reportSaveAction) {
@@ -20,35 +59,21 @@ if (reportSaveAction) {
             formDataObj.geoPoint = null
         }
 
-        const xhr = new XMLHttpRequest()
-        const method = isNew ? 'POST' : 'PATCH'
-        const url = window.location.origin + '/api/reports' + (isNew ? '' : '/' + id)
-
-        xhr.open(method, url, true)
-        xhr.setRequestHeader("Content-type", isNew ? "application/ld+json" : "application/merge-patch+json")
-        xhr.onreadystatechange = () => {
-            if (xhr.readyState === XMLHttpRequest.DONE) {
-                const status = xhr.status;
-                if (status === 0 || (status >= 200 && status < 400)) {
-                    showMessage(status, 'Даныя захаваліся паспяхова!', 'Справаздача', '#' + id)
-                    if (isNew) {
-                        let obj = JSON.parse(xhr.responseText)
-                        id = obj.id
-                        document.forms['reportEdit'].id.value = id
-                        showSubReportBlocks()
-                        window.location.replace('/report/' + id + '/edit')
-                    }
-                } else {
-                    let message = 'Даныя не захаваліся!'
-                    if (xhr.getResponseHeader("content-type").indexOf('json') > 0) {
-                        let obj = JSON.parse(xhr.responseText)
-                        message += '</br>' + status + '. ' + obj.description
-                    }
-                    showMessage(status, message, 'Справаздача', '#' + id)
-                }
+        sendRequest(
+            window.location.origin + '/api/reports' + (isNew ? '' : '/' + id),
+            isNew ? 'POST' : 'PATCH',
+            formDataObj,
+            'Справаздача',
+            id,
+            null
+        ).then(function (obj) {
+            showMessage(obj.status, 'Даныя захаваліся паспяхова!', 'Справаздача', '#' + obj.id)
+            if (obj.isNew) {
+                document.forms['reportEdit'].id.value = obj.id
+                showSubReportBlocks()
+                window.location.replace('/report/' + obj.id + '/edit')
             }
-        };
-        xhr.send(JSON.stringify(formDataObj))
+        })
     })
 }
 
@@ -112,35 +137,21 @@ function addActionBlock(index, savedBlock) {
             formDataObj.organization = null
         }
 
-        const xhr = new XMLHttpRequest()
-        const method = isNew ? 'POST' : 'PATCH'
-        const url = window.location.origin + '/api/report_blocks' + (isNew ? '' : '/' + id)
-
-        xhr.open(method, url, true)
-        xhr.setRequestHeader("Content-type", isNew ? "application/ld+json" : "application/merge-patch+json")
-        xhr.onreadystatechange = () => {
-            if (xhr.readyState === XMLHttpRequest.DONE) {
-                const status = xhr.status;
-                if (status === 0 || (status >= 200 && status < 400)) {
-                    if (isNew) {
-                        let obj = JSON.parse(xhr.responseText)
-                        id = obj.id
-                        document.forms["blockEdit" + index].id.value = id
-                        showSubBlocks(index)
-                        createContentFile(index, id)
-                    }
-                    showMessage(status, 'Даныя захаваліся паспяхова!', 'Блок ' + index, '#' + id)
-                } else {
-                    let message = 'Даныя не захаваліся!'
-                    if (xhr.getResponseHeader("content-type").indexOf('json') > 0) {
-                        let obj = JSON.parse(xhr.responseText)
-                        message += '</br>' + status + '. ' + obj.description
-                    }
-                    showMessage(status, message, 'Блок ' + index, '#' + id)
-                }
+        sendRequest(
+            window.location.origin + '/api/report_blocks' + (isNew ? '' : '/' + id),
+            isNew ? 'POST' : 'PATCH',
+            formDataObj,
+            'Блок ' + index,
+            id,
+            index
+        ).then(function (obj) {
+            if (obj.isNew) {
+                document.forms["blockEdit" + obj.index].id.value = obj.id
+                showSubBlocks(obj.index)
+                createContentFile(obj.index, obj.id)
             }
-        };
-        xhr.send(JSON.stringify(formDataObj))
+            showMessage(obj.status, 'Даныя захаваліся паспяхова!', 'Блок ' + obj.index, '#' + obj.id)
+        })
     })
 }
 
@@ -154,29 +165,17 @@ function showSubBlocks(index) {
 function createContentFile(index, reportBlockId) {
     const formDataObj = {reportBlock: '/api/report_blocks/' + reportBlockId, type: 0, processed: false, subject: null}
 
-    const xhr = new XMLHttpRequest()
-    const method = 'POST'
-    const url = window.location.origin + '/api/files'
-
-    xhr.open(method, url, true)
-    xhr.setRequestHeader("Content-type", "application/ld+json")
-    xhr.onreadystatechange = () => {
-        if (xhr.readyState === XMLHttpRequest.DONE) {
-            const status = xhr.status;
-            if (status === 0 || (status >= 200 && status < 400)) {
-                let obj = JSON.parse(xhr.responseText)
-                document.forms["blockEdit" + index].file.value = obj.id
-            } else {
-                let message = 'Файл кантэнта не стварыўся!'
-                if (xhr.getResponseHeader("content-type").indexOf('json') > 0) {
-                    let obj = JSON.parse(xhr.responseText)
-                    message += '</br>' + status + '. ' + obj.description
-                }
-                showMessage(status, message, 'Блок ' + index, '#' + reportBlockId)
-            }
-        }
-    };
-    xhr.send(JSON.stringify(formDataObj));
+    sendRequest(
+        window.location.origin + '/api/files',
+        'POST',
+        formDataObj,
+        'Блок ' + index,
+        null,
+        index,
+        'Файл кантэнта не стварыўся!'
+    ).then(function (obj) {
+        document.forms["blockEdit" + obj.index].file.value = obj.id
+    })
 }
 
 // Modal functions

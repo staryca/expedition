@@ -195,7 +195,7 @@
 
             {% for task in report.tasks %}
             <script type="application/javascript">
-                addReportTaskBlock('{{ reportTaskIndex }}', '{{ task.status }}', '{{ task.id }}', '{{ task.content }}', '{% if task.informant %} {{ task.informant.firstName }} {% endif %}')
+                addReportTaskBlock('{{ reportTaskIndex }}', '{{ task.status }}', '{{ task.id }}', '{{ task.getStatusIcon() }}', '{{ task.content }}', '{% if task.informant %} {{ task.informant.firstName }} {% endif %}')
             </script>
             {% endfor %}
 
@@ -278,6 +278,7 @@
                         <input type="hidden" name="blockIndex" value="">
                         <input type="hidden" name="report" value="">
                         <input type="hidden" name="reportBlock" value="">
+                        <input type="hidden" name="id" value="">
 
                         <div class="input-group mb-3">
                             <span class="input-group-text">Тып</span>
@@ -326,6 +327,7 @@
                 <div class="modal-body">
                     <form id="formAddOrg">
                         <input type="hidden" name="blockIndex" value="">
+                        <input type="hidden" name="id" value="">
 
                         <div class="input-group mb-3">
                             <span class="input-group-text">Тып</span>
@@ -406,6 +408,7 @@
                 <div class="modal-body">
                     <form id="formAddInformant">
                         <input type="hidden" name="blockIndex" value="">
+                        <input type="hidden" name="id" value="">
 
                         <div class="mb-3">
                             <div class="input-group">
@@ -508,6 +511,7 @@
                 <div class="modal-body">
                     <form id="formAddEpisode">
                         <input type="hidden" name="blockIndex" value="">
+                        <input type="hidden" name="id" value="">
 
                         <div class="input-group mb-3">
                             <span class="input-group-text">Тып</span>
@@ -564,6 +568,7 @@
                         <input type="hidden" name="blockIndex" value="">
                         <input type="hidden" name="expedition" value="/api/expeditions/{{ report.expedition.id }}">
                         <input type="hidden" name="reportBlock" value="">
+                        <input type="hidden" name="id" value="">
 
                         <div class="input-group mb-3">
                             <span class="input-group-text" id="subjectType">Тып</span>

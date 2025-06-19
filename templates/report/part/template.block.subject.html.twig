@@ -9,31 +9,20 @@
 <script type="application/javascript">
     function addActionSubject(element) {
         const id = element.getAttribute('data-index')
-        const blockIndex = element.getAttribute('data-block')
+        const index = element.getAttribute('data-block')
         element.addEventListener('click', () => {
-
-            const xhr = new XMLHttpRequest()
-            const method = 'DELETE'
-            const url = window.location.origin + '/api/subjects/' + id
-
-            xhr.open(method, url, true)
-            xhr.onreadystatechange = () => {
-                if (xhr.readyState === XMLHttpRequest.DONE) {
-                    const status = xhr.status;
-                    if (status === 0 || (status >= 200 && status < 400)) {
-                        showMessage(status, 'Даныя выдалены паспяхова!', 'Прадмет', '#' + id)
-                        document.getElementById('editBlock_' + blockIndex + '_Subject_' + id).remove()
-                    } else {
-                        let message = 'Даныя не выдалены!'
-                        if (xhr.getResponseHeader("content-type").indexOf('json') > 0) {
-                            let obj = JSON.parse(xhr.responseText)
-                            message += '</br>' + status + '. ' + obj.description
-                        }
-                        showMessage(status, message, 'Прадмет', '#' + id)
-                    }
-                }
-            };
-            xhr.send(JSON.stringify())
+            sendRequest(
+                window.location.origin + '/api/subjects/' + id,
+                'DELETE',
+                null,
+                'Прадмет',
+                id,
+                index,
+                'Даныя не выдалены!'
+            ).then(function (obj) {
+                showMessage(obj.status, 'Даныя выдалены паспяхова!', 'Прадмет', '#' + obj.id)
+                document.getElementById('editBlock_' + obj.index + '_Subject_' + obj.id).remove()
+            })
         })
     }
 
@@ -63,46 +52,30 @@
                 } else {
                     const formData = new FormData(form);
                     const formDataObj = Object.fromEntries(formData.entries());
-                    let id = ''
+                    let id = formDataObj.id
                     const isNew = id === ''
                     const index = formDataObj.blockIndex
                     delete formDataObj.blockIndex
                     formDataObj.type = parseInt(formDataObj.type)
 
-                    const xhr = new XMLHttpRequest()
-                    const method = isNew ? 'POST' : 'PATCH'
-                    const url = window.location.origin + '/api/subjects' + (isNew ? '' : '/' + id)
+                    sendRequest(
+                        window.location.origin + '/api/subjects' + (isNew ? '' : '/' + id),
+                        isNew ? 'POST' : 'PATCH',
+                        formDataObj,
+                        'Прадмет',
+                        id,
+                        index
+                    ).then(function (obj) {
+                        const typeText = form.querySelector('select[name="type"]').selectedOptions[0].text
+                        addSubjectBlock(obj.index, obj.id, typeText, obj.name)
+                        showMessage(obj.status, 'Даныя захаваліся паспяхова!', 'Прадмет', '#' + id)
 
-                    xhr.open(method, url, true)
-                    xhr.setRequestHeader("Content-type", isNew ? "application/ld+json" : "application/merge-patch+json")
-                    xhr.onreadystatechange = () => {
-                        if (xhr.readyState === XMLHttpRequest.DONE) {
-                            const status = xhr.status;
-                            if (status === 0 || (status >= 200 && status < 400)) {
-                                let obj = JSON.parse(xhr.responseText)
-                                if (isNew) {
-                                    id = obj.id
-                                }
-                                const typeText = form.querySelector('select[name="type"]').selectedOptions[0].text
-                                addSubjectBlock(index, id, typeText, obj.name)
-                                showMessage(status, 'Даныя захаваліся паспяхова!', 'Прадмет', '#' + id)
-                            } else {
-                                let message = 'Даныя не захаваліся!'
-                                if (xhr.getResponseHeader("content-type").indexOf('json') > 0) {
-                                    let obj = JSON.parse(xhr.responseText)
-                                    message += '</br>' + status + '. ' + obj.description
-                                }
-                                showMessage(status, message, 'Прадмет', '#' + id)
-                            }
+                        const modalElement = document.getElementById('addSubjectModal')
+                        bootstrap.Modal.getInstance(modalElement).hide()
 
-                            const modalElement = document.getElementById('addSubjectModal')
-                            bootstrap.Modal.getInstance(modalElement).hide()
-
-                            form.classList.remove('was-validated')
-                            form.reset()
-                        }
-                    };
-                    xhr.send(JSON.stringify(formDataObj))
+                        form.classList.remove('was-validated')
+                        form.reset()
+                    })
                 }
             })
         }
