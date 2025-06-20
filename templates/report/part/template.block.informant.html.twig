@@ -16,17 +16,51 @@
         const id = element.getAttribute('data-index')
         const blockIndex = element.getAttribute('data-block')
         element.addEventListener('click', () => {
-            if (addRemoveInformantFromBlock(blockIndex, id, 'remove')) {
-                showMessage(200, 'Даныя выдалены паспяхова!', 'Інфармант', '#' + id)
-                document.getElementById('editBlock_' + blockIndex + '_Informant_' + id).remove()
-            } else {
-                showMessage(400, 'Даныя ня выдалены!', 'Інфармант', '#' + id)
-            }
+            addOrRemoveInformantFromBlock(blockIndex, id, 'remove', 'Даныя ня выдалены!',
+                function (obj) {
+                    showMessage(obj.status, 'Даныя выдалены паспяхова!', 'Інфармант', '#' + id)
+                    document.getElementById('editBlock_' + blockIndex + '_Informant_' + id).remove()
+                }
+            )
         })
     }
 
-    function addRemoveInformantFromBlock(blockIndex, id, action) {
-        return false
+    function addOrRemoveInformantFromBlock(blockIndex, informantId, actionName, errorMessage, actionFunction) {
+        const blockId = document.forms["blockEdit" + blockIndex].id.value
+
+        sendRequest(
+            window.location.origin + '/api/report_blocks/' + blockId,
+            'GET',
+            null,
+            'Інфармант',
+            informantId,
+            blockIndex,
+            errorMessage
+        ).then(function (obj) {
+            let informants = obj.informants
+            const oldCount = informants.length
+            const informantLink = '/api/informants/' + informantId
+            const informantKey = informants.indexOf(informantLink)
+
+            if (actionName === 'add' && informantKey === -1) {
+                informants.push(informantLink)
+            }
+            if (actionName === 'remove' && informantKey >= 0) {
+                informants.splice(informantKey, 1)
+            }
+            if (informants.length !== oldCount) {
+                sendRequest(
+                    window.location.origin + '/api/report_blocks/' + blockId,
+                    'PATCH',
+                    {informants: informants},
+                    'Інфармант',
+                    informantId,
+                    blockIndex
+                ).then(function (obj) {
+                    actionFunction(obj)
+                })
+            }
+        })
     }
 
     function addInformantBlock(blockIndex, id, name, birthYear, notes) {
@@ -34,7 +68,7 @@
         html = html.replaceAll('BLOCK_INDEX', blockIndex)
         html = html.replaceAll('INFORMANT_ID', '' + id)
         html = html.replaceAll('INFORMANT_NAME', name)
-        const birth = birthYear === '' ? '' : birthYear + ' г.н.'
+        const birth = birthYear === undefined ? '' : birthYear + ' г.н.'
         html = html.replaceAll('INFORMANT_BIRTH_YEAR', birth)
         html = html.replaceAll('INFORMANT_BIRTH_LOCATION', '')
         html = html.replaceAll('INFORMANT_LIVE_LOCATION', '')
@@ -84,11 +118,16 @@
                         id,
                         index
                     ).then(function (obj) {
-                        if (addRemoveInformantFromBlock(obj.index, obj.id, 'add')) {
-                            addInformantBlock(obj.index, obj.id, obj.firstName, obj.yearBirth, obj.notes)
-                            showMessage(obj.status, 'Даныя захаваліся паспяхова!', 'Інфармант', '#' + obj.id)
+                        if (obj.isNew) {
+                            // Link informant to block
+                            addOrRemoveInformantFromBlock(obj.index, obj.id, 'add', undefined,
+                                function (object) {
+                                    addInformantBlock(obj.index, obj.id, obj.firstName, obj.yearBirth, obj.notes)
+                                    showMessage(object.status, 'Даныя захаваліся паспяхова!', 'Інфармант', '#' + obj.id)
+                                }
+                            )
                         } else {
-                            showMessage(400, 'Даныя ня захаваліся!', 'Інфармант', '#' + obj.id)
+                            showMessage(obj.status, 'Даныя захаваліся паспяхова!', 'Інфармант', '#' + obj.id)
                         }
 
                         const modalElement = document.getElementById('addInformantModal')

@@ -1,4 +1,4 @@
-const sendRequest = function (url, method, data, title, id, index, errorMessage) {
+const sendRequest = function (url, method, data, title, id, index, errorMessage, cycleObj) {
     return new Promise(function (resolve) {
         const xhr = new XMLHttpRequest()
         xhr.open(method, url, true)
@@ -20,10 +20,24 @@ const sendRequest = function (url, method, data, title, id, index, errorMessage)
                     obj.id = id
                 }
                 if (status === 0 || (status >= 200 && status < 400)) {
-                    obj.status = status
-                    obj.isNew = method === 'POST'
-                    obj.index = index
-                    resolve(obj)
+                    if (cycleObj !== undefined) {
+                        data[cycleObj.property] = cycleObj.values.pop()
+                        sendRequest(
+                            url,
+                            method,
+                            data,
+                            title,
+                            id,
+                            index,
+                            errorMessage,
+                            cycleObj.values.length > 0 ? cycleObj : undefined
+                        ).then(function (obj) { console.log(obj) })
+                    } else {
+                        obj.status = status
+                        obj.isNew = method === 'POST'
+                        obj.index = index
+                        resolve(obj)
+                    }
                 } else {
                     let message = errorMessage === undefined ? 'Даныя не захаваліся!' : errorMessage
                     if (obj.description !== undefined) {
@@ -242,6 +256,14 @@ if (addTaskPlanModal) {
         let text = blockIndex === '0' ? 'справаздачы' : 'блока ' + blockIndex
         let addTaskPlanModalLabel = document.getElementById('addTaskPlanModalLabel')
         addTaskPlanModalLabel.innerText = 'Дадаць новую задачу для ' + text
+    })
+}
+
+const addReportUserModal = document.getElementById('addReportUserModal')
+if (addReportUserModal) {
+    addReportUserModal.addEventListener('show.bs.modal', event => {
+        let reportInput = addReportUserModal.querySelector('input[name="report"]')
+        reportInput.value = '/api/reports/' + document.forms['reportEdit'].id.value
     })
 }
 

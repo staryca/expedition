@@ -12,9 +12,16 @@
     function addActionUserRole(element) {
         const id = element.getAttribute('data-index')
         element.addEventListener('click', () => {
-            // todo: remove user roles
-            showMessage(400, 'Даныя выдалены паспяхова!', 'Даследвальнік', '#' + id)
-            document.getElementById('editUserReport' + id).remove()
+            sendRequest(
+                window.location.origin + '/api/user_reports/' + id,
+                'DELETE',
+                null,
+                'Даследвальнік',
+                id
+            ).then(function (obj) {
+                showMessage(obj.status, 'Даныя выдалены паспяхова!', 'Даследвальнік', '#' + obj.id)
+                document.getElementById('editUserReport_' + obj.id).remove()
+            })
         })
     }
 
@@ -40,18 +47,29 @@
                     event.stopPropagation()
                     form.classList.add('was-validated')
                 } else {
-                    // todo: save user roles
-                    const id = form.querySelector('select[name="user"]').value
-                    const userName = form.querySelector('select[name="user"]').selectedOptions[0].text
-                    let txt = '';
+                    const formData = new FormData(form);
+                    const formDataObj = Object.fromEntries(formData.entries());
+
+                    const userName = form.querySelector('select[name="participant"]').selectedOptions[0].text
+
                     for (let i = 0; i < form.length; i++) {
                         if (form[i].type === 'checkbox' && form[i].checked) {
-                            txt = txt + form[i].value + " ";
+                            const roleName = form[i].getAttribute('data-name')
+                            formDataObj.role = form[i].value
+                            sendRequest(
+                                window.location.origin + '/api/user_reports',
+                                'POST',
+                                formDataObj,
+                                'Даследвальнік',
+                                null,
+                                null
+                            ).then(function (obj) {
+                                addUserRoleBlock(userName, obj.id, roleName)
+
+                                showMessage(obj.status, 'Даныя захаваліся паспяхова!', 'Даследвальнік', '#' + obj.id)
+                            })
                         }
                     }
-                    addUserRoleBlock(userName, id, txt)
-
-                    showMessage(200, 'Даныя захаваліся паспяхова!', 'Даследвальнік', '#' + id)
 
                     const modalElement = document.getElementById('addReportUserModal')
                     bootstrap.Modal.getInstance(modalElement).hide()

@@ -166,9 +166,10 @@
 
                         {% if loop.index > 1 %} {% set roles = roles ~ ', ' %} {% endif %}
                         {% set roles = roles ~ userRole.getRoleName() %}
+
+                        addUserRoleBlock('{{ userName }}', '{{ userRole.id }}', '{{ userRole.getRoleName() }}')
                     {% endfor %}
 
-                    addUserRoleBlock('{{ userName }}', '{{ id }}', '{{ roles }}')
                 {% endfor %}
             </script>
         </div>
@@ -233,12 +234,14 @@
                 </div>
                 <div class="modal-body">
                     <form id="formAddReportUser">
+                        <input type="hidden" name="report" value="">
+
                         <div class="input-group mb-3">
                             <span class="input-group-text">Імя</span>
-                            <select name="user" class="form-select" aria-label="Name of user" required>
+                            <select name="participant" class="form-select" aria-label="Name of user" required>
                                 <option selected disabled value="">- выбярыце са сьпіса -</option>
                                 {% for id, name in users %}
-                                    <option value="{{ id }}">{{ name }}</option>
+                                    <option value="/api/users/{{ id }}">{{ name }}</option>
                                 {% endfor %}
                             </select>
                             <div class="invalid-feedback">
@@ -249,9 +252,9 @@
                         <div class="input-group mb-3">
                             {% for role, name in constant('App\\Entity\\Type\\UserRoleType::ROLES') %}
                                 <div class="form-check form-check-inline">
-                                    <input class="form-check-input roles" type="checkbox"
-                                           id="role{{ role }}" name="{{ role }}" value="{{ role }}">
-                                    <label class="form-check-label" for="role{{ role }}">{{ name }}</label>
+                                    <input class="form-check-input roles" type="checkbox" aria-label="Name of roles"
+                                           name="role" value="{{ role }}" data-name="{{ name }}">
+                                    <label class="form-check-label">{{ name }}</label>
                                 </div>
                             {% endfor %}
                         </div>
