@@ -6,19 +6,44 @@
         INFORMANT_LIVE_LOCATION
         <small>INFORMANT_NOTES</small>
 
-        <button type="submit" class="btn btn-danger"
+        <button type="button" class="btn btn-secondary" id="editBlock_BLOCK_INDEX_Informant_INFORMANT_ID_Unlink"
+                data-index="INFORMANT_ID" data-block="BLOCK_INDEX">Адвязаць ад блока</button>
+        <button type="button" class="btn btn-danger" id="editBlock_BLOCK_INDEX_Informant_INFORMANT_ID_Remove"
                 data-index="INFORMANT_ID" data-block="BLOCK_INDEX">Выдаліць</button>
     </p>
 </div>
 
 <script type="application/javascript">
-    function addActionInformant(element) {
+    function addActionRemoveInformant(element) {
         const id = element.getAttribute('data-index')
         const blockIndex = element.getAttribute('data-block')
         element.addEventListener('click', () => {
             addOrRemoveInformantFromBlock(blockIndex, id, 'remove', 'Даныя ня выдалены!',
                 function (obj) {
-                    showMessage(obj.status, 'Даныя выдалены паспяхова!', 'Інфармант', '#' + id)
+                    sendRequest(
+                        window.location.origin + '/api/informants/' + id,
+                        'DELETE',
+                        null,
+                        'Інфармант',
+                        id,
+                        obj.index,
+                        'Даныя не выдалены! Магчыма інфармант прывязан да іншых справаздач!'
+                    ).then(function (object) {
+                        showMessage(object.status, 'Даныя выдалены паспяхова!', 'Інфармант', '#' + id)
+                        document.getElementById('editBlock_' + blockIndex + '_Informant_' + id).remove()
+                    })
+                }
+            )
+        })
+    }
+
+    function addActionUnlinkInformant(element) {
+        const id = element.getAttribute('data-index')
+        const blockIndex = element.getAttribute('data-block')
+        element.addEventListener('click', () => {
+            addOrRemoveInformantFromBlock(blockIndex, id, 'remove', 'Даныя не захаваліся!',
+                function (obj) {
+                    showMessage(obj.status, 'Даныя захаваліся паспяхова!', 'Інфармант', '#' + id)
                     document.getElementById('editBlock_' + blockIndex + '_Informant_' + id).remove()
                 }
             )
@@ -48,6 +73,10 @@
             if (actionName === 'remove' && informantKey >= 0) {
                 informants.splice(informantKey, 1)
             }
+            console.log(informantLink)
+            console.log(informantId)
+            console.log(informantKey)
+            console.log(informants)
             if (informants.length !== oldCount) {
                 sendRequest(
                     window.location.origin + '/api/report_blocks/' + blockId,
@@ -68,7 +97,7 @@
         html = html.replaceAll('BLOCK_INDEX', blockIndex)
         html = html.replaceAll('INFORMANT_ID', '' + id)
         html = html.replaceAll('INFORMANT_NAME', name)
-        const birth = birthYear === undefined ? '' : birthYear + ' г.н.'
+        const birth = birthYear === undefined || birthYear === '' ? '' : birthYear + ' г.н.'
         html = html.replaceAll('INFORMANT_BIRTH_YEAR', birth)
         html = html.replaceAll('INFORMANT_BIRTH_LOCATION', '')
         html = html.replaceAll('INFORMANT_LIVE_LOCATION', '')
@@ -77,8 +106,11 @@
         let element = document.getElementById('allBlock' + blockIndex + 'Informants')
         element.insertAdjacentHTML('afterbegin', html)
 
-        let newInformant = document.getElementById('editBlock_' + blockIndex + '_Informant_' + id).querySelector('button')
-        addActionInformant(newInformant)
+        let newInformantUnlink = document.getElementById('editBlock_' + blockIndex + '_Informant_' + id + '_Unlink')
+        addActionUnlinkInformant(newInformantUnlink)
+
+        let newInformantRemove = document.getElementById('editBlock_' + blockIndex + '_Informant_' + id + '_Remove')
+        addActionRemoveInformant(newInformantRemove)
     }
 
     window.addEventListener("load", (event) => {

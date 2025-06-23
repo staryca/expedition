@@ -20,28 +20,14 @@ const sendRequest = function (url, method, data, title, id, index, errorMessage,
                     obj.id = id
                 }
                 if (status === 0 || (status >= 200 && status < 400)) {
-                    if (cycleObj !== undefined) {
-                        data[cycleObj.property] = cycleObj.values.pop()
-                        sendRequest(
-                            url,
-                            method,
-                            data,
-                            title,
-                            id,
-                            index,
-                            errorMessage,
-                            cycleObj.values.length > 0 ? cycleObj : undefined
-                        ).then(function (obj) { console.log(obj) })
-                    } else {
-                        obj.status = status
-                        obj.isNew = method === 'POST'
-                        obj.index = index
-                        resolve(obj)
-                    }
+                    obj.status = status
+                    obj.isNew = method === 'POST'
+                    obj.index = index
+                    resolve(obj)
                 } else {
                     let message = errorMessage === undefined ? 'Даныя не захаваліся!' : errorMessage
                     if (obj.description !== undefined) {
-                        message += '</br>' + status + '. ' + obj.description
+                        message += '</br></br>' + status + '. ' + obj.description
                     }
                     showMessage(status, message, title, '#' + id)
                 }

@@ -328,6 +328,11 @@ class ReportBlock
         return $this;
     }
 
+    public function existsInformant(Informant $informant): bool
+    {
+        return $this->informants->contains($informant);
+    }
+
     public function removeInformant(Informant $informant): static
     {
         $this->informants->removeElement($informant);

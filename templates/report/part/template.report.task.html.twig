@@ -3,13 +3,16 @@
         <i class="bi TASK_ICON"></i>
         TASK_TYPE
         TASK_CONTENT
+        <button type="button" class="btn btn-secondary" id="editBlock_BLOCK_INDEX_Task_TASK_ID_Edit"
+                data-index="TASK_ID" data-block="BLOCK_INDEX"><i class="bi bi-pencil-square"></i></button>
         TASK_INFORMANT
-        <button type="submit" class="btn btn-danger" data-index="TASK_ID" data-block="BLOCK_INDEX">Выдаліць</button>
+        <button type="button" class="btn btn-danger" id="editBlock_BLOCK_INDEX_Task_TASK_ID_Remove"
+                data-index="TASK_ID" data-block="BLOCK_INDEX">Выдаліць</button>
     </p>
 </div>
 
 <script type="application/javascript">
-    function addActionReportTask(element) {
+    function addActionReportTaskRemove(element) {
         const id = element.getAttribute('data-index')
         const index = element.getAttribute('data-block')
         element.addEventListener('click', () => {
@@ -42,8 +45,8 @@
         let element = document.getElementById('all_' + blockIndex + '_Tasks')
         element.insertAdjacentHTML('afterbegin', html)
 
-        let newReportTask = document.getElementById('edit_' + blockIndex + '_Task_' + id).querySelector('button')
-        addActionReportTask(newReportTask)
+        let newReportTaskRemove = document.getElementById('editBlock_' + blockIndex + '_Task_' + id + '_Remove')
+        addActionReportTaskRemove(newReportTaskRemove)
     }
 
     window.addEventListener("load", (event) => {

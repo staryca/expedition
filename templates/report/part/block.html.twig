@@ -79,8 +79,12 @@
     </div>
 
     <div class="card-body" id="allBlock{{ blockIndex }}Informants">
-        {# list of informants #}
+        {# list of added informants #}
         <hr>
+        <p class="" id="list{{ blockIndex }}Informants">
+            Выбраць існуючага інфарманта:
+            {# list of exist informants #}
+        </p>
         <p>
             Дадаць новага інфарманта
             <button type="button" class="btn btn-primary" data-bs-toggle="modal"
@@ -94,6 +98,21 @@
                 addInformantBlock('{{ blockIndex }}', '{{ informant.id }}', '{{ informant.firstName }}', '{{ informant.yearBirth }}', '{{ informant.notes }}')
             </script>
         {% endfor %}
+
+        {% set added = false %}
+        {% for informant in informantsAtLocation %}
+            {% if not block.existsInformant(informant) %}
+                <script type="application/javascript">
+                    addInformantInList('{{ blockIndex }}', '{{ informant.id }}', '{{ informant.firstName }}', '{{ informant.yearBirth }}', '{{ informant.notes }}')
+                </script>
+                {% set added = true %}
+            {% endif %}
+        {% endfor %}
+        {% if not added %}
+            <script type="application/javascript">
+                document.getElementById('list{{ blockIndex }}Informants').classList.add('d-none')
+            </script>
+        {% endif %}
     </div>
 </div>
 

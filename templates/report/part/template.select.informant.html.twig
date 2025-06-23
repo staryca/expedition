@@ -1,0 +1,47 @@
+<div class="d-none" id="selectInformantTemplate">
+    <p id="select_BLOCK_INDEX_Informant_INFORMANT_ID">
+        <b>INFORMANT_NAME</b>
+        INFORMANT_BIRTH_YEAR
+        INFORMANT_BIRTH_LOCATION
+        INFORMANT_LIVE_LOCATION
+        <small>INFORMANT_NOTES</small>
+
+        <button type="button" class="btn btn-secondary" id="editBlock_BLOCK_INDEX_Informant_INFORMANT_ID_Select"
+                data-name="INFORMANT_NAME"
+                data-index="INFORMANT_ID" data-block="BLOCK_INDEX">Выбраць</button>
+    </p>
+</div>
+
+<script type="application/javascript">
+    function addActionSelectInformant(element) {
+        const id = element.getAttribute('data-index')
+        const blockIndex = element.getAttribute('data-block')
+        element.addEventListener('click', () => {
+            addOrRemoveInformantFromBlock(blockIndex, id, 'add', undefined,
+                function (obj) {
+                    addInformantBlock(obj.index, id, element.getAttribute('data-name'), '', '')
+                    showMessage(obj.status, 'Даныя захаваліся паспяхова!', 'Інфармант', '#' + obj.id)
+                    document.getElementById('select_' + blockIndex + '_Informant_' + id).remove()
+                }
+            )
+        })
+    }
+
+    function addInformantInList(blockIndex, id, name, birthYear, notes) {
+        let html = document.getElementById('selectInformantTemplate').innerHTML
+        html = html.replaceAll('BLOCK_INDEX', blockIndex)
+        html = html.replaceAll('INFORMANT_ID', '' + id)
+        html = html.replaceAll('INFORMANT_NAME', name)
+        const birth = birthYear === undefined || birthYear === '' ? '' : birthYear + ' г.н.'
+        html = html.replaceAll('INFORMANT_BIRTH_YEAR', birth)
+        html = html.replaceAll('INFORMANT_BIRTH_LOCATION', '')
+        html = html.replaceAll('INFORMANT_LIVE_LOCATION', '')
+        html = html.replaceAll('INFORMANT_NOTES', notes)
+
+        let element = document.getElementById('list' + blockIndex + 'Informants')
+        element.insertAdjacentHTML('afterend', html)
+
+        let newMarkerSelect = document.getElementById('editBlock_' + blockIndex + '_Informant_' + id + '_Select')
+        addActionSelectInformant(newMarkerSelect)
+    }
+</script>
