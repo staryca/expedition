@@ -214,13 +214,19 @@ const addEpisodeModal = document.getElementById('addEpisodeModal')
 if (addEpisodeModal) {
     addEpisodeModal.addEventListener('show.bs.modal', event => {
         const button = event.relatedTarget
-        const blockIndex = button.getAttribute('data-bs-block')
+        if (button !== undefined) {
+            const blockIndex = button.getAttribute('data-bs-block')
 
-        let addSubjectModalLabel = document.getElementById('addEpisodeModalLabel')
-        addSubjectModalLabel.innerText = 'Дадаць новы эпізод для блока ' + blockIndex
+            const form = document.getElementById('formAddEpisode')
+            form.id.value = ''
+            form.reset()
 
-        let blockIndexInput = addEpisodeModal.querySelector('input[name="blockIndex"]')
-        blockIndexInput.value = blockIndex
+            let addSubjectModalLabel = document.getElementById('addEpisodeModalLabel')
+            addSubjectModalLabel.innerText = 'Дадаць новы эпізод для блока ' + blockIndex
+
+            let blockIndexInput = addEpisodeModal.querySelector('input[name="blockIndex"]')
+            blockIndexInput.value = blockIndex
+        }
     })
 }
 

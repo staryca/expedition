@@ -3,13 +3,45 @@
         MARKER_CATEGORY <b>MARKER_NAME</b>
         MARKER_TAGS <span class="badge text-bg-secondary"></span>
         MARKER_NOTES
-        <button type="submit" class="btn btn-danger"
+        <button type="button" class="btn btn-secondary" id="editBlock_BLOCK_INDEX_Marker_MARKER_ID_Edit"
+                data-index="MARKER_ID" data-block="BLOCK_INDEX"><i class="bi bi-pencil-square"></i></button>
+        <button type="button" class="btn btn-danger" id="editBlock_BLOCK_INDEX_Marker_MARKER_ID_Remove"
                 data-index="MARKER_ID" data-block="BLOCK_INDEX">Выдаліць</button>
     </p>
 </div>
 
 <script type="application/javascript">
-    function addActionMarker(element) {
+    function addActionMarkerEdit(element) {
+        const id = element.getAttribute('data-index')
+        const index = element.getAttribute('data-block')
+        element.addEventListener('click', () => {
+            sendRequest(
+                window.location.origin + '/api/file_markers/' + id,
+                'GET',
+                null,
+                'Эпізод блока ' + index,
+                id,
+                index,
+                'Даныя не атрыманы!'
+            ).then(function (obj) {
+                const modal = new bootstrap.Modal(document.getElementById('addEpisodeModal'), {focus: true})
+                modal.show()
+
+                let addSubjectModalLabel = document.getElementById('addEpisodeModalLabel')
+                addSubjectModalLabel.innerText = 'Рэадагаваць эпізод для блока ' + index
+
+                const form = document.getElementById('formAddEpisode')
+                console.log(obj)
+                form.blockIndex.value = obj.index
+                form.id.value = obj.id
+                form.category.value = obj.category
+                form.name.value = obj.name === undefined ? '' : obj.name
+                form.notes.value = obj.notes === undefined ? '' : obj.notes
+            })
+        })
+    }
+
+    function addActionMarkerRemove(element) {
         const id = element.getAttribute('data-index')
         const index = element.getAttribute('data-block')
         element.addEventListener('click', () => {
@@ -28,7 +60,7 @@
         })
     }
 
-    function addMarkerBlock(blockIndex, id, category, name, tags, notes) {
+    function showMarkerBlock(isShow, blockIndex, id, category, name, tags, notes) {
         let html = document.getElementById('createNewMarkerTemplate').innerHTML
         html = html.replaceAll('BLOCK_INDEX', blockIndex)
         html = html.replaceAll('MARKER_ID', '' + id)
@@ -45,11 +77,21 @@
         }
         html = html.replaceAll('MARKER_TAGS', htmlTags)
 
-        let element = document.getElementById('allBlock' + blockIndex + 'Markers')
-        element.insertAdjacentHTML('afterbegin', html)
+        if (isShow) {
+            let element = document.getElementById('allBlock' + blockIndex + 'Markers')
+            element.insertAdjacentHTML('afterbegin', html)
+        } else {
+            const oldElement = document.getElementById('editBlock_' + blockIndex + '_Marker_' + id)
+            oldElement.innerHTML = ''
+            oldElement.insertAdjacentHTML('afterend', html)
+            oldElement.remove()
+        }
 
-        let newMarker = document.getElementById('editBlock_' + blockIndex + '_Marker_' + id).querySelector('button')
-        addActionMarker(newMarker)
+        let newMarkerEdit = document.getElementById('editBlock_' + blockIndex + '_Marker_' + id + '_Edit')
+        addActionMarkerEdit(newMarkerEdit)
+
+        let newMarkerRemove = document.getElementById('editBlock_' + blockIndex + '_Marker_' + id + '_Remove')
+        addActionMarkerRemove(newMarkerRemove)
     }
 
     window.addEventListener("load", (event) => {
@@ -81,7 +123,7 @@
                         index
                     ).then(function (obj) {
                         const categoryText = form.querySelector('select[name="category"]').selectedOptions[0].text
-                        addMarkerBlock(obj.index, obj.id, categoryText, obj.name, {}, obj.notes)
+                        showMarkerBlock(obj.isNew, obj.index, obj.id, categoryText, obj.name, {}, obj.notes)
                         showMessage(obj.status, 'Даныя захаваліся паспяхова!', 'Эпізод блока ' + obj.index, '#' + obj.id)
 
                         const modalElement = document.getElementById('addEpisodeModal')

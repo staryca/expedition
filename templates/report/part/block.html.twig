@@ -116,9 +116,10 @@
         {% if block.getContentFile() %}
             {% for marker in block.getContentFile().fileMarkers %}
                 <script type="application/javascript">
-                    category = '{% if marker.isCategoryNotOther() %}{{ marker.getCategoryName() }}{% endif %}'
-                    tags = {{ marker.tags|json_encode|raw }};
-                    addMarkerBlock('{{ blockIndex }}', '{{ marker.id }}', category, '{{ marker.name }}', tags, '{{ marker.notes }}')
+                    showMarkerBlock(true, '{{ blockIndex }}', '{{ marker.id }}',
+                        '{{ marker.getCategoryName() }}', '{{ marker.name }}', {{ marker.tags|json_encode|raw }},
+                        '{{ marker.notes }}'
+                    )
                 </script>
             {% endfor %}
         {% endif %}
