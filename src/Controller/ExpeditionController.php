@@ -9,6 +9,7 @@ use App\Entity\Type\CategoryType;
 use App\Repository\ExpeditionRepository;
 use App\Repository\FileMarkerRepository;
 use App\Repository\ReportRepository;
+use App\Service\LocationService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -18,6 +19,7 @@ class ExpeditionController extends AbstractController
     public function __construct(
         private readonly ExpeditionRepository $expeditionRepository,
         private readonly ReportRepository $reportRepository,
+        private readonly LocationService $locationService,
         private readonly FileMarkerRepository $fileMarkerRepository,
     ) {
     }
@@ -43,11 +45,14 @@ class ExpeditionController extends AbstractController
 
         $reports = $this->reportRepository->findByExpedition($expedition);
 
+        $geoMapData = $this->locationService->getGeoMapData($expedition);
+
         $statistics = $this->fileMarkerRepository->getStatistics($expedition);
 
         return $this->render('expedition/show.html.twig', [
             'expedition' => $expedition,
             'reports' => $reports,
+            'geoMapData' => $geoMapData,
             'statistics' => $statistics,
             'categories' => CategoryType::TYPES,
         ]);

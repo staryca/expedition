@@ -18,13 +18,28 @@
             integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
             crossorigin=""></script>
     <script>
-        var map = L.map('map').setView(geoLatLon, geoZoom);
+        let map = L.map('map').setView(geoLatLon, geoZoom);
+
+        const iconColors = ['green', 'violet', 'red', 'grey', 'black']
+        const icons = []
+        for (i = 0; i < iconColors.length; i++) {
+            icons[i] = new L.Icon({
+                iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-' + iconColors[i] + '.png',
+                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                iconSize: [25, 41],
+                iconAnchor: [12, 41],
+                popupAnchor: [1, -34],
+                shadowSize: [41, 41]
+            })
+        }
+
         L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 20,
             attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         }).addTo(map);
         for (i in geoPlaces) {
-            L.marker(geoPlaces[i]).addTo(map).bindPopup(geoPopups[i]);
+            const geoIcon = icons[geoTypes[i] - 1]
+            L.marker(geoPlaces[i], {icon: geoIcon}).addTo(map).bindPopup(geoPopups[i]);
         }
     </script>
 {% endblock %}
@@ -59,7 +74,6 @@
                 {% endif %}
             </p>
 
-            {% set geoMapData = expedition.getGeoMapData() %}
             {% if geoMapData.center %}
                 <div id="map"></div>
                 <script type="text/javascript">
@@ -67,6 +81,7 @@
                     var geoZoom = {{ geoMapData.zoom }};
                     var geoPlaces = {{ geoMapData.points|json_encode|raw }};
                     var geoPopups = {{ geoMapData.popups|json_encode|raw }};
+                    var geoTypes = {{ geoMapData.types|json_encode|raw }};
                 </script>
             {% endif %}
 
