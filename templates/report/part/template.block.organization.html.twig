@@ -1,0 +1,68 @@
+<div class="d-none" id="createNewOrganizationTemplate">
+    <option value="ORGANIZATION_ID">
+        <b>ORGANIZATION_NAME</b>
+        ORGANIZATION_LOCATION
+    </option>
+</div>
+
+<script type="application/javascript">
+    function addOrganizationBlock(blockIndex, id, type, name, description, location, notes) {
+        let html = document.getElementById('createNewOrganizationTemplate').innerHTML
+        html = html.replaceAll('BLOCK_INDEX', blockIndex)
+        html = html.replaceAll('ORGANIZATION_ID', '/api/organizations/' + id)
+        html = html.replaceAll('ORGANIZATION_NAME', name)
+        html = html.replaceAll('ORGANIZATION_LOCATION', location)
+
+        let element = document.getElementById('editBlockOrganization' + blockIndex)
+        element.insertAdjacentHTML('afterbegin', html)
+        element.selectedIndex = '/api/organizations/' + id
+    }
+
+    window.addEventListener("load", (event) => {
+        const saveNewOrganization = document.getElementById('saveNewOrganization')
+        if (saveNewOrganization) {
+            saveNewOrganization.addEventListener('click', event => {
+                const form = document.getElementById('formAddOrg')
+                if (!form.checkValidity()) {
+                    event.preventDefault()
+                    event.stopPropagation()
+                    form.classList.add('was-validated')
+                } else {
+                    const formData = new FormData(form)
+                    const formDataObj = Object.fromEntries(formData.entries())
+                    let id = formDataObj.id
+                    const isNew = id === ''
+                    const index = formDataObj.blockIndex
+                    delete formDataObj.blockIndex
+                    formDataObj.type = parseInt(formDataObj.type)
+                    if (isNew) {
+                        formDataObj.dateCreated = (new Date()).toISOString()
+                    }
+                    if (formDataObj.geoPoint === '') {
+                        formDataObj.geoPoint = null
+                    }
+
+                    sendRequest(
+                        window.location.origin + '/api/organizations' + (isNew ? '' : '/' + id),
+                        isNew ? 'POST' : 'PATCH',
+                        formDataObj,
+                        'Арганізацыя',
+                        id,
+                        index
+                    ).then(function (obj) {
+                        const typeText = form.querySelector('select[name="type"]').selectedOptions[0].text
+                        const locationText = form.querySelector('select[name="geoPoint"]').selectedOptions[0].text
+                        addOrganizationBlock(obj.index, obj.id, typeText, obj.name, obj.description, locationText, obj.notes)
+                        showMessage(obj.status, 'Даныя захаваліся паспяхова!', 'Арганізацыя', '#' + obj.id)
+
+                        const modalElement = document.getElementById('addOrgModal')
+                        bootstrap.Modal.getInstance(modalElement).hide()
+
+                        form.classList.remove('was-validated')
+                        form.reset()
+                    })
+                }
+            })
+        }
+    });
+</script>

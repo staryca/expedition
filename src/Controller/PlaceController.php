@@ -84,7 +84,7 @@ class PlaceController extends AbstractController
 
         $subjects = $this->subjectRepository->findByGeoPoint($geoPoint);
 
-        $tasks = $this->taskRepository->findByGeoPoint($geoPoint);
+        $tasks = $this->taskRepository->findByReportGeoPoint($geoPoint);
 
         return $this->render('place/item.show.html.twig', [
             'geoPoint' => $geoPoint,

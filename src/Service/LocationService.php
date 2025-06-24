@@ -4,11 +4,15 @@ declare(strict_types=1);
 
 namespace App\Service;
 
+use App\Dto\GeoMapDto;
 use App\Dto\GeoPointSearchDto;
+use App\Dto\LatLonDto;
+use App\Entity\Expedition;
 use App\Entity\GeoPoint;
 use App\Entity\Type\GeoPointType;
 use App\Helper\TextHelper;
 use App\Repository\GeoPointRepository;
+use App\Repository\TaskRepository;
 
 class LocationService
 {
@@ -19,6 +23,7 @@ class LocationService
 
     public function __construct(
         private readonly GeoPointRepository $geoPointRepository,
+        private readonly TaskRepository $taskRepository,
         private readonly TextHelper $textHelper,
     ) {
     }
@@ -326,5 +331,74 @@ class LocationService
         }
 
         return null;
+    }
+
+    public function getGeoMapData(Expedition $expedition): GeoMapDto
+    {
+        $geoMapData = new GeoMapDto();
+
+        if ($expedition->getGeoPoint()) {
+            $latLon = new LatLonDto();
+            $latLon->lat = (float) $expedition->getGeoPoint()->getLat();
+            $latLon->lon = (float) $expedition->getGeoPoint()->getLon();
+            $popup = 'База: ' . $expedition->getGeoPoint()->getLongBeName();
+
+            $geoMapData->addLatLon($latLon, $popup, GeoMapDto::TYPE_BASE);
+        }
+
+        foreach ($expedition->getReports() as $report) {
+            $latLon = $report->getLatLon();
+            if ($latLon) {
+                $popup = 'Справаздача: ' . $report->getGeoPlace() . '<br>Блокаў: ' . $report->getBlocks()->count();
+                $geoMapData->addLatLon($latLon, $popup, GeoMapDto::TYPE_REPORT);
+            }
+        }
+
+        if ($expedition->getGeoPoint()) {
+            $tips = $this->taskRepository->findByInformantGeoPoint($expedition->getGeoPoint());
+            foreach ($tips as $tip) {
+                $latLon = new LatLonDto();
+                $latLon->lat = (float) $tip->getInformant()?->getGeoPointCurrent()?->getLat();
+                $latLon->lon = (float) $tip->getInformant()?->getGeoPointCurrent()?->getLon();
+                $popup = 'Наводка: ' . $tip->getContent() . '<br>Інфармант: ' . $tip->getInformant()?->getFirstName();
+
+                $geoMapData->addLatLon($latLon, $popup, GeoMapDto::TYPE_TIP);
+            }
+        }
+        if (count($geoMapData->points) === 1) {
+            $places = $this->geoPointRepository->findNotFarFromPoint($expedition->getGeoPoint());
+            foreach ($places as $place) {
+                $latLon = new LatLonDto();
+                $latLon->lat = (float) $place->getLat();
+                $latLon->lon = (float) $place->getLon();
+                $popup = $place->getLongBeName();
+
+                $geoMapData->addLatLon($latLon, $popup, GeoMapDto::TYPE_COMMENT);
+            }
+        }
+
+        // Group by location
+        $groups = $geoMapData->getGroupsByLocation();
+        foreach ($groups as $keys) {
+            $latLon = new LatLonDto();
+            $latLon->lat = $geoMapData->points[current($keys)]->lat;
+            $latLon->lon = $geoMapData->points[current($keys)]->lon;
+
+            $hasTip = false;
+            $popup = '<ul>';
+            foreach ($keys as $key) {
+                $popup .= '<li>' . $geoMapData->popups[$key] . '</li>';
+                if ($geoMapData->types[$key] === GeoMapDto::TYPE_TIP) {
+                    $hasTip = true;
+                }
+
+                $geoMapData->removeByIndex($key);
+            }
+            $popup .= '</ul>';
+
+            $geoMapData->addLatLon($latLon, $popup, $hasTip ? GeoMapDto::TYPE_TIP : GeoMapDto::TYPE_COMPLEX);
+        }
+
+        return $geoMapData;
     }
 }

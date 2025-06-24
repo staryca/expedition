@@ -1,0 +1,175 @@
+<div class="d-none" id="createNewInformantTemplate">
+    <p id="editBlock_BLOCK_INDEX_Informant_INFORMANT_ID">
+        <b>INFORMANT_NAME</b>
+        INFORMANT_BIRTH_YEAR
+        INFORMANT_BIRTH_LOCATION
+        INFORMANT_LIVE_LOCATION
+        <small>INFORMANT_NOTES</small>
+
+        <button type="button" class="btn btn-secondary" id="editBlock_BLOCK_INDEX_Informant_INFORMANT_ID_Unlink"
+                data-index="INFORMANT_ID" data-block="BLOCK_INDEX">Адвязаць ад блока</button>
+        <button type="button" class="btn btn-danger" id="editBlock_BLOCK_INDEX_Informant_INFORMANT_ID_Remove"
+                data-index="INFORMANT_ID" data-block="BLOCK_INDEX">Выдаліць</button>
+    </p>
+</div>
+
+<script type="application/javascript">
+    function addActionRemoveInformant(element) {
+        const id = element.getAttribute('data-index')
+        const blockIndex = element.getAttribute('data-block')
+        element.addEventListener('click', () => {
+            addOrRemoveInformantFromBlock(blockIndex, id, 'remove', 'Даныя ня выдалены!',
+                function (obj) {
+                    sendRequest(
+                        window.location.origin + '/api/informants/' + id,
+                        'DELETE',
+                        null,
+                        'Інфармант',
+                        id,
+                        obj.index,
+                        'Даныя не выдалены! Магчыма інфармант прывязан да іншых справаздач!'
+                    ).then(function (object) {
+                        showMessage(object.status, 'Даныя выдалены паспяхова!', 'Інфармант', '#' + id)
+                        document.getElementById('editBlock_' + blockIndex + '_Informant_' + id).remove()
+                    })
+                }
+            )
+        })
+    }
+
+    function addActionUnlinkInformant(element) {
+        const id = element.getAttribute('data-index')
+        const blockIndex = element.getAttribute('data-block')
+        element.addEventListener('click', () => {
+            addOrRemoveInformantFromBlock(blockIndex, id, 'remove', 'Даныя не захаваліся!',
+                function (obj) {
+                    showMessage(obj.status, 'Даныя захаваліся паспяхова!', 'Інфармант', '#' + id)
+                    document.getElementById('editBlock_' + blockIndex + '_Informant_' + id).remove()
+                }
+            )
+        })
+    }
+
+    function addOrRemoveInformantFromBlock(blockIndex, informantId, actionName, errorMessage, actionFunction) {
+        const blockId = document.forms["blockEdit" + blockIndex].id.value
+
+        sendRequest(
+            window.location.origin + '/api/report_blocks/' + blockId,
+            'GET',
+            null,
+            'Інфармант',
+            informantId,
+            blockIndex,
+            errorMessage
+        ).then(function (obj) {
+            let informants = obj.informants
+            const oldCount = informants.length
+            const informantLink = '/api/informants/' + informantId
+            const informantKey = informants.indexOf(informantLink)
+
+            if (actionName === 'add' && informantKey === -1) {
+                informants.push(informantLink)
+            }
+            if (actionName === 'remove' && informantKey >= 0) {
+                informants.splice(informantKey, 1)
+            }
+            console.log(informantLink)
+            console.log(informantId)
+            console.log(informantKey)
+            console.log(informants)
+            if (informants.length !== oldCount) {
+                sendRequest(
+                    window.location.origin + '/api/report_blocks/' + blockId,
+                    'PATCH',
+                    {informants: informants},
+                    'Інфармант',
+                    informantId,
+                    blockIndex
+                ).then(function (obj) {
+                    actionFunction(obj)
+                })
+            }
+        })
+    }
+
+    function addInformantBlock(blockIndex, id, name, birthYear, notes) {
+        let html = document.getElementById('createNewInformantTemplate').innerHTML
+        html = html.replaceAll('BLOCK_INDEX', blockIndex)
+        html = html.replaceAll('INFORMANT_ID', '' + id)
+        html = html.replaceAll('INFORMANT_NAME', name)
+        const birth = birthYear === undefined || birthYear === '' ? '' : birthYear + ' г.н.'
+        html = html.replaceAll('INFORMANT_BIRTH_YEAR', birth)
+        html = html.replaceAll('INFORMANT_BIRTH_LOCATION', '')
+        html = html.replaceAll('INFORMANT_LIVE_LOCATION', '')
+        html = html.replaceAll('INFORMANT_NOTES', notes)
+
+        let element = document.getElementById('allBlock' + blockIndex + 'Informants')
+        element.insertAdjacentHTML('afterbegin', html)
+
+        let newInformantUnlink = document.getElementById('editBlock_' + blockIndex + '_Informant_' + id + '_Unlink')
+        addActionUnlinkInformant(newInformantUnlink)
+
+        let newInformantRemove = document.getElementById('editBlock_' + blockIndex + '_Informant_' + id + '_Remove')
+        addActionRemoveInformant(newInformantRemove)
+    }
+
+    window.addEventListener("load", (event) => {
+        const saveNewInformant = document.getElementById('saveNewInformant')
+        if (saveNewInformant) {
+            saveNewInformant.addEventListener('click', event => {
+                const form = document.getElementById('formAddInformant')
+                if (!form.checkValidity()) {
+                    event.preventDefault()
+                    event.stopPropagation()
+                    form.classList.add('was-validated')
+                } else {
+                    const formData = new FormData(form);
+                    const formDataObj = Object.fromEntries(formData.entries());
+                    let id = formDataObj.id
+                    const isNew = id === ''
+                    const index = formDataObj.blockIndex
+                    delete formDataObj.blockIndex
+                    if (isNew) {
+                        formDataObj.dateCreated = (new Date()).toISOString()
+                    }
+                    formDataObj.yearBirth = parseInt(formDataObj.yearBirth)
+                    formDataObj.gender = parseInt(formDataObj.gender)
+                    formDataObj.nameAndGender = {name: formDataObj.firstName, gender: formDataObj.gender}
+                    if (formDataObj.geoPointBirth === '') {
+                        formDataObj.geoPointBirth = null
+                    }
+                    if (formDataObj.geoPointCurrent === '') {
+                        formDataObj.geoPointCurrent = null
+                    }
+
+                    sendRequest(
+                        window.location.origin + '/api/informants' + (isNew ? '' : '/' + id),
+                        isNew ? 'POST' : 'PATCH',
+                        formDataObj,
+                        'Інфармант',
+                        id,
+                        index
+                    ).then(function (obj) {
+                        if (obj.isNew) {
+                            // Link informant to block
+                            addOrRemoveInformantFromBlock(obj.index, obj.id, 'add', undefined,
+                                function (object) {
+                                    addInformantBlock(obj.index, obj.id, obj.firstName, obj.yearBirth, obj.notes)
+                                    showMessage(object.status, 'Даныя захаваліся паспяхова!', 'Інфармант', '#' + obj.id)
+                                }
+                            )
+                        } else {
+                            showMessage(obj.status, 'Даныя захаваліся паспяхова!', 'Інфармант', '#' + obj.id)
+                        }
+
+                        const modalElement = document.getElementById('addInformantModal')
+                        bootstrap.Modal.getInstance(modalElement).hide()
+
+                        form.classList.remove('was-validated')
+                        form.reset()
+                    })
+                }
+            })
+        }
+    });
+</script>

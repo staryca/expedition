@@ -65,6 +65,11 @@ class GeoPointRepository extends ServiceEntityRepository
         ;
     }
 
+    /**
+     * @param GeoPoint $getGeoPoint
+     * @param bool $withTract
+     * @return array<GeoPoint>
+     */
     public function findNotFarFromPoint(GeoPoint $getGeoPoint, bool $withTract = false): array
     {
         $qb = $this->createQueryBuilder('gp')

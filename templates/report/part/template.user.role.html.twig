@@ -1,0 +1,83 @@
+<div class="d-none" id="createNewUserRoleTemplate">
+    <p id="editUserReport_USER_ROLE_ID">
+        <u>USER_FULL_NAME</u>:
+        <span>
+            USER_ROLE_NAME
+            <button type="button" class="btn btn-danger" data-index="USER_ROLE_ID">Выдаліць</button>
+        </span>
+    </p>
+</div>
+
+<script type="application/javascript">
+    function addActionUserRole(element) {
+        const id = element.getAttribute('data-index')
+        element.addEventListener('click', () => {
+            sendRequest(
+                window.location.origin + '/api/user_reports/' + id,
+                'DELETE',
+                null,
+                'Даследвальнік',
+                id
+            ).then(function (obj) {
+                showMessage(obj.status, 'Даныя выдалены паспяхова!', 'Даследвальнік', '#' + obj.id)
+                document.getElementById('editUserReport_' + obj.id).remove()
+            })
+        })
+    }
+
+    function addUserRoleBlock(userName, id, roleNames) {
+        let html = document.getElementById('createNewUserRoleTemplate').innerHTML
+        html = html.replaceAll('USER_FULL_NAME', userName)
+        html = html.replaceAll('USER_ROLE_ID', '' + id)
+        html = html.replaceAll('USER_ROLE_NAME', roleNames)
+        let element = document.getElementById('allUserRoles')
+        element.insertAdjacentHTML('afterbegin', html)
+
+        let newUserRole = document.getElementById('editUserReport_' + id).querySelector('button')
+        addActionUserRole(newUserRole)
+    }
+
+    window.addEventListener("load", (event) => {
+        const saveReportUser = document.getElementById('saveReportUser')
+        if (saveReportUser) {
+            saveReportUser.addEventListener('click', event => {
+                const form = document.getElementById('formAddReportUser')
+                if (!form.checkValidity()) {
+                    event.preventDefault()
+                    event.stopPropagation()
+                    form.classList.add('was-validated')
+                } else {
+                    const formData = new FormData(form);
+                    const formDataObj = Object.fromEntries(formData.entries());
+
+                    const userName = form.querySelector('select[name="participant"]').selectedOptions[0].text
+
+                    for (let i = 0; i < form.length; i++) {
+                        if (form[i].type === 'checkbox' && form[i].checked) {
+                            const roleName = form[i].getAttribute('data-name')
+                            formDataObj.role = form[i].value
+                            sendRequest(
+                                window.location.origin + '/api/user_reports',
+                                'POST',
+                                formDataObj,
+                                'Даследвальнік',
+                                null,
+                                null
+                            ).then(function (obj) {
+                                addUserRoleBlock(userName, obj.id, roleName)
+
+                                showMessage(obj.status, 'Даныя захаваліся паспяхова!', 'Даследвальнік', '#' + obj.id)
+                            })
+                        }
+                    }
+
+                    const modalElement = document.getElementById('addReportUserModal')
+                    bootstrap.Modal.getInstance(modalElement).hide()
+
+                    form.classList.remove('was-validated')
+                    form.reset()
+                }
+            })
+        }
+    });
+</script>

@@ -14,7 +14,7 @@
         // create the editor
         const container = document.getElementById('jsoneditor')
         const options = {mode: 'view'}
-        const json = {{ data|json_encode|raw }}
+        const json = {{ data|json_encode|raw }};
         const editor = new JSONEditor(container, options, json)
     </script>
 {% endblock %}

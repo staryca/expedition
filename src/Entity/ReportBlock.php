@@ -223,7 +223,7 @@ class ReportBlock
     public function getContentFile(): ?File
     {
         foreach ($this->getFiles() as $file) {
-            if ($file->getType() === 0) {
+            if ($file->getType() === FileType::TYPE_VIRTUAL_CONTENT_LIST) {
                 return $file;
             }
         }
@@ -328,6 +328,11 @@ class ReportBlock
         return $this;
     }
 
+    public function existsInformant(Informant $informant): bool
+    {
+        return $this->informants->contains($informant);
+    }
+
     public function removeInformant(Informant $informant): static
     {
         $this->informants->removeElement($informant);
@@ -368,7 +373,7 @@ class ReportBlock
     public function getFirstFileOfMarkers(): ?File
     {
         $fileMarker = $this->fileMarkers->first();
-        if ($fileMarker === null) {
+        if (!($fileMarker instanceof FileMarker)) {
             return null;
         }
 

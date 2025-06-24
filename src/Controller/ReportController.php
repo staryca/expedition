@@ -6,8 +6,10 @@ namespace App\Controller;
 
 use App\Entity\Expedition;
 use App\Entity\Report;
+use App\Entity\ReportBlock;
 use App\Repository\ExpeditionRepository;
 use App\Repository\GeoPointRepository;
+use App\Repository\InformantRepository;
 use App\Repository\ReportRepository;
 use App\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -21,6 +23,7 @@ class ReportController extends AbstractController
         private readonly ReportRepository $reportRepository,
         private readonly UserRepository $userRepository,
         private readonly GeoPointRepository $geoPointRepository,
+        private readonly InformantRepository $informantRepository,
     ) {
     }
 
@@ -75,16 +78,21 @@ class ReportController extends AbstractController
             throw $this->createNotFoundException('The expedition does not exist');
         }
 
-        $geoPoints = [];
-        $baseGeoPoint = $report ? $report->getGeoPoint() : $expedition->getGeoPoint();
-        if ($baseGeoPoint) {
-            $geoPoints = $this->geoPointRepository->findNotFarFromPoint($baseGeoPoint);
+        $baseGeoPoint = $report?->getGeoPoint();
+
+        $informantsAtLocation = $baseGeoPoint ? $this->informantRepository->findByGeoPoint($baseGeoPoint) : [];
+
+        if (!$baseGeoPoint) {
+            $baseGeoPoint = $expedition->getGeoPoint();
         }
+        $geoPoints = $baseGeoPoint ? $this->geoPointRepository->findNotFarFromPoint($baseGeoPoint) : [];
 
         return $this->render('report/edit.html.twig', [
             'report' => $report ?? new Report($expedition),
+            'newBlock' => new ReportBlock(),
             'users' => $this->userRepository->getList(),
             'geoPoints' => $geoPoints,
+            'informantsAtLocation' => $informantsAtLocation,
         ]);
     }
 }

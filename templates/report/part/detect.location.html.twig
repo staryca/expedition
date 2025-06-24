@@ -1,0 +1,20 @@
+<button type="button" class="btn btn-secondary" id="detectLocation">Вызначыць</button>
+
+<script type="application/javascript">
+
+    let element = document.getElementById('detectLocation')
+    element.addEventListener('click', () => {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(showPosition)
+        } else {
+            console.log("Geolocation is not supported by this browser.")
+        }
+
+        function showPosition(position) {
+            // todo: get
+            console.log("Latitude: " + position.coords.latitude +
+                "<br>Longitude: " + position.coords.longitude)
+        }
+    })
+
+</script>

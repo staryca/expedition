@@ -46,7 +46,7 @@
                 <ul class="list-group">
                     {% for task in tasks %}
                         <a href="#" class="list-group-item list-group-item-action">
-                            {% include 'block/task.full.html.twig' with {'task': task, 'geoPoint': geoPoint} %}
+                            {% include 'part/task.full.html.twig' with {'task': task, 'geoPoint': geoPoint} %}
                         </a>
                     {% endfor %}
                 </ul>
@@ -59,7 +59,7 @@
                 <ul class="list-group">
                     {% for organization in organizations %}
                         <a href="#" class="list-group-item list-group-item-action">
-                            {% include 'block/organization.full.html.twig' with {'organization': organization} %}
+                            {% include 'part/organization.full.html.twig' with {'organization': organization} %}
                         </a>
                     {% endfor %}
                 </ul>
@@ -74,7 +74,7 @@
                 <ul class="list-group">
                     {% for informant in informants %}
                         <a href="#" class="list-group-item list-group-item-action">
-                            {% include 'block/informant.full.html.twig' with {'geoPoint': geoPoint, 'isLink' : true} %}
+                            {% include 'part/informant.full.html.twig' with {'geoPoint': geoPoint, 'isLink' : true} %}
                         </a>
                     {% endfor %}
                 </ul>
@@ -87,7 +87,7 @@
                 <ul class="list-group">
                     {% for subject in subjects %}
                         <a href="#" class="list-group-item list-group-item-action">
-                            {% include 'block/subject.full.html.twig' with {'subject': subject} %}
+                            {% include 'part/subject.full.html.twig' with {'subject': subject} %}
                         </a>
                     {% endfor %}
                 </ul>

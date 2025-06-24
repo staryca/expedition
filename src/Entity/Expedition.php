@@ -9,6 +9,7 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Post;
 use App\Dto\GeoMapDto;
+use App\Dto\LatLonDto;
 use App\Repository\ExpeditionRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -119,21 +120,6 @@ class Expedition
         $this->geoPoint = $geoPoint;
 
         return $this;
-    }
-
-    public function getGeoMapData(): GeoMapDto
-    {
-        $result = new GeoMapDto();
-
-        foreach ($this->reports as $report) {
-            $latLon = $report->getLatLon();
-            if ($latLon) {
-                $popup = $report->getGeoPlace() . '<br>Блокаў: ' . $report->getBlocks()->count();
-                $result->addLatLon($latLon, $popup);
-            }
-        }
-
-        return $result;
     }
 
     /**

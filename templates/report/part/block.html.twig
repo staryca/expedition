@@ -1,0 +1,195 @@
+<h3>Блок {{ blockIndex }}</h3>
+<div class="card mb-3" id="block{{ blockIndex }}body">
+    <div class="card-header">
+        Асноўная інфармацыя блока {{ blockIndex }}
+    </div>
+
+    <div class="card-body">
+        <form id="blockEdit{{ blockIndex }}">
+            <input type="hidden" name="report" value="/api/reports/{{ report.id }}">
+            <input type="hidden" name="id" value="{{ block.id }}">
+            <input type="hidden" name="file" value="{% if block.getContentFile() %}{{ block.getContentFile().id }}{% endif %}">
+            <input type="hidden" name="informants" value="">
+
+            <div class="input-group mb-3">
+                <span class="input-group-text">Тып</span>
+                <select class="form-select" aria-label="Тып" name="type" id="blockType{{ blockIndex }}">
+                    {% for id, name in constant('App\\Entity\\Type\\ReportBlockType::TYPES') %}
+                        <option value="{{ id }}" {% if id == block.type %}selected="selected"{% endif %}>
+                            {{ name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="input-group mb-3">
+                <span class="input-group-text">Вопіс блока</span>
+                <textarea class="form-control" aria-label="With textarea" name="description">{{ block.description }}</textarea>
+            </div>
+
+            <div class="mb-3">
+                <div class="input-group">
+                    <span class="input-group-text">Арганізацыя / гурт</span>
+                    <select class="form-select" id="editBlockOrganization{{ blockIndex }}" name="organization" aria-label="Арганізацыя">
+                        <option value="">- выбраць -</option>
+                        {% if block.organization %}
+                            <option selected value="/api/organizations/{{ block.organization.id }}">{{ block.organization.name }}</option>
+                        {% endif %}
+                    </select>
+                    <button type="button" class="btn btn-primary"
+                            data-bs-toggle="modal" data-bs-target="#addOrgModal" data-bs-block="{{ blockIndex }}">
+                        Дадаць новую
+                    </button>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <div class="input-group">
+                    <label class="input-group-text">Заўвагі да даследвальнікаў</label>
+                    <input type="text" class="form-control" value="{{ block.userNotes }}" name="userNotes" aria-label="userNotes of block">
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <div class="input-group">
+                    <label class="input-group-text">Заўвагі к фота</label>
+                    <input type="text" class="form-control" value="{{ block.photoNotes }}" name="photoNotes" aria-label="photoNotes of block">
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <div class="input-group">
+                    <label class="input-group-text">Заўвагі к відэа</label>
+                    <input type="text" class="form-control" value="{{ block.videoNotes }}" name="videoNotes" aria-label="videoNotes of block">
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <button type="button" class="btn btn-success edit-report-block"
+                        data-index="{{ blockIndex }}"
+                        id="editReportBlock{{ blockIndex }}SaveAction">Захаваць</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card mb-3 d-none showThisAfterSaveBlock{{ blockIndex }}" id="block{{ blockIndex }}informants">
+    <div class="card-header">
+        Інфарманты блока {{ blockIndex }}
+    </div>
+
+    <div class="card-body" id="allBlock{{ blockIndex }}Informants">
+        {# list of added informants #}
+        <hr>
+        <p class="" id="list{{ blockIndex }}Informants">
+            Выбраць існуючага інфарманта:
+            {# list of exist informants #}
+        </p>
+        <p>
+            Дадаць новага інфарманта
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                    data-bs-target="#addInformantModal" data-bs-block="{{ blockIndex }}">
+                Дадаць
+            </button>
+        </p>
+
+        {% for informant in block.informants %}
+            <script type="application/javascript">
+                addInformantBlock('{{ blockIndex }}', '{{ informant.id }}', '{{ informant.firstName }}', '{{ informant.yearBirth }}', '{{ informant.notes }}')
+            </script>
+        {% endfor %}
+
+        {% set added = false %}
+        {% for informant in informantsAtLocation %}
+            {% if not block.existsInformant(informant) %}
+                <script type="application/javascript">
+                    addInformantInList('{{ blockIndex }}', '{{ informant.id }}', '{{ informant.firstName }}', '{{ informant.yearBirth }}', '{{ informant.notes }}')
+                </script>
+                {% set added = true %}
+            {% endif %}
+        {% endfor %}
+        {% if not added %}
+            <script type="application/javascript">
+                document.getElementById('list{{ blockIndex }}Informants').classList.add('d-none')
+            </script>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card mb-3 d-none showThisAfterSaveBlock{{ blockIndex }}" id="block{{ blockIndex }}tags">
+    <div class="card-header">
+        Краткае апісаньне эпізодаў блока {{ blockIndex }}
+    </div>
+
+    <div class="card-body" id="allBlock{{ blockIndex }}Markers">
+        {# list of markers #}
+        <hr>
+        <p>
+            Дадаць новы эпізод
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                    data-bs-target="#addEpisodeModal" data-bs-block="{{ blockIndex }}">
+                Дадаць
+            </button>
+        </p>
+
+        {% if block.getContentFile() %}
+            {% for marker in block.getContentFile().fileMarkers %}
+                <script type="application/javascript">
+                    showMarkerBlock(true, '{{ blockIndex }}', '{{ marker.id }}',
+                        '{{ marker.getCategoryName() }}', '{{ marker.name }}', {{ marker.tags|json_encode|raw }},
+                        '{{ marker.notes }}'
+                    )
+                </script>
+            {% endfor %}
+        {% endif %}
+    </div>
+</div>
+
+<div class="card mb-3 d-none showThisAfterSaveBlock{{ blockIndex }}" id="block{{ blockIndex }}items">
+    <div class="card-header">
+        Прадметы блока {{ blockIndex }}
+    </div>
+
+    <div class="card-body" id="allBlock{{ blockIndex }}Subjects">
+        {# list of subjects #}
+        <hr>
+        <p>
+            Дадаць новы прадмет
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                    data-bs-target="#addSubjectModal" data-bs-block="{{ blockIndex }}">
+                Дадаць
+            </button>
+        </p>
+
+        {% for subject in block.subjects %}
+        <script type="application/javascript">
+            addSubjectBlock('{{ blockIndex }}', '{{ subject.id }}', '{{ subject.getTypeName() }}', '{{ subject.name }}')
+        </script>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="card mb-3 d-none showThisAfterSaveBlock{{ blockIndex }}" id="block{{ blockIndex }}tasks">
+    <div class="card-header">
+        Планы, задачы, наводкі блока {{ blockIndex }}
+    </div>
+
+    <div class="card-body" id="all_{{ blockIndex }}_Tasks">
+        {# list of block tasks #}
+        <hr>
+        <p>
+            Дадаць новы план, задачу, наводку
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                    data-bs-target="#addTaskPlanModal" data-bs-block="{{ blockIndex }}">
+                Дадаць
+            </button>
+        </p>
+    </div>
+
+    {% for task in block.tasks %}
+        <script type="application/javascript">
+            addReportTaskBlock('{{ blockIndex }}', '{{ task.status }}', '{{ task.id }}', '{{ task.getStatusIcon() }}', '{{ task.content }}', '{% if task.informant %} {{ task.informant.firstName }} {% endif %}')
+        </script>
+    {% endfor %}
+
+</div>

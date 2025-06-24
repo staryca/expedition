@@ -18,13 +18,28 @@
             integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
             crossorigin=""></script>
     <script>
-        var map = L.map('map').setView(geoLatLon, geoZoom);
+        let map = L.map('map').setView(geoLatLon, geoZoom);
+
+        const iconColors = ['green', 'violet', 'red', 'grey', 'black']
+        const icons = []
+        for (i = 0; i < iconColors.length; i++) {
+            icons[i] = new L.Icon({
+                iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-' + iconColors[i] + '.png',
+                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                iconSize: [25, 41],
+                iconAnchor: [12, 41],
+                popupAnchor: [1, -34],
+                shadowSize: [41, 41]
+            })
+        }
+
         L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 20,
             attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         }).addTo(map);
         for (i in geoPlaces) {
-            L.marker(geoPlaces[i]).addTo(map).bindPopup(geoPopups[i]);
+            const geoIcon = icons[geoTypes[i] - 1]
+            L.marker(geoPlaces[i], {icon: geoIcon}).addTo(map).bindPopup(geoPopups[i]);
         }
     </script>
 {% endblock %}
@@ -59,7 +74,6 @@
                 {% endif %}
             </p>
 
-            {% set geoMapData = expedition.getGeoMapData() %}
             {% if geoMapData.center %}
                 <div id="map"></div>
                 <script type="text/javascript">
@@ -67,6 +81,7 @@
                     var geoZoom = {{ geoMapData.zoom }};
                     var geoPlaces = {{ geoMapData.points|json_encode|raw }};
                     var geoPopups = {{ geoMapData.popups|json_encode|raw }};
+                    var geoTypes = {{ geoMapData.types|json_encode|raw }};
                 </script>
             {% endif %}
 
@@ -117,7 +132,11 @@
                     {% for report in reports %}
                         <a href="{{ path('report_show', {id: report.id}) }}" class="list-group-item list-group-item-action">
                             {{ report.getTextDateAction() }}
-                            {% if report.code %}<small>&lt;{{ report.code }}&gt;</small>{% endif %}
+                            {% if report.code %}
+                                <small>&lt;{{ report.code }}&gt;</small>
+                            {% else %}
+                                <span class="text-danger-emphasis" title="Няма кода ў справаздачы!"><i class="bi bi-exclamation-triangle"></i></span>
+                            {% endif %}
                             {% if report.geoPoint %}
                                 <b>{{ report.geoPoint.getLongBeName() }}</b>
                                 {% if report.geoPoint.district %}
@@ -125,21 +144,46 @@
                                 {% endif %}
                             {% else %}
                                 <b>{{ report.geoNotes }}</b>
+                                {% if report.geoNotes is empty %}
+                                    <span class="text-danger" title="Няма лакацыі!"><i class="bi bi-exclamation-triangle"></i> Лок.</span>
+                                {% else %}
+                                    <span class="text-danger-emphasis" title="Недакладная лакацыя!"><i class="bi bi-exclamation-triangle"></i> Лок.</span>
+                                {% endif %}
                             {% endif %}
-                            {% for block in report.blocks %}
-                                | {{ block.getTypeName() }}
-                            {% endfor %}
-
-                            {% if report.getAmountTaskTips() > 0 %}
-                                | <span title="Наводкі">
-                                    <i class="bi bi-truck"></i> <b>{{ report.getAmountTaskTips() }}</b>
-                                </span>
+                            {% if not report.getLeader() %}
+                                <span class="text-danger" title="Няма кіраўніка!"><i class="bi bi-exclamation-triangle"></i> Кір.</span>
+                            {% endif %}
+                            {% if report.notes is not empty %}
+                                <span class="text-success" title="{{ report.notes }}"><i class="bi bi-info-square"></i> Зам.</span>
                             {% endif %}
                             {% if report.getAmountTaskQuestions() > 0 %}
-                                | <span title="Пытаньні">
+                                <span class="text-primary" title="Пытаньні">
                                     <i class="bi bi-question-square"></i> <b>{{ report.getAmountTaskQuestions() }}</b>
                                 </span>
                             {% endif %}
+                            {% if report.getAmountTaskTips() > 0 %}
+                                <span class="text-primary" title="Наводкі">
+                                    <i class="bi bi-truck"></i> <b>{{ report.getAmountTaskTips() }}</b>
+                                </span>
+                            {% endif %}
+
+                            {% if report.blocks is empty %}
+                                <span class="text-danger" title="Няма блокаў!"><i class="bi bi-exclamation-triangle"></i> Блокі</span>
+                            {% endif %}
+                            {% for block in report.blocks %}
+                                | {{ block.getTypeName() }}
+                                {% if block.type == constant('App\\Entity\\Type\\ReportBlockType::TYPE_CONVERSATION') %}
+                                    {% if block.getInformants() is empty %}
+                                        <span class="text-danger" title="Няма інфармантаў!"><i class="bi bi-exclamation-triangle"></i> Інф.</span>
+                                    {% endif %}
+                                    {% if block.getContentFile() is empty %}
+                                        <span class="text-danger" title="Няма зместу!"><i class="bi bi-exclamation-triangle"></i> Зм.</span>
+                                    {% elseif block.getContentFile().getFileMarkers() is empty %}
+                                        <span class="text-danger-emphasis" title="Змест пусты!"><i class="bi bi-exclamation-triangle"></i> Зм.</span>
+                                    {% endif %}
+                                {% endif %}
+                            {% endfor %}
+
                         </a>
                     {% endfor %}
                 </ul>

@@ -1,0 +1,99 @@
+<div class="d-none" id="createNewReportTaskTemplate">
+    <p id="edit_BLOCK_INDEX_Task_TASK_ID">
+        <i class="bi TASK_ICON"></i>
+        TASK_TYPE
+        TASK_CONTENT
+        <button type="button" class="btn btn-secondary" id="editBlock_BLOCK_INDEX_Task_TASK_ID_Edit"
+                data-index="TASK_ID" data-block="BLOCK_INDEX"><i class="bi bi-pencil-square"></i></button>
+        TASK_INFORMANT
+        <button type="button" class="btn btn-danger" id="editBlock_BLOCK_INDEX_Task_TASK_ID_Remove"
+                data-index="TASK_ID" data-block="BLOCK_INDEX">Выдаліць</button>
+    </p>
+</div>
+
+<script type="application/javascript">
+    function addActionReportTaskRemove(element) {
+        const id = element.getAttribute('data-index')
+        const index = element.getAttribute('data-block')
+        element.addEventListener('click', () => {
+            sendRequest(
+                window.location.origin + '/api/tasks/' + id,
+                'DELETE',
+                null,
+                'Планы, задачы, наводкі',
+                id,
+                index,
+                'Даныя не выдалены!'
+            ).then(function (obj) {
+                showMessage(obj.status, 'Даныя выдалены паспяхова!', 'Планы, задачы, наводкі', '#' + obj.id)
+                document.getElementById('edit_' + obj.index + '_Task_' + obj.id).remove()
+            })
+        })
+    }
+
+    function addReportTaskBlock(blockIndex, status, id, icon, content, informant) {
+        let html = document.getElementById('createNewReportTaskTemplate').innerHTML
+        html = html.replaceAll('BLOCK_INDEX', blockIndex)
+        const type = ('' + status === '{{ constant('App\\Entity\\Type\\TaskStatus::TIP') }}') ? 'Наводка:' : ''
+        html = html.replaceAll('TASK_ICON', icon)
+        html = html.replaceAll('TASK_TYPE', type)
+        html = html.replaceAll('TASK_ID', '' + id)
+        html = html.replaceAll('TASK_CONTENT', content)
+        const informantContent = (informant !== '') ? 'Інфармант: ' + informant : ''
+        html = html.replaceAll('TASK_INFORMANT', informantContent)
+
+        let element = document.getElementById('all_' + blockIndex + '_Tasks')
+        element.insertAdjacentHTML('afterbegin', html)
+
+        let newReportTaskRemove = document.getElementById('editBlock_' + blockIndex + '_Task_' + id + '_Remove')
+        addActionReportTaskRemove(newReportTaskRemove)
+    }
+
+    window.addEventListener("load", (event) => {
+        const saveNewTask = document.getElementById('saveNewTask')
+        if (saveNewTask) {
+            saveNewTask.addEventListener('click', event => {
+                const form = document.getElementById('formAddTaskPlan')
+                if (!form.checkValidity()) {
+                    event.preventDefault()
+                    event.stopPropagation()
+                    form.classList.add('was-validated')
+                } else {
+                    const formData = new FormData(form)
+                    const formDataObj = Object.fromEntries(formData.entries())
+                    let id = formDataObj.id
+                    const isNew = id === ''
+                    const index = formDataObj.blockIndex
+                    delete formDataObj.blockIndex
+                    formDataObj.status = parseInt(formDataObj.status)
+                    if (formDataObj.report === '') {
+                        formDataObj.report = null
+                    }
+                    if (formDataObj.reportBlock === '') {
+                        formDataObj.reportBlock = null
+                    }
+
+                    sendRequest(
+                        window.location.origin + '/api/tasks' + (isNew ? '' : '/' + id),
+                        isNew ? 'POST' : 'PATCH',
+                        formDataObj,
+                        'Планы, задачы, наводкі',
+                        id,
+                        index
+                    ).then(function (obj) {
+                        const statusText = form.querySelector('select[name="status"]').selectedOptions[0].text
+                        const informant = '-'
+                        addReportTaskBlock(obj.index, statusText, obj.id, obj.statusIcon , obj.content, informant)
+                        showMessage(obj.status, 'Даныя захаваліся паспяхова!', 'Планы, задачы, наводкі', '#' + obj.id)
+
+                        const modalElement = document.getElementById('addTaskPlanModal')
+                        bootstrap.Modal.getInstance(modalElement).hide()
+
+                        form.classList.remove('was-validated')
+                        form.reset()
+                    })
+                }
+            })
+        }
+    });
+</script>

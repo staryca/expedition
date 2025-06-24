@@ -1,0 +1,139 @@
+<div class="d-none" id="createNewMarkerTemplate">
+    <p id="editBlock_BLOCK_INDEX_Marker_MARKER_ID">
+        MARKER_CATEGORY <b>MARKER_NAME</b>
+        MARKER_TAGS <span class="badge text-bg-secondary"></span>
+        MARKER_NOTES
+        <button type="button" class="btn btn-secondary" id="editBlock_BLOCK_INDEX_Marker_MARKER_ID_Edit"
+                data-index="MARKER_ID" data-block="BLOCK_INDEX"><i class="bi bi-pencil-square"></i></button>
+        <button type="button" class="btn btn-danger" id="editBlock_BLOCK_INDEX_Marker_MARKER_ID_Remove"
+                data-index="MARKER_ID" data-block="BLOCK_INDEX">Выдаліць</button>
+    </p>
+</div>
+
+<script type="application/javascript">
+    function addActionMarkerEdit(element) {
+        const id = element.getAttribute('data-index')
+        const index = element.getAttribute('data-block')
+        element.addEventListener('click', () => {
+            sendRequest(
+                window.location.origin + '/api/file_markers/' + id,
+                'GET',
+                null,
+                'Эпізод блока ' + index,
+                id,
+                index,
+                'Даныя не атрыманы!'
+            ).then(function (obj) {
+                const modal = new bootstrap.Modal(document.getElementById('addEpisodeModal'), {focus: true})
+                modal.show()
+
+                let addSubjectModalLabel = document.getElementById('addEpisodeModalLabel')
+                addSubjectModalLabel.innerText = 'Рэадагаваць эпізод для блока ' + index
+
+                const form = document.getElementById('formAddEpisode')
+                console.log(obj)
+                form.blockIndex.value = obj.index
+                form.id.value = obj.id
+                form.category.value = obj.category
+                form.name.value = obj.name === undefined ? '' : obj.name
+                form.notes.value = obj.notes === undefined ? '' : obj.notes
+            })
+        })
+    }
+
+    function addActionMarkerRemove(element) {
+        const id = element.getAttribute('data-index')
+        const index = element.getAttribute('data-block')
+        element.addEventListener('click', () => {
+            sendRequest(
+                window.location.origin + '/api/file_markers/' + id,
+                'DELETE',
+                null,
+                'Эпізод блока ' + index,
+                id,
+                index,
+                'Даныя не выдалены!'
+            ).then(function (obj) {
+                showMessage(obj.status, 'Даныя выдалены паспяхова!', 'Эпізод блока ' + obj.index, '#' + obj.id)
+                document.getElementById('editBlock_' + obj.index + '_Marker_' + obj.id).remove()
+            })
+        })
+    }
+
+    function showMarkerBlock(isShow, blockIndex, id, category, name, tags, notes) {
+        let html = document.getElementById('createNewMarkerTemplate').innerHTML
+        html = html.replaceAll('BLOCK_INDEX', blockIndex)
+        html = html.replaceAll('MARKER_ID', '' + id)
+        const cat = category === '' ? '' : category + ':'
+        html = html.replaceAll('MARKER_CATEGORY', cat)
+        html = html.replaceAll('MARKER_NAME', name)
+        html = html.replaceAll('MARKER_NOTES', notes)
+
+        let htmlTags = ''
+        let tagTemplate = document.getElementById('createNewMarkerTemplate').querySelector('span')
+        for (let tag in tags) {
+            tagTemplate.innerText = tag
+            htmlTags += tagTemplate.outerHTML
+        }
+        html = html.replaceAll('MARKER_TAGS', htmlTags)
+
+        if (isShow) {
+            let element = document.getElementById('allBlock' + blockIndex + 'Markers')
+            element.insertAdjacentHTML('afterbegin', html)
+        } else {
+            const oldElement = document.getElementById('editBlock_' + blockIndex + '_Marker_' + id)
+            oldElement.innerHTML = ''
+            oldElement.insertAdjacentHTML('afterend', html)
+            oldElement.remove()
+        }
+
+        let newMarkerEdit = document.getElementById('editBlock_' + blockIndex + '_Marker_' + id + '_Edit')
+        addActionMarkerEdit(newMarkerEdit)
+
+        let newMarkerRemove = document.getElementById('editBlock_' + blockIndex + '_Marker_' + id + '_Remove')
+        addActionMarkerRemove(newMarkerRemove)
+    }
+
+    window.addEventListener("load", (event) => {
+        const saveNewEpisode = document.getElementById('saveNewEpisode')
+        if (saveNewEpisode) {
+            saveNewEpisode.addEventListener('click', event => {
+                const form = document.getElementById('formAddEpisode')
+                if (!form.checkValidity()) {
+                    event.preventDefault()
+                    event.stopPropagation()
+                    form.classList.add('was-validated')
+                } else {
+                    const formData = new FormData(form)
+                    const formDataObj = Object.fromEntries(formData.entries())
+                    let id = formDataObj.id
+                    const isNew = id === ''
+                    const index = formDataObj.blockIndex
+                    delete formDataObj.blockIndex
+                    formDataObj.category = parseInt(formDataObj.category)
+                    formDataObj.tags = {}
+                    formDataObj.file = '/api/files/' + document.forms["blockEdit" + index].file.value
+
+                    sendRequest(
+                        window.location.origin + '/api/file_markers' + (isNew ? '' : '/' + id),
+                        isNew ? 'POST' : 'PATCH',
+                        formDataObj,
+                        'Эпізод блока ' + index,
+                        id,
+                        index
+                    ).then(function (obj) {
+                        const categoryText = form.querySelector('select[name="category"]').selectedOptions[0].text
+                        showMarkerBlock(obj.isNew, obj.index, obj.id, categoryText, obj.name, {}, obj.notes)
+                        showMessage(obj.status, 'Даныя захаваліся паспяхова!', 'Эпізод блока ' + obj.index, '#' + obj.id)
+
+                        const modalElement = document.getElementById('addEpisodeModal')
+                        bootstrap.Modal.getInstance(modalElement).hide()
+
+                        form.classList.remove('was-validated')
+                        form.reset()
+                    })
+                }
+            })
+        }
+    });
+</script>

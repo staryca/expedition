@@ -9,7 +9,7 @@
 {% endif %}
 {% if informant.urlPhoto %}
     {% set imageContent %}
-        {% include 'block/image.html.twig' with {'url': informant.urlPhoto} %}
+        {% include 'part/image.html.twig' with {'url': informant.urlPhoto} %}
     {% endset %}
     <span data-bs-toggle="tooltip" data-bs-html="true" data-bs-title="{{ imageContent|escape }}">
         <i class="bi bi-camera-fill"></i>

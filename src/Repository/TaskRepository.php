@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\GeoPoint;
 use App\Entity\Task;
+use App\Entity\Type\TaskStatus;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -21,7 +22,7 @@ class TaskRepository extends ServiceEntityRepository
      * @param GeoPoint $geoPoint
      * @return array<Task>
      */
-    public function findByGeoPoint(GeoPoint $geoPoint): array
+    public function findByReportGeoPoint(GeoPoint $geoPoint): array
     {
         return $this->createQueryBuilder('t')
             ->leftJoin('t.report', 'r1')
@@ -31,6 +32,27 @@ class TaskRepository extends ServiceEntityRepository
             ->orWhere('r2.geoPoint = :geoPoint')
             ->setParameter('geoPoint', $geoPoint)
             ->orderBy('t.status', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @param GeoPoint $geoPoint
+     * @return array<Task>
+     */
+    public function findByInformantGeoPoint(GeoPoint $geoPoint): array
+    {
+        return $this->createQueryBuilder('t')
+            ->leftJoin('t.informant', 'i')
+            ->leftJoin('i.geoPointCurrent', 'gpCurrent')
+            ->where('gpCurrent.lat between :minLat and :maxLat')
+            ->andWhere('gpCurrent.lon between :minLon and :maxLon')
+            ->andWhere('t.status = :status')
+            ->setParameter('minLat', $geoPoint->getLat() - 0.35)
+            ->setParameter('maxLat', $geoPoint->getLat() + 0.35)
+            ->setParameter('minLon', $geoPoint->getLon() - 0.7)
+            ->setParameter('maxLon', $geoPoint->getLon() + 0.7)
+            ->setParameter('status', TaskStatus::TIP)
             ->getQuery()
             ->getResult();
     }
