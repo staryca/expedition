@@ -20,7 +20,7 @@
         "google/apiclient": "^2.18",
         "hwi/oauth-bundle": "^2.3",
         "league/csv": "^9.21.0",
-        "martin-georgiev/postgresql-for-doctrine": "^2.8",
+        "martin-georgiev/postgresql-for-doctrine": "^v3.2",
         "nelmio/cors-bundle": "^2.5",
         "nesbot/carbon": "^3.8",
         "phpdocumentor/reflection-docblock": "^5.6",
