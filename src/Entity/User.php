@@ -12,11 +12,12 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use HWI\Bundle\OAuthBundle\OAuth\Response\UserResponseInterface;
 use HWI\Bundle\OAuthBundle\Security\Core\User\OAuthAwareUserProviderInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
 #[ApiResource]
-class User implements OAuthAwareUserProviderInterface
+class User implements OAuthAwareUserProviderInterface, UserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -46,6 +47,9 @@ class User implements OAuthAwareUserProviderInterface
 
     #[ORM\Column(length: 200, nullable: true)]
     private ?string $nicks = null;
+
+    #[ORM\Column(length: 200, nullable: true)]
+    private ?string $email = null;
 
     public function __construct()
     {
@@ -157,5 +161,32 @@ class User implements OAuthAwareUserProviderInterface
     public function loadUserByOAuthUserResponse(UserResponseInterface $response): void
     {
         $this->firstName = $response->getUserIdentifier();
+    }
+
+    public function getEmail(): ?string
+    {
+        return $this->email;
+    }
+
+    public function setEmail(?string $email): static
+    {
+        $this->email = $email;
+
+        return $this;
+    }
+
+    public function getRoles(): array
+    {
+        return ['ROLE_USER'];
+    }
+
+    public function eraseCredentials(): void
+    {
+        // TODO: Implement eraseCredentials() method.
+    }
+
+    public function getUserIdentifier(): string
+    {
+        return $this->email;
     }
 }
