@@ -365,7 +365,7 @@ class LocationService
                 $geoMapData->addLatLon($latLon, $popup, GeoMapDto::TYPE_TIP);
             }
         }
-        if (count($geoMapData->points) === 1) {
+        if (count($geoMapData->points) === 1 && $expedition->getGeoPoint()) {
             $places = $this->geoPointRepository->findNotFarFromPoint($expedition->getGeoPoint());
             foreach ($places as $place) {
                 $latLon = new LatLonDto();
@@ -384,19 +384,20 @@ class LocationService
             $latLon->lat = $geoMapData->points[current($keys)]->lat;
             $latLon->lon = $geoMapData->points[current($keys)]->lon;
 
-            $hasTip = false;
+            $types = [];
             $popup = '<ul>';
             foreach ($keys as $key) {
                 $popup .= '<li>' . $geoMapData->popups[$key] . '</li>';
-                if ($geoMapData->types[$key] === GeoMapDto::TYPE_TIP) {
-                    $hasTip = true;
-                }
+                $types[$geoMapData->types[$key]] = 1;
 
                 $geoMapData->removeByIndex($key);
             }
             $popup .= '</ul>';
 
-            $geoMapData->addLatLon($latLon, $popup, $hasTip ? GeoMapDto::TYPE_TIP : GeoMapDto::TYPE_COMPLEX);
+            $type = isset($types[GeoMapDto::TYPE_TIP]) ? GeoMapDto::TYPE_TIP : null;
+            $type = $type ?? (count($types) > 1 ? GeoMapDto::TYPE_COMPLEX : current($types));
+
+            $geoMapData->addLatLon($latLon, $popup, $type);
         }
 
         return $geoMapData;

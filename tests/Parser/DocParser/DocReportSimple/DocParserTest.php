@@ -15,6 +15,7 @@ use App\Service\LocationService;
 use App\Service\PersonService;
 use App\Service\ReportService;
 use App\Service\UserService;
+use Doctrine\ORM\EntityManager;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
@@ -36,7 +37,8 @@ class DocParserTest extends TestCase
         $personService = new PersonService($textHelper);
         $userService = new UserService(
             $this->createMock(UserRepository::class),
-            $textHelper
+            $textHelper,
+            $this->createMock(EntityManager::class),
         );
         $reportService = new ReportService();
         $this->docParser = new DocParser($locationService, $personService, $userService, $reportService);

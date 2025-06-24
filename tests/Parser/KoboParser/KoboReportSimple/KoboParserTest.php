@@ -14,6 +14,7 @@ use App\Repository\TaskRepository;
 use App\Repository\UserRepository;
 use App\Service\LocationService;
 use App\Service\UserService;
+use Doctrine\ORM\EntityManager;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
@@ -34,7 +35,8 @@ class KoboParserTest extends TestCase
         $locationService = new LocationService($this->geoPointRepository, $taskRepository, $textHelper);
         $userService = new UserService(
             $this->createMock(UserRepository::class),
-            $textHelper
+            $textHelper,
+            $this->createMock(EntityManager::class),
         );
         $this->koboParser = new KoboParser($locationService, $userService);
     }
