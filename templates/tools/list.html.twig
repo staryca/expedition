@@ -7,21 +7,33 @@
 {% block body %}
     <div class="container">
         <div class="row">
-            <h3>Інфарманты</h3>
-            <ul class="list-group">
-                <li class="list-group-item">
-                    <a href="{{ path('app_import_tools_informants') }}">Сьпіс усіх інфармантаў</a>
-                </li>
-                <li class="list-group-item">
-                    <a href="{{ path('app_import_tools_all_middle_names') }}">Сьпіс усіх прозвішч</a>
-                </li>
-                <li class="list-group-item">
-                    <span class="badge text-bg-danger">Увага!</span>
-                    <a href="{{ path('app_import_tools_update_name_informants') }}">
-                        Паправіць імёны і пол усіх інфармантаў
-                    </a>
-                </li>
-            </ul>
+            <p>
+                <h3>Інфарманты</h3>
+                <ul class="list-group">
+                    <li class="list-group-item">
+                        <a href="{{ path('app_import_tools_informants') }}">Сьпіс усіх інфармантаў</a>
+                    </li>
+                    <li class="list-group-item">
+                        <a href="{{ path('app_import_tools_all_middle_names') }}">Сьпіс усіх прозвішч</a>
+                    </li>
+                    <li class="list-group-item">
+                        <span class="badge text-bg-danger">Увага!</span>
+                        <a href="{{ path('app_import_tools_update_name_informants') }}">
+                            Паправіць імёны і пол усіх інфармантаў
+                        </a>
+                    </li>
+                </ul>
+            </p>
+
+            <p>
+                <h3>Пошук</h3>
+                <ul class="list-group">
+                    <li class="list-group-item">
+                        <a href="{{ path('app_search_index') }}">Індэксацыя справаздач</a>
+                    </li>
+                </ul>
+
+            </p>
         </div>
     </div>
 {% endblock %}

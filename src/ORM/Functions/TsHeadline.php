@@ -9,16 +9,23 @@ use MartinGeorgiev\Doctrine\ORM\Query\AST\Functions\Exception\InvalidArgumentFor
 
 class TsHeadline extends BaseVariadicFunction
 {
-    protected function customizeFunction(): void
+    protected function getNodeMappingPattern(): array
     {
-        $this->setFunctionPrototype('ts_headline(%s)');
+        return ['StringPrimary'];
     }
 
-    protected function validateArguments(array $arguments): void
+    protected function getFunctionName(): string
     {
-        $argumentCount = \count($arguments);
-        if ($argumentCount < 1 || $argumentCount > 2) {
-            throw InvalidArgumentForVariadicFunctionException::between('ts_headline', 1, 2);
-        }
+        return 'ts_headline';
+    }
+
+    protected function getMinArgumentCount(): int
+    {
+        return 2;
+    }
+
+    protected function getMaxArgumentCount(): int
+    {
+        return 3;
     }
 }

@@ -9,16 +9,23 @@ use MartinGeorgiev\Doctrine\ORM\Query\AST\Functions\Exception\InvalidArgumentFor
 
 class TsRank extends BaseVariadicFunction
 {
-    protected function customizeFunction(): void
+    protected function getNodeMappingPattern(): array
     {
-        $this->setFunctionPrototype('ts_rank(%s)');
+        return ['StringPrimary'];
     }
 
-    protected function validateArguments(array $arguments): void
+    protected function getFunctionName(): string
     {
-        $argumentCount = \count($arguments);
-        if ($argumentCount < 1 || $argumentCount > 2) {
-            throw InvalidArgumentForVariadicFunctionException::between('ts_rank', 1, 2);
-        }
+        return 'ts_rank';
+    }
+
+    protected function getMinArgumentCount(): int
+    {
+        return 1;
+    }
+
+    protected function getMaxArgumentCount(): int
+    {
+        return 2;
     }
 }

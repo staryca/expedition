@@ -9,16 +9,23 @@ use MartinGeorgiev\Doctrine\ORM\Query\AST\Functions\Exception\InvalidArgumentFor
 
 class WebsearchToTsquery extends BaseVariadicFunction
 {
-    protected function customizeFunction(): void
+    protected function getNodeMappingPattern(): array
     {
-        $this->setFunctionPrototype('websearch_to_tsquery(%s)');
+        return ['StringPrimary'];
     }
 
-    protected function validateArguments(array $arguments): void
+    protected function getFunctionName(): string
     {
-        $argumentCount = \count($arguments);
-        if ($argumentCount < 1 || $argumentCount > 2) {
-            throw InvalidArgumentForVariadicFunctionException::between('websearch_to_tsquery', 1, 2);
-        }
+        return 'websearch_to_tsquery';
+    }
+
+    protected function getMinArgumentCount(): int
+    {
+        return 1;
+    }
+
+    protected function getMaxArgumentCount(): int
+    {
+        return 2;
     }
 }
