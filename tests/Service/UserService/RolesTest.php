@@ -9,6 +9,7 @@ use App\Entity\User;
 use App\Helper\TextHelper;
 use App\Repository\UserRepository;
 use App\Service\UserService;
+use Doctrine\ORM\EntityManager;
 use PHPUnit\Framework\TestCase;
 
 class RolesTest extends TestCase
@@ -22,7 +23,11 @@ class RolesTest extends TestCase
 
         $this->userRepository = $this->createMock(UserRepository::class);
         $textHelper = new TextHelper();
-        $this->userService = new UserService($this->userRepository, $textHelper);
+        $this->userService = new UserService(
+            $this->userRepository,
+            $textHelper,
+            $this->createMock(EntityManager::class),
+        );
     }
 
     public function testThreeUsers(): void

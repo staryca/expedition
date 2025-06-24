@@ -4,8 +4,8 @@ security:
         Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
     # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
     providers:
-        hwi_oauth.user.provider:
-            id: hwi_oauth.user.provider
+        google.user.provider:
+            id: google.user.provider
     firewalls:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
@@ -22,8 +22,8 @@ security:
                 default_target_path: /profile
 
                 oauth_user_provider:
-                    service: hwi_oauth.user.provider
-                provider: hwi_oauth.user.provider
+                    service: google.user.provider
+                provider: google.user.provider
             logout:
                 path: /logout
                 target: expedition_list

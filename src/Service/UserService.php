@@ -9,12 +9,15 @@ use App\Entity\Type\UserRoleType;
 use App\Entity\User;
 use App\Helper\TextHelper;
 use App\Repository\UserRepository;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 class UserService
 {
     public function __construct(
         private readonly UserRepository $userRepository,
         private readonly TextHelper $textHelper,
+        private readonly EntityManagerInterface $entityManager,
     ) {
     }
 
@@ -109,5 +112,14 @@ class UserService
         }
 
         return null;
+    }
+
+    public function onUserLogged(UserInterface $user): void
+    {
+        if ($user instanceof User) {
+            $user->setLastLogin(new \DateTime());
+
+            $this->entityManager->flush();
+        }
     }
 }

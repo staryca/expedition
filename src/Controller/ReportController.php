@@ -15,6 +15,7 @@ use App\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 class ReportController extends AbstractController
 {
@@ -52,6 +53,7 @@ class ReportController extends AbstractController
     }
 
     #[Route('/report/{id}/edit', name: 'report_edit')]
+    #[IsGranted('ROLE_USER', statusCode: 423)]
     public function edit(int $id): Response
     {
         /** @var Report|null $report */
@@ -64,6 +66,7 @@ class ReportController extends AbstractController
     }
 
     #[Route('/report/new', name: 'report_new_for_active_expedition')]
+    #[IsGranted('ROLE_USER', statusCode: 423)]
     public function newForActive(): Response
     {
         /** @var Expedition|null $expedition */

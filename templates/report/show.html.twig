@@ -31,11 +31,13 @@
     <div class="container py-5">
         <h1 class="h2">Справаздача па экспедыцыі {{ report }}</h1>
         <p class="text-end"><small><a href="{{ path('expedition_show', {id: report.expedition.id}) }}">Усе справаздачы</a></small></p>
-        <div>
-            <a href="{{ path('report_edit', {id: report.id}) }}">
-                <i class="bi bi-pencil-square"></i> Рэдагаваць
-            </a>
-        </div>
+        {% if is_granted('ROLE_USER') %}
+            <div>
+                <a href="{{ path('report_edit', {id: report.id}) }}">
+                    <i class="bi bi-pencil-square"></i> Рэдагаваць
+                </a>
+            </div>
+        {% endif %}
 
         <div class="row">
             {% if report.geoPoint %}

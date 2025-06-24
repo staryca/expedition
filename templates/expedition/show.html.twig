@@ -122,11 +122,13 @@
 
             <p>
                 <h5>Месцы</h5>
-                <div>
-                    <a href="{{ path('report_new_by_expedition', {id: expedition.id}) }}">
-                        <i class="bi bi-file-earmark-plus"></i> Дадаць справаздачу
-                    </a>
-                </div>
+                {% if is_granted('ROLE_USER') %}
+                    <div>
+                        <a href="{{ path('report_new_by_expedition', {id: expedition.id}) }}">
+                            <i class="bi bi-file-earmark-plus"></i> Дадаць справаздачу
+                        </a>
+                    </div>
+                {% endif %}
 
                 <ul class="list-group">
                     {% for report in reports %}

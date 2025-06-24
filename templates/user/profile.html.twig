@@ -10,7 +10,11 @@
             <div class="row py-lg-5">
                 <div class="col-lg-6 col-md-8 mx-auto">
                     <h1 class="fw-light">Профіль даследчыка</h1>
-                    <p class="lead text-body-secondary">{{ app.user.username }}</p>
+                    <p class="lead text-body-secondary">
+                        {{ app.user.gelFullName() }}
+                        <br>
+                        {{ app.user.email }}
+                    </p>
                     <p>
                         <a href="/logout" class="btn btn-primary my-2">Выйсці</a>
                     </p>
