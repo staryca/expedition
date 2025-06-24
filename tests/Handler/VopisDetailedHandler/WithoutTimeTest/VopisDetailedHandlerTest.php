@@ -13,6 +13,7 @@ use App\Manager\ReportManager;
 use App\Parser\VopisDetailedParser;
 use App\Repository\ExpeditionRepository;
 use App\Repository\GeoPointRepository;
+use App\Repository\TaskRepository;
 use App\Repository\UserRepository;
 use App\Service\LocationService;
 use App\Service\PersonService;
@@ -32,7 +33,9 @@ class VopisDetailedHandlerTest extends TestCase
         $this->geoPointRepository = $this->createMock(GeoPointRepository::class);
 
         $textHelper = new TextHelper();
-        $locationService = new LocationService($this->geoPointRepository, $textHelper);
+        /** @var TaskRepository|MockObject $taskRepository */
+        $taskRepository = $this->createMock(TaskRepository::class);
+        $locationService = new LocationService($this->geoPointRepository, $taskRepository, $textHelper);
         /** @var ExpeditionRepository|MockObject $expeditionRepository */
         $expeditionRepository = $this->createMock(ExpeditionRepository::class);
         $personService = new PersonService($textHelper);

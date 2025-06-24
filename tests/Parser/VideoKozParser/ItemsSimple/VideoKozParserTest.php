@@ -11,6 +11,7 @@ use App\Helper\TextHelper;
 use App\Parser\VideoKozParser;
 use App\Repository\GeoPointRepository;
 use App\Repository\PackRepository;
+use App\Repository\TaskRepository;
 use App\Service\LocationService;
 use App\Service\PersonService;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -30,7 +31,9 @@ class VideoKozParserTest extends TestCase
         $this->packRepository = $this->createMock(PackRepository::class);
 
         $textHelper = new TextHelper();
-        $locationService = new LocationService($this->geoPointRepository, $textHelper);
+        /** @var TaskRepository|MockObject $taskRepository */
+        $taskRepository = $this->createMock(TaskRepository::class);
+        $locationService = new LocationService($this->geoPointRepository, $taskRepository, $textHelper);
         $personService = new PersonService($textHelper);
         $this->parser = new VideoKozParser($locationService, $personService, $textHelper, $this->packRepository);
     }

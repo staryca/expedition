@@ -9,8 +9,10 @@ use App\Dto\StudentDto;
 use App\Helper\TextHelper;
 use App\Parser\BsuParser;
 use App\Repository\GeoPointRepository;
+use App\Repository\TaskRepository;
 use App\Service\LocationService;
 use App\Service\PersonService;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 class BsuParserTest extends TestCase
@@ -23,9 +25,11 @@ class BsuParserTest extends TestCase
 
         $geoPointRepository = $this->createMock(GeoPointRepository::class);
         $textHelper = new TextHelper();
-        $locationService = new LocationService($geoPointRepository, $textHelper);
+        /** @var TaskRepository|MockObject $taskRepository */
+        $taskRepository = $this->createMock(TaskRepository::class);
+        $locationService = new LocationService($geoPointRepository, $taskRepository, $textHelper);
         $personService = new PersonService($textHelper);
-        $this->bsuParser = new BsuParser($locationService, $personService, $textHelper);
+        $this->bsuParser = new BsuParser($locationService, $personService);
     }
 
     public function testParse(): void
