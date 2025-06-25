@@ -37,7 +37,7 @@ class SearchService
                 $text = 'Удзельнікі: ';
                 foreach ($organization->getOrganizationInformants() as $organizationInformant) {
                     $informant = $organizationInformant->getInformant();
-                    $text .= $informant->getSearchIndex() . '; ';
+                    $text .= $informant->getInformation() . '; ';
                 }
                 $text = trim($text, " ,");
                 $org .= empty($text) ? '' : $text . '. ';
@@ -49,7 +49,7 @@ class SearchService
         if ($reportBlock->getInformants()->count() > 0) {
             $inf = 'Інфарманты: ';
             foreach ($reportBlock->getInformants() as $informant) {
-                $inf .= $informant->getSearchIndex() . '; ';
+                $inf .= $informant->getInformation() . '; ';
             }
             $inf = trim($inf, " ,;");
             $searchIndex .= $inf . '. ';
@@ -66,7 +66,7 @@ class SearchService
                 $subtext .= trim($task->getContent(), " .,;") . ', ';
                 if ($task->getInformant() !== null) {
                     $informant = $task->getInformant();
-                    $subtext .= $informant->getSearchIndex() . ', ';
+                    $subtext .= $informant->getInformation() . ', ';
                 }
                 $subtexts[] = trim($subtext, " ,");
             }
