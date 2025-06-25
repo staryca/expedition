@@ -651,14 +651,6 @@ class ReportManager
         }
     }
 
-    public function generateSearchForBlock(ReportBlock $reportBlock): void
-    {
-        $reportBlock->generateSearchIndex();
-
-        $this->entityManager->flush();
-        $this->entityManager->clear();
-    }
-
     /**
      * @param Expedition $expedition
      * @param array<InformantDto> $informants

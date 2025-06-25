@@ -21,10 +21,24 @@ class ReportBlockRepository extends ServiceEntityRepository
     /**
      * @return array<ReportBlock>
      */
+    public function findNotIndexed(): array
+    {
+        return $this->createQueryBuilder('rb')
+            ->where('rb.searchIndex IS NULL')
+            ->orWhere('rb.searchIndex = \'\'')
+            ->setMaxResults(300)
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
+    /**
+     * @return array<ReportBlock>
+     */
     public function findByQuerySimple(string $query): array
     {
         return $this->createQueryBuilder('rb')
-            ->andWhere('rb.searchIndex LIKE :query')
+            ->where('rb.searchIndex LIKE :query')
             ->setParameter('query', '%' . $query . '%')
             ->orderBy('rb.id', 'ASC')
             ->setMaxResults(20)
@@ -40,14 +54,14 @@ class ReportBlockRepository extends ServiceEntityRepository
     {
         $records = $this->createQueryBuilder('rb')
             ->addSelect('TS_HEADLINE(:lang, rb.searchIndex, WEBSEARCH_TO_TSQUERY(:lang, :query)) AS searchHeadline')
-            ->andWhere('TSMATCH(TO_TSVECTOR(:lang, rb.searchIndex), WEBSEARCH_TO_TSQUERY(:lang, :query)) = true')
+            ->where('TSMATCH(TO_TSVECTOR(:lang, rb.searchIndex), WEBSEARCH_TO_TSQUERY(:lang, :query)) = true')
             ->setParameter('query', $query)
             ->setParameter('lang', 'belarusian')
             ->orderBy('TS_RANK(TO_TSVECTOR(:lang, rb.searchIndex), WEBSEARCH_TO_TSQUERY(:lang, :query))', 'DESC')
             ->setMaxResults(20)
             ->getQuery()
             ->getResult()
-            ;
+        ;
 
         $result = [];
         foreach ($records as $record) {
