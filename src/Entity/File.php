@@ -258,68 +258,6 @@ class File
         return $this;
     }
 
-    /**
-     * @param bool $partMarkers
-     * @param array<FileMarker> $markers
-     * @return string
-     */
-    public function getSearchIndex(bool $partMarkers = false, array $markers = []): string
-    {
-        $text = '';
-
-        if ($this->type === FileType::TYPE_VIRTUAL_CONTENT_LIST) {
-            foreach ($this->getFileMarkers() as $fileMarker) {
-                if (!empty($fileMarker->getName())) {
-                    $text .= $fileMarker->getName() . ', ';
-                }
-                foreach ($fileMarker->getTags() as $tag) {
-                    $text .= $tag->getName() . ', ';
-                }
-                if (!empty($fileMarker->getNotes())) {
-                    $text .= trim($fileMarker->getNotes(), " ,.;") . ', ';
-                }
-                $text .= trim($text, " ,.;") . '; ';
-            }
-            $text = trim($text, " ,;");
-        } else {
-            if ($this->filename) {
-                $text .= $this->filename . ', ';
-            }
-            if ($this->sizeText) {
-                $text .= $this->sizeText . ', ';
-            }
-            if ($this->comment) {
-                $text .= trim($this->comment, " ,.;") . ', ';
-            }
-            if (!empty($text)) {
-                $text = trim($text, " ,.;") . '. ';
-            }
-
-            $printMarkers = $partMarkers ? $markers : $this->getFileMarkers();
-            foreach ($printMarkers as $fileMarker) {
-                if ($fileMarker->getStartTime()) {
-                    $text .= $fileMarker->getStartTime()->format('H:i:s.u') . ' ';
-                }
-                if (!empty($fileMarker->getName())) {
-                    $text .= $fileMarker->getName() . ', ';
-                }
-                foreach ($fileMarker->getTags() as $tag) {
-                    $text .= $tag->getName() . ', ';
-                }
-                if (!empty($fileMarker->getNotes())) {
-                    $text .= trim($fileMarker->getNotes(), " ,.;") . ', ';
-                }
-                if (!empty($fileMarker->getDecoding())) {
-                    $text .= trim($fileMarker->getDecoding(), " ,.;") . ', ';
-                }
-                $text .= trim($text, " ,.;") . '; ';
-            }
-            $text = trim($text, " ,;");
-        }
-
-        return $text;
-    }
-
     public function getAdditional(): ?array
     {
         return $this->additional;

@@ -43,4 +43,26 @@ class FileMarkerRepository extends ServiceEntityRepository
 
         return $result;
     }
+
+    /**
+     * @param FileMarker $fileMarker
+     * @return array<string>
+     */
+    public function getTagNamesByMarker(FileMarker $fileMarker): array
+    {
+        $records = $this->createQueryBuilder('fm')
+            ->select('t.name')
+            ->leftJoin('fm.tags', 't')
+            ->where('fm.id = :markerId')
+            ->setParameter('markerId', $fileMarker->getId())
+            ->getQuery()
+            ->getResult();
+
+        $result = [];
+        foreach ($records as $record) {
+            $result[] = $record['name'];
+        }
+
+        return $result;
+    }
 }
