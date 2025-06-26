@@ -6,12 +6,10 @@ namespace App\Service;
 
 use App\Dto\GeoMapDto;
 use App\Dto\GeoPointSearchDto;
-use App\Dto\LatLonDto;
 use App\Entity\Expedition;
 use App\Entity\GeoPoint;
 use App\Entity\Report;
 use App\Entity\Type\GeoPointType;
-use App\Entity\Type\TaskStatus;
 use App\Helper\TextHelper;
 use App\Repository\GeoPointRepository;
 use App\Repository\TaskRepository;
@@ -22,6 +20,11 @@ class LocationService
     public const SUBDISTRICT = 'сельскі Савет';
     public const SUBDISTRICT_SHORT = 'с/с';
     public const REGION = 'вобласць';
+
+    public const LAT_RANGE_UP = 0.55; // lat - // N
+    public const LAT_RANGE_DOWN = 0.35; // lat + // S
+    public const LON_RANGE_UP = 0.7; // lon - // E
+    public const LON_RANGE_DOWN = 0.7; // lon + // W
 
     public function __construct(
         private readonly GeoPointRepository $geoPointRepository,
