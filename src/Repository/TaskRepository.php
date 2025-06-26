@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\GeoPoint;
 use App\Entity\Task;
 use App\Entity\Type\TaskStatus;
+use App\Service\LocationService;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -48,10 +49,10 @@ class TaskRepository extends ServiceEntityRepository
             ->where('gpCurrent.lat between :minLat and :maxLat')
             ->andWhere('gpCurrent.lon between :minLon and :maxLon')
             ->andWhere('t.status = :status')
-            ->setParameter('minLat', $geoPoint->getLat() - 0.35)
-            ->setParameter('maxLat', $geoPoint->getLat() + 0.35)
-            ->setParameter('minLon', $geoPoint->getLon() - 0.7)
-            ->setParameter('maxLon', $geoPoint->getLon() + 0.7)
+            ->setParameter('minLat', $geoPoint->getLat() - LocationService::LAT_RANGE_UP)
+            ->setParameter('maxLat', $geoPoint->getLat() + LocationService::LAT_RANGE_DOWN)
+            ->setParameter('minLon', $geoPoint->getLon() - LocationService::LON_RANGE_UP)
+            ->setParameter('maxLon', $geoPoint->getLon() + LocationService::LON_RANGE_DOWN)
             ->setParameter('status', TaskStatus::TIP)
             ->getQuery()
             ->getResult();

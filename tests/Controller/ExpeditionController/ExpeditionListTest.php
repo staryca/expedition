@@ -11,7 +11,7 @@ class ExpeditionListTest extends WebTestCase
     public function testList(): void
     {
         $client = static::createClient();
-        $crawler = $client->request('GET', '/expedition/');
+        $crawler = $client->request('GET', '/');
 
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains('h1', 'Сьпіс экспедыцый');
