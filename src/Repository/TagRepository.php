@@ -31,4 +31,18 @@ class TagRepository extends ServiceEntityRepository
 
         return $result;
     }
+
+    /**
+     * @return array<int, string>
+     */
+    public function getAllNames(): array
+    {
+        $result = [];
+
+        foreach ($this->findAll() as $tag) {
+            $result[$tag->getId()] = $tag->getName();
+        }
+
+        return $result;
+    }
 }

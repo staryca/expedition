@@ -169,6 +169,11 @@ class FileMarker
         return $this->tags;
     }
 
+    public function getTagNames(): array
+    {
+        return array_map(static function (Tag $tag): string { return $tag->getName(); }, $this->tags->toArray());
+    }
+
     public function addTag(Tag $tag): static
     {
         if (!$this->tags->contains($tag)) {
