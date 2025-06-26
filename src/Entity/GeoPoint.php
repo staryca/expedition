@@ -7,6 +7,7 @@ namespace App\Entity;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
+use App\Dto\LatLonDto;
 use App\Entity\Type\GeoPointType;
 use App\Repository\GeoPointRepository;
 use Doctrine\DBAL\Types\Types;
@@ -105,6 +106,19 @@ class GeoPoint
         $this->lon = $lon;
 
         return $this;
+    }
+
+    public function getLatLonDto(): ?LatLonDto
+    {
+        if (null === $this->lat || null === $this->lon) {
+            return null;
+        }
+
+        $dto = new LatLonDto();
+        $dto->lat = (float) $this->lat;
+        $dto->lon = (float) $this->lon;
+
+        return $dto;
     }
 
     public function getRegion(): ?string

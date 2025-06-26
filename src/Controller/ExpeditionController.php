@@ -45,7 +45,7 @@ class ExpeditionController extends AbstractController
 
         $reports = $this->reportRepository->findByExpedition($expedition);
 
-        $geoMapData = $this->locationService->getGeoMapData($expedition);
+        $geoMapData = $this->locationService->getGeoMapDataForExpedition($expedition);
 
         $statistics = $this->fileMarkerRepository->getStatistics($expedition);
 

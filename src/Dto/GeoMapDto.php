@@ -60,7 +60,7 @@ class GeoMapDto
     /**
      * @return array<array<int>>
      */
-    public function getGroupsByLocation(): array
+    private function getGroupsByLocation(): array
     {
         $groups = [];
 
@@ -79,8 +79,38 @@ class GeoMapDto
         return $groups;
     }
 
+    public function groupByLocation(): void
+    {
+        $groups = $this->getGroupsByLocation();
+        foreach ($groups as $keys) {
+            $latLon = new LatLonDto();
+            $latLon->lat = $this->points[current($keys)]->lat;
+            $latLon->lon = $this->points[current($keys)]->lon;
+
+            $types = [];
+            $popup = '<ul>';
+            foreach ($keys as $key) {
+                $popup .= '<li>' . $this->popups[$key] . '</li>';
+                $types[$this->types[$key]] = 1;
+
+                $this->removeByIndex($key);
+            }
+            $popup .= '</ul>';
+
+            $type = isset($types[GeoMapDto::TYPE_TIP]) ? GeoMapDto::TYPE_TIP : null;
+            $type = $type ?? (count($types) > 1 ? GeoMapDto::TYPE_COMPLEX : current($types));
+
+            $this->addLatLon($latLon, $popup, $type);
+        }
+    }
+
     public function removeByIndex(int $index): void
     {
         unset($this->points[$index], $this->popups[$index], $this->types[$index]);
+    }
+
+    public function setCenter(LatLonDto $center): void
+    {
+        $this->center = $center;
     }
 }

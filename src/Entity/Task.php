@@ -68,6 +68,11 @@ class Task
         return TaskStatus::getIcon($this->status);
     }
 
+    public function getStatusText(): ?string
+    {
+        return TaskStatus::STATUSES[$this->status] ?? null;
+    }
+
     public function getReport(): ?Report
     {
         return $this->report;

@@ -47,6 +47,9 @@
         <a class="text-success" id="createNewBlock" title="Дадаць новы блок"><i class="bi bi-plus-square"></i></a>
 
         <hr >
+        {% if report.id %}
+            <a class="" href="{{ path('report_show', {id: report.id}) }}" title="Паглядзець гэтую справаздачу"><i class="bi bi-bi-eye-fill"></i></a>
+        {% endif %}
         <a class="" data-bs-toggle="modal" data-bs-target="#toNewReport" title="Дадаць новую справаздачу"><i class="bi bi-file-earmark-plus"></i></a>
     </div>
 
