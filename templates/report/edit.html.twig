@@ -38,18 +38,21 @@
     <link href="{{ asset('css/choices.min.css') }}" rel="stylesheet">
 
     <style>
-        .choices[data-type*=select-one] {
+        .choices {
             padding: 0;
             margin: 0;
         }
-        .choices[data-type*=select-one] .choices__inner {
+        .choices .choices__inner {
             border: none;
+            background: none;
         }
         .choices__list--dropdown, .choices__list[aria-expanded] {
             z-index: 5;
         }
+        .choices__list--multiple .choices__item {
+            border-radius: 6px;
+        }
     </style>
-
 
 {% endblock %}
 
@@ -601,7 +604,14 @@
 
                         <div class="input-group mb-3">
                             <span class="input-group-text">Тэгі</span>
-                            <input type="text" class="form-control" placeholder="" name="tags" aria-label="Tags of episode">
+                            <select class="form-control js-choice" name="tags" aria-label="Tags of episode" multiple>
+                                {% for id, name in tags %}
+                                    <option value="/api/tags/{{ id }}"
+                                            {% if id == 0 %}selected{% endif %}>
+                                        {{ name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
                         </div>
 
                         <div class="input-group mb-3">
@@ -718,7 +728,10 @@
             choiceObjects[i] = new Choices(jsChoices[i], {
                 itemSelectText: 'Выбраць',
                 noResultsText: 'Нічога ня знойдзена',
+                maxItemCount: 8,
+                removeItemButton: true,
             });
+            jsChoices[i].setAttribute('data-choice-index', '' + i)
         }
         const choices = document.getElementsByClassName('choices')
         for (let i = 0; i < choices.length; i++) {

@@ -11,6 +11,7 @@ use App\Repository\ExpeditionRepository;
 use App\Repository\GeoPointRepository;
 use App\Repository\InformantRepository;
 use App\Repository\ReportRepository;
+use App\Repository\TagRepository;
 use App\Repository\UserRepository;
 use App\Service\LocationService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -26,6 +27,7 @@ class ReportController extends AbstractController
         private readonly UserRepository $userRepository,
         private readonly GeoPointRepository $geoPointRepository,
         private readonly InformantRepository $informantRepository,
+        private readonly TagRepository $tagRepository,
         private readonly LocationService $locationService,
     ) {
     }
@@ -95,11 +97,14 @@ class ReportController extends AbstractController
         }
         $geoPoints = $baseGeoPoint ? $this->geoPointRepository->findNotFarFromPoint($baseGeoPoint) : [];
 
+        $tags = $this->tagRepository->getAllNames();
+
         return $this->render('report/edit.html.twig', [
             'report' => $report ?? new Report($expedition),
             'newBlock' => new ReportBlock(),
             'users' => $this->userRepository->getList(),
             'geoPoints' => $geoPoints,
+            'tags' => $tags,
             'informantsAtLocation' => $informantsAtLocation,
         ]);
     }

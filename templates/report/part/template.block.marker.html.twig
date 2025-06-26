@@ -1,7 +1,7 @@
 <div class="d-none" id="createNewMarkerTemplate">
     <p id="editBlock_BLOCK_INDEX_Marker_MARKER_ID">
         MARKER_CATEGORY <b>MARKER_NAME</b>
-        MARKER_TAGS <span class="badge text-bg-secondary"></span>
+        MARKER_TAGS <span class="badge text-bg-secondary item-tag"></span>
         MARKER_NOTES
         <button type="button" class="btn btn-secondary" id="editBlock_BLOCK_INDEX_Marker_MARKER_ID_Edit"
                 data-index="MARKER_ID" data-block="BLOCK_INDEX"><i class="bi bi-pencil-square"></i></button>
@@ -31,12 +31,16 @@
                 addSubjectModalLabel.innerText = 'Рэадагаваць эпізод для блока ' + index
 
                 const form = document.getElementById('formAddEpisode')
-                console.log(obj)
                 form.blockIndex.value = obj.index
                 form.id.value = obj.id
                 form.category.value = obj.category
                 form.name.value = obj.name === undefined ? '' : obj.name
                 form.notes.value = obj.notes === undefined ? '' : obj.notes
+
+                const choiceIndex = form.querySelector('select[name="tags"]').getAttribute('data-choice-index')
+                for (let i = 0; i < obj.tags.length; i++) {
+                    choiceObjects[choiceIndex].setChoiceByValue(obj.tags[i]);
+                }
             })
         })
     }
@@ -70,11 +74,12 @@
         html = html.replaceAll('MARKER_NOTES', notes)
 
         let htmlTags = ''
-        let tagTemplate = document.getElementById('createNewMarkerTemplate').querySelector('span')
-        for (let tag in tags) {
-            tagTemplate.innerText = tag
-            htmlTags += tagTemplate.outerHTML
+        let tagTemplate = document.getElementById('createNewMarkerTemplate').querySelector('span.item-tag')
+        for (let i = 0; i < tags.length; i++) {
+            tagTemplate.innerText = tags[i]
+            htmlTags += ' ' + tagTemplate.outerHTML
         }
+        tagTemplate.innerText = ''
         html = html.replaceAll('MARKER_TAGS', htmlTags)
 
         if (isShow) {
@@ -111,8 +116,10 @@
                     const index = formDataObj.blockIndex
                     delete formDataObj.blockIndex
                     formDataObj.category = parseInt(formDataObj.category)
-                    formDataObj.tags = {}
                     formDataObj.file = '/api/files/' + document.forms["blockEdit" + index].file.value
+
+                    const choiceIndex = form.querySelector('select[name="tags"]').getAttribute('data-choice-index')
+                    formDataObj.tags = choiceObjects[choiceIndex].getValue(true)
 
                     sendRequest(
                         window.location.origin + '/api/file_markers' + (isNew ? '' : '/' + id),
@@ -123,7 +130,13 @@
                         index
                     ).then(function (obj) {
                         const categoryText = form.querySelector('select[name="category"]').selectedOptions[0].text
-                        showMarkerBlock(obj.isNew, obj.index, obj.id, categoryText, obj.name, {}, obj.notes)
+                        const tagsCollection = choiceObjects[choiceIndex].getValue()
+                        let tagsSelected = []
+                        for (let i = 0; i < tagsCollection.length; i++) {
+                            tagsSelected[i] = tagsCollection[i].label
+                        }
+
+                        showMarkerBlock(obj.isNew, obj.index, obj.id, categoryText, obj.name, tagsSelected, obj.notes)
                         showMessage(obj.status, 'Даныя захаваліся паспяхова!', 'Эпізод блока ' + obj.index, '#' + obj.id)
 
                         const modalElement = document.getElementById('addEpisodeModal')

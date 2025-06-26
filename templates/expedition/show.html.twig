@@ -46,13 +46,6 @@
 
             {% if geoMapData.center %}
                 <div id="map"></div>
-                <script type="text/javascript">
-                    const geoLatLon = [{{ geoMapData.center.lat }}, {{ geoMapData.center.lon }}];
-                    const geoZoom = {{ geoMapData.zoom }};
-                    const geoPlaces = {{ geoMapData.points|json_encode|raw }};
-                    const geoPopups = {{ geoMapData.popups|json_encode|raw }};
-                    const geoTypes = {{ geoMapData.types|json_encode|raw }};
-                </script>
             {% endif %}
 
             {% if expedition.subjects|length %}
