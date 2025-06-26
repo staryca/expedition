@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Repository;
 
+use App\Entity\Informant;
 use App\Entity\ReportBlock;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -72,5 +73,19 @@ class ReportBlockRepository extends ServiceEntityRepository
         }
 
         return $result;
+    }
+
+    /**
+     * @return array<ReportBlock>
+     */
+    public function findByInformant(Informant $informant): array
+    {
+        return $this->createQueryBuilder('rb')
+            ->where(':informant MEMBER OF rb.informants')
+            ->setParameter('informant', $informant)
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getResult()
+        ;
     }
 }

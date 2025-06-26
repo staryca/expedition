@@ -437,7 +437,11 @@ class Informant
         return $this;
     }
 
-    public function getSearchIndex(): string
+    /**
+     * Use for search and in edit reports
+     * @return string
+     */
+    public function getInformation(): string
     {
         $text = $this->getFirstName() . ', ';
         if ($this->getLifeDates() !== null) {

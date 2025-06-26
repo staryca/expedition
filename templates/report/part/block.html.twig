@@ -45,13 +45,6 @@
 
             <div class="mb-3">
                 <div class="input-group">
-                    <label class="input-group-text">Заўвагі да даследвальнікаў</label>
-                    <input type="text" class="form-control" value="{{ block.userNotes }}" name="userNotes" aria-label="userNotes of block">
-                </div>
-            </div>
-
-            <div class="mb-3">
-                <div class="input-group">
                     <label class="input-group-text">Заўвагі к фота</label>
                     <input type="text" class="form-control" value="{{ block.photoNotes }}" name="photoNotes" aria-label="photoNotes of block">
                 </div>
@@ -61,6 +54,13 @@
                 <div class="input-group">
                     <label class="input-group-text">Заўвагі к відэа</label>
                     <input type="text" class="form-control" value="{{ block.videoNotes }}" name="videoNotes" aria-label="videoNotes of block">
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <div class="input-group">
+                    <label class="input-group-text">Заўвагі да даследвальнікаў</label>
+                    <input type="text" class="form-control" value="{{ block.userNotes }}" name="userNotes" aria-label="userNotes of block">
                 </div>
             </div>
 
@@ -82,7 +82,7 @@
         {# list of added informants #}
         <hr>
         <p class="" id="list{{ blockIndex }}Informants">
-            Выбраць існуючага інфарманта:
+            Выбраць існуючага інфарманта з гэтай вёскі:
             {# list of exist informants #}
         </p>
         <p>
@@ -188,7 +188,10 @@
 
     {% for task in block.tasks %}
         <script type="application/javascript">
-            addReportTaskBlock('{{ blockIndex }}', '{{ task.status }}', '{{ task.id }}', '{{ task.getStatusIcon() }}', '{{ task.content }}', '{% if task.informant %} {{ task.informant.firstName }} {% endif %}')
+            addReportTaskBlock('{{ blockIndex }}', '{{ task.status }}', '{{ task.id }}',
+                '{{ task.getStatusIcon() }}', '{{ task.content }}',
+                '{% if task.informant %} {{ task.informant.getInformation() }} {% endif %}',
+                '{{ task.informant|is_in_blocks }}')
         </script>
     {% endfor %}
 

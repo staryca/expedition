@@ -73,10 +73,6 @@
             if (actionName === 'remove' && informantKey >= 0) {
                 informants.splice(informantKey, 1)
             }
-            console.log(informantLink)
-            console.log(informantId)
-            console.log(informantKey)
-            console.log(informants)
             if (informants.length !== oldCount) {
                 sendRequest(
                     window.location.origin + '/api/report_blocks/' + blockId,
@@ -113,6 +109,17 @@
         addActionRemoveInformant(newInformantRemove)
     }
 
+    function saveInformant(data, isNew, id, index, successFunction) {
+        sendRequest(
+            window.location.origin + '/api/informants' + (isNew ? '' : '/' + id),
+            isNew ? 'POST' : 'PATCH',
+            data,
+            'Інфармант',
+            id,
+            index
+        ).then(successFunction)
+    }
+
     window.addEventListener("load", (event) => {
         const saveNewInformant = document.getElementById('saveNewInformant')
         if (saveNewInformant) {
@@ -142,32 +149,27 @@
                         formDataObj.geoPointCurrent = null
                     }
 
-                    sendRequest(
-                        window.location.origin + '/api/informants' + (isNew ? '' : '/' + id),
-                        isNew ? 'POST' : 'PATCH',
-                        formDataObj,
-                        'Інфармант',
-                        id,
-                        index
-                    ).then(function (obj) {
-                        if (obj.isNew) {
-                            // Link informant to block
-                            addOrRemoveInformantFromBlock(obj.index, obj.id, 'add', undefined,
-                                function (object) {
-                                    addInformantBlock(obj.index, obj.id, obj.firstName, obj.yearBirth, obj.notes)
-                                    showMessage(object.status, 'Даныя захаваліся паспяхова!', 'Інфармант', '#' + obj.id)
-                                }
-                            )
-                        } else {
-                            showMessage(obj.status, 'Даныя захаваліся паспяхова!', 'Інфармант', '#' + obj.id)
+                    saveInformant(formDataObj, isNew, id, index,
+                        function (obj) {
+                            if (obj.isNew) {
+                                // Link informant to block
+                                addOrRemoveInformantFromBlock(obj.index, obj.id, 'add', undefined,
+                                    function (object) {
+                                        addInformantBlock(obj.index, obj.id, obj.firstName, obj.yearBirth, obj.notes)
+                                        showMessage(object.status, 'Даныя захаваліся паспяхова!', 'Інфармант', '#' + obj.id)
+                                    }
+                                )
+                            } else {
+                                showMessage(obj.status, 'Даныя захаваліся паспяхова!', 'Інфармант', '#' + obj.id)
+                            }
+
+                            const modalElement = document.getElementById('addInformantModal')
+                            bootstrap.Modal.getInstance(modalElement).hide()
+
+                            form.classList.remove('was-validated')
+                            form.reset()
                         }
-
-                        const modalElement = document.getElementById('addInformantModal')
-                        bootstrap.Modal.getInstance(modalElement).hide()
-
-                        form.classList.remove('was-validated')
-                        form.reset()
-                    })
+                    )
                 }
             })
         }

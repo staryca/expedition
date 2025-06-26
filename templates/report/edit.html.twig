@@ -196,7 +196,9 @@
 
             {% for task in report.tasks %}
             <script type="application/javascript">
-                addReportTaskBlock('{{ reportTaskIndex }}', '{{ task.status }}', '{{ task.id }}', '{{ task.getStatusIcon() }}', '{{ task.content }}', '{% if task.informant %} {{ task.informant.firstName }} {% endif %}')
+                addReportTaskBlock('{{ reportTaskIndex }}', '{{ task.status }}', '{{ task.id }}', '{{ task.getStatusIcon() }}',
+                    '{{ task.content }}', '{% if task.informant %} {{ task.informant.getInformation() }} {% endif %}',
+                    '{{ task.informant|is_in_blocks }}')
             </script>
             {% endfor %}
 
@@ -304,11 +306,46 @@
                             </div>
                         </div>
 
+                        <div class="mb-3">
+                            <div class="input-group">
+                                <label class="input-group-text">Імя інфарманта</label>
+                                <input type="text" class="form-control" name="firstName" aria-label="Name of informant">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="input-group">
+                                <label class="input-group-text">Год нараджэньня</label>
+                                <input type="number" class="form-control" name="yearBirth" aria-label="Year of birth"
+                                       min="1850" max="2020" size="4">
+                                <div class="invalid-feedback">
+                                    Калі ласка, напішыце дакладна год
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="input-group mb-3">
-                            <span class="input-group-text">Інфармант</span>
-                            <select class="form-select" aria-label="Informant of task">
-                                <option selected>- выбраць -</option>
+                            <span class="input-group-text">Жыве ў</span>
+                            <select class="form-select" aria-label="Месца" name="geoPointCurrent">
+                                <option value="">- выбраць -</option>
+                                {% for geoPoint in geoPoints %}
+                                    <option value="/api/geo_points/{{ geoPoint.id }}"
+                                            {% if report.geoPoint and report.geoPoint.id == geoPoint.id %}selected{% endif %}>
+                                        {{ geoPoint.getFullBeName() }}
+                                    </option>
+                                {% endfor %}
                             </select>
+                        </div>
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">няма ў сьпісе</span>
+                            <input type="text" class="form-control" placeholder="вёска і раён" name="placeCurrent" aria-label="live place">
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="input-group">
+                                <label class="input-group-text">Заўвагі да інфарманта</label>
+                                <input type="text" class="form-control" name="notes" aria-label="Notes about informant">
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -489,8 +526,8 @@
 
                         <div class="mb-3">
                             <div class="input-group">
-                                <label class="input-group-text" for="informantNotes">Заўвагі</label>
-                                <input type="text" class="form-control" id="informantNotes" name="notes">
+                                <label class="input-group-text">Заўвагі</label>
+                                <input type="text" class="form-control" aria-label="Notes about informant" name="notes">
                             </div>
                         </div>
                     </form>

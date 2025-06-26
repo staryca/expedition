@@ -3,11 +3,14 @@
         <i class="bi TASK_ICON"></i>
         TASK_TYPE
         TASK_CONTENT
+        {#
         <button type="button" class="btn btn-secondary" id="editBlock_BLOCK_INDEX_Task_TASK_ID_Edit"
                 data-index="TASK_ID" data-block="BLOCK_INDEX"><i class="bi bi-pencil-square"></i></button>
-        TASK_INFORMANT
+        #}
         <button type="button" class="btn btn-danger" id="editBlock_BLOCK_INDEX_Task_TASK_ID_Remove"
                 data-index="TASK_ID" data-block="BLOCK_INDEX">Выдаліць</button>
+        TASK_INFORMANT_INFO
+        <b>TASK_INFORMANT_COMMENT</b>
     </p>
 </div>
 
@@ -31,22 +34,49 @@
         })
     }
 
-    function addReportTaskBlock(blockIndex, status, id, icon, content, informant) {
+    function addReportTaskBlock(blockIndex, status, id, icon, content, informant, informantComment) {
         let html = document.getElementById('createNewReportTaskTemplate').innerHTML
         html = html.replaceAll('BLOCK_INDEX', blockIndex)
-        const type = ('' + status === '{{ constant('App\\Entity\\Type\\TaskStatus::TIP') }}') ? 'Наводка:' : ''
+        const type = (('' + status) === '{{ constant('App\\Entity\\Type\\TaskStatus::TIP') }}') ? 'Наводка:' : ''
         html = html.replaceAll('TASK_ICON', icon)
         html = html.replaceAll('TASK_TYPE', type)
         html = html.replaceAll('TASK_ID', '' + id)
         html = html.replaceAll('TASK_CONTENT', content)
-        const informantContent = (informant !== '') ? 'Інфармант: ' + informant : ''
-        html = html.replaceAll('TASK_INFORMANT', informantContent)
+        const informantContent = (informant !== '' && informant !== undefined) ? 'Інфармант: ' + informant : ''
+        html = html.replaceAll('TASK_INFORMANT_INFO', informantContent)
+        const comment = informantContent === '' ? '' : ((informantComment === '' || informantComment === undefined)
+            ? '<span class="badge text-bg-secondary"><i class="bi bi-truck"></i> Неапрацаваны яшчэ' + '</span>'
+            : '<span class="badge text-bg-success"><i class="bi bi-journal-check"></i> ' + informantComment + '. Можна выдаляць наводку.</span>')
+        html = html.replaceAll('TASK_INFORMANT_COMMENT', comment)
 
         let element = document.getElementById('all_' + blockIndex + '_Tasks')
         element.insertAdjacentHTML('afterbegin', html)
 
         let newReportTaskRemove = document.getElementById('editBlock_' + blockIndex + '_Task_' + id + '_Remove')
         addActionReportTaskRemove(newReportTaskRemove)
+    }
+
+    function saveTask(data, isNew, id, index, informantName) {
+        sendRequest(
+            window.location.origin + '/api/tasks' + (isNew ? '' : '/' + id),
+            isNew ? 'POST' : 'PATCH',
+            data,
+            'Планы, задачы, наводкі',
+            id,
+            index
+        ).then(
+            function (obj) {
+                const form = document.getElementById('formAddTaskPlan')
+                addReportTaskBlock(obj.index, obj.status, obj.id, obj.statusIcon , obj.content, informantName)
+                showMessage(obj.status, 'Даныя захаваліся паспяхова!', 'Планы, задачы, наводкі', '#' + obj.id)
+
+                const modalElement = document.getElementById('addTaskPlanModal')
+                bootstrap.Modal.getInstance(modalElement).hide()
+
+                form.classList.remove('was-validated')
+                form.reset()
+            }
+        )
     }
 
     window.addEventListener("load", (event) => {
@@ -72,26 +102,36 @@
                     if (formDataObj.reportBlock === '') {
                         formDataObj.reportBlock = null
                     }
+                    delete formDataObj.informantId
 
-                    sendRequest(
-                        window.location.origin + '/api/tasks' + (isNew ? '' : '/' + id),
-                        isNew ? 'POST' : 'PATCH',
-                        formDataObj,
-                        'Планы, задачы, наводкі',
-                        id,
-                        index
-                    ).then(function (obj) {
-                        const statusText = form.querySelector('select[name="status"]').selectedOptions[0].text
-                        const informant = '-'
-                        addReportTaskBlock(obj.index, statusText, obj.id, obj.statusIcon , obj.content, informant)
-                        showMessage(obj.status, 'Даныя захаваліся паспяхова!', 'Планы, задачы, наводкі', '#' + obj.id)
+                    let dataInformant = {
+                        dateCreated: (new Date()).toISOString(),
+                        firstName: formDataObj.firstName,
+                        yearBirth: parseInt(formDataObj.yearBirth),
+                        nameAndGender: {name: formDataObj.firstName, gender: parseInt('{{ constant('App\\Entity\\Type\\GenderType::UNKNOWN') }}')},
+                        geoPointCurrent: formDataObj.geoPointCurrent === '' ? null : formDataObj.geoPointCurrent,
+                        placeCurrent: formDataObj.placeCurrent,
+                        notes: formDataObj.notes
+                    }
+                    if (isNew) {
+                        formDataObj.dateCreated = (new Date()).toISOString()
+                    }
+                    delete formDataObj.firstName
+                    delete formDataObj.yearBirth
+                    delete formDataObj.geoPointCurrent
+                    delete formDataObj.placeCurrent
+                    delete formDataObj.notes
 
-                        const modalElement = document.getElementById('addTaskPlanModal')
-                        bootstrap.Modal.getInstance(modalElement).hide()
-
-                        form.classList.remove('was-validated')
-                        form.reset()
-                    })
+                    if (dataInformant.name !== '') {
+                        saveInformant(dataInformant, true, null, index,
+                            function (obj) {
+                                formDataObj.informant = '/api/informants/' + obj.id
+                                saveTask(formDataObj, isNew, id, index, obj.information, '')
+                            }
+                        )
+                    } else {
+                        saveTask(formDataObj, isNew, id, index, '', '')
+                    }
                 }
             })
         }
