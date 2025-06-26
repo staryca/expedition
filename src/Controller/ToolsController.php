@@ -125,7 +125,7 @@ class ToolsController extends AbstractController
         $this->entityManager->flush();
 
         return $this->render('import/show.table.result.html.twig', [
-            'headers' => ['Імя до', 'Пол до', 'Імя пасля', 'Пол пасля'],
+            'headers' => ['Пол до', 'Імя до', 'Пол пасля', 'Імя пасля'],
             'data' => $data,
         ]);
     }

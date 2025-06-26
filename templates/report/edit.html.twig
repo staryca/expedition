@@ -32,6 +32,25 @@
             .main {margin-left: 50px;}
         }
     </style>
+
+    <!-- Include Choices CSS -->
+    {# <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css"/> #}
+    <link href="{{ asset('css/choices.min.css') }}" rel="stylesheet">
+
+    <style>
+        .choices[data-type*=select-one] {
+            padding: 0;
+            margin: 0;
+        }
+        .choices[data-type*=select-one] .choices__inner {
+            border: none;
+        }
+        .choices__list--dropdown, .choices__list[aria-expanded] {
+            z-index: 5;
+        }
+    </style>
+
+
 {% endblock %}
 
 {% block body %}
@@ -102,13 +121,13 @@
                         <label class="input-group-text" for="newReportCode">Код</label>
                         <input type="text" class="form-control" value="{{ report.code }}" id="newReportCode" name="code">
                         <span class="input-group-text">
-                              Будзе як назва папкі для файлаў да гэтага блоку
+                              Назва папкі на дыску для файлаў
                         </span>
                     </div>
 
                     <div class="input-group mb-3">
                         <span class="input-group-text">Месца</span>
-                        <select class="form-select" aria-label="new report location" name="geoPoint">
+                        <select class="form-select js-choice" aria-label="new report location" name="geoPoint">
                             <option value="" selected>- невядома -</option>
                             {% set selected = report.geoPoint == null %}
                             {% for geoPoint in geoPoints %}
@@ -124,14 +143,14 @@
                             {% endif %}
                         </select>
 
-                        {% include('report/part/detect.location.html.twig') %}
+                        {# include('report/part/detect.location.html.twig') #}
 
-                        <button type="button" class="btn btn-primary">Паглядзець на мапе</button>
-                        <span class="input-group-text">няма ў спісе</span>
+                        {# <button type="button" class="btn btn-primary">Паглядзець на мапе</button> #}
+                    </div>
+                    <div class="input-group mb-3">
+                        <span class="input-group-text">няма ў сьпісе</span>
                         <input type="text" class="form-control"
-                               placeholder="вёска, раён [, вобласць, краіна]"
-                               value="{{ report.geoNotes }}"
-                               name="geoNotes"
+                               placeholder="вёска і раён [, вобласць, краіна]" name="geoNotes"
                                aria-label="new report other location">
                     </div>
 
@@ -244,7 +263,7 @@
 
                         <div class="input-group mb-3">
                             <span class="input-group-text">Імя</span>
-                            <select name="participant" class="form-select" aria-label="Name of user" required>
+                            <select class="form-select js-choice" name="participant" aria-label="Name of user" required>
                                 <option selected disabled value="">- выбярыце са сьпіса -</option>
                                 {% for id, name in users %}
                                     <option value="/api/users/{{ id }}">{{ name }}</option>
@@ -276,7 +295,7 @@
 
     <!-- Modal: addTaskPlanModal -->
     <div class="modal fade" id="addTaskPlanModal" tabindex="-1" aria-labelledby="addTaskPlanModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header">
                     <h1 class="modal-title fs-5" id="addTaskPlanModalLabel">Дадаць новы план, задачу, наводку</h1>
@@ -329,7 +348,7 @@
 
                         <div class="input-group mb-3">
                             <span class="input-group-text">Жыве ў</span>
-                            <select class="form-select" aria-label="Месца" name="geoPointCurrent">
+                            <select class="form-select js-choice" aria-label="Месца" name="geoPointCurrent">
                                 <option value="">- выбраць -</option>
                                 {% for geoPoint in geoPoints %}
                                     <option value="/api/geo_points/{{ geoPoint.id }}"
@@ -362,7 +381,7 @@
 
     <!-- Modal: addOrgModal -->
     <div class="modal fade" id="addOrgModal" tabindex="-1" aria-labelledby="addOrgModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header">
                     <h1 class="modal-title fs-5" id="addOrgModalLabel">Дадаць новую арганізацыю</h1>
@@ -411,7 +430,7 @@
 
                         <div class="input-group mb-3">
                             <span class="input-group-text">Месца</span>
-                            <select class="form-select" aria-label="Location of org" name="geoPoint" required>
+                            <select class="form-select js-choice" aria-label="Location of org" name="geoPoint" required>
                                 <option value="">- выбраць -</option>
                                 {% for geoPoint in geoPoints %}
                                     <option value="/api/geo_points/{{ geoPoint.id }}"
@@ -443,7 +462,7 @@
 
     <!-- Modal: addInformantModal -->
     <div class="modal fade" id="addInformantModal" tabindex="-1" aria-labelledby="addInformantModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
+        <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header">
                     <h1 class="modal-title fs-5" id="addInformantModalLabel">Дадаць новага інфарманта</h1>
@@ -477,7 +496,7 @@
 
                         <div class="input-group mb-3">
                             <span class="input-group-text">Адкуль</span>
-                            <select class="form-select" aria-label="Месца" name="geoPointBirth">
+                            <select class="form-select js-choice" aria-label="Месца" name="geoPointBirth">
                                 <option value="">- выбраць -</option>
                                 {% for geoPoint in geoPoints %}
                                     <option value="/api/geo_points/{{ geoPoint.id }}"
@@ -494,7 +513,7 @@
 
                         <div class="input-group mb-3">
                             <span class="input-group-text">Жыве ў</span>
-                            <select class="form-select" aria-label="Месца" name="geoPointCurrent">
+                            <select class="form-select js-choice" aria-label="Месца" name="geoPointCurrent">
                                 <option value="">- выбраць -</option>
                                 {% for geoPoint in geoPoints %}
                                     <option value="/api/geo_points/{{ geoPoint.id }}"
@@ -546,7 +565,7 @@
 
     <!-- Modal: addEpisodeModal -->
     <div class="modal fade" id="addEpisodeModal" tabindex="-1" aria-labelledby="addEpisodeModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header">
                     <h1 class="modal-title fs-5" id="addEpisodeModalLabel">Дадаць новы эпізод</h1>
@@ -601,7 +620,7 @@
 
     <!-- Modal: addSubjectModal -->
     <div class="modal fade" id="addSubjectModal" tabindex="-1" aria-labelledby="addSubjectModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header">
                     <h1 class="modal-title fs-5" id="addSubjectModalLabel">Дадаць новы прадмет</h1>
@@ -692,4 +711,18 @@
 
 {% block styles_finish %}
     <script src="{{ asset('js/exp.js') }}"></script>
+    <script type="application/javascript">
+        const jsChoices = document.getElementsByClassName('js-choice')
+        let choiceObjects = []
+        for (let i = 0; i < jsChoices.length; i++) {
+            choiceObjects[i] = new Choices(jsChoices[i], {
+                itemSelectText: 'Выбраць',
+                noResultsText: 'Нічога ня знойдзена',
+            });
+        }
+        const choices = document.getElementsByClassName('choices')
+        for (let i = 0; i < choices.length; i++) {
+            choices[i].classList.add('form-select');
+        }
+    </script>
 {% endblock %}
