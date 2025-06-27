@@ -213,7 +213,7 @@ class ImportBsuController extends AbstractController
     {
         $reports = [];
         foreach ($expedition->getReports() as $report) {
-            $code = (int) $report->getCode();
+            $code = (int) $report->getTempValue('id');
             if ($code > 100000) {
                 $reports[$code] = $report;
             }
@@ -230,7 +230,7 @@ class ImportBsuController extends AbstractController
     {
         $reports = [];
         foreach ($expedition->getReports() as $report) {
-            $code = (int) $report->getCode();
+            $code = (int) $report->getTempValue('id');
             if ($code === 0) {
                 $reports[$this->getReportIndex($report)] = $report;
             }
@@ -247,9 +247,8 @@ class ImportBsuController extends AbstractController
     {
         $reports = [];
         foreach ($expedition->getReports() as $report) {
-            $code = (int) $report->getCode();
-            $data = $report->getTemp();
-            if ($code > 100000 && $data['total'] > 0) {
+            $code = (int) $report->getTempValue('id');
+            if ($code > 100000 && $report->getTempValue('total') > 0) {
                 $reports[$code] = $report;
             }
         }
@@ -265,7 +264,7 @@ class ImportBsuController extends AbstractController
     {
         $reports = [];
         foreach ($expedition->getReports() as $report) {
-            $code = (int) $report->getCode();
+            $code = (int) $report->getTempValue('id');
             $data = $report->getTemp();
             if (
                 $code > 100000
@@ -287,7 +286,7 @@ class ImportBsuController extends AbstractController
     {
         $reports = [];
         foreach ($expedition->getReports() as $report) {
-            $code = (int) $report->getCode();
+            $code = (int) $report->getTempValue('id');
             $data = $report->getTemp();
             if (
                 $code > 100000
@@ -421,7 +420,7 @@ class ImportBsuController extends AbstractController
                 }
             }
             $result[] = [
-                'id' => $report->getCode(),
+                'id' => $report->getTempValue('id'),
                 'name' => $report->getGeoNotes(),
                 'total' => $total,
                 'children' => count($children),
@@ -499,7 +498,7 @@ class ImportBsuController extends AbstractController
         foreach ($allReports as $code => $report) {
             $bsuDto = (new BsuDto())->make($report->getTemp());
             $reportsData[$code] = $this->parser->createReportData($bsuDto);
-            $persons = $this->parser->getBsuPersonsFromAuthors($bsuDto->authors, $reportsData[$code]);
+            $persons = $this->parser->getBsuPersonsFromAuthors($bsuDto->authors, $reportsData[$code], $code);
             foreach ($persons as $person) {
                 $personsBsu[] = $person;
             }
@@ -616,7 +615,7 @@ class ImportBsuController extends AbstractController
         foreach ($allReports as $code => $report) {
             $bsuDto = (new BsuDto())->make($report->getTemp());
             $reportsData[$code] = $this->parser->createReportData($bsuDto);
-            $persons = $this->parser->getBsuPersonsFromAuthors($bsuDto->authors, $reportsData[$code]);
+            $persons = $this->parser->getBsuPersonsFromAuthors($bsuDto->authors, $reportsData[$code], $code);
             foreach ($persons as $person) {
                 $personsBsu[] = $person;
             }
@@ -663,13 +662,13 @@ class ImportBsuController extends AbstractController
         $this->parser->mergeReportBlocks($reportsData, $reportBlocksData);
 
         $reportsDataGroupByLocation = [];
-        foreach ($reportsData as $reportData) {
+        foreach ($reportsData as $code => $reportData) {
             $key = ($reportData->geoPoint ? $reportData->geoPoint->getId() : $reportData->place)
                 . '-' . $reportData->dateAction?->format('Y');
             if (!isset($reportsDataGroupByLocation[$key])) {
-                $reportsDataGroupByLocation[$key][] = $reportData->code;
+                $reportsDataGroupByLocation[$key][] = $code;
             } else {
-                $reportsDataGroupByLocation[$key][] = $reportData->code;
+                $reportsDataGroupByLocation[$key][] = $code;
             }
         }
         $sr['m7'] = memory_get_usage(true) / 1024 / 1024;

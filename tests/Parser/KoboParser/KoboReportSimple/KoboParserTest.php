@@ -101,12 +101,12 @@ class KoboParserTest extends TestCase
         $this->assertCount(4, $reports);
 
         $report = $reports[46];
-        $this->assertEquals('20210813_Kruk_01_Ордзеж_01', $report->code);
         $this->assertEquals('в. Ордзеж, Лёзненскі раён (Крынковский c/c)', $report->place);
         $this->assertEquals('2021-08-13', $report->dateCreated->format('Y-m-d'));
         $this->assertEquals('2021-08-13', $report->dateAction->format('Y-m-d'));
         $this->assertCount(2, $report->users);
         $this->assertCount(1, $report->blocks);
+        $this->assertEquals('20210813_Kruk_01_Ордзеж_01', $report->blocks[0]->code);
         $this->assertEquals(ReportBlockType::TYPE_CONVERSATION, $report->blocks[0]->type);
         $this->assertCount(2, $report->blocks[0]->additional);
         $this->assertArrayHasKey(InformationType::AUDIO, $report->blocks[0]->additional);
@@ -114,12 +114,12 @@ class KoboParserTest extends TestCase
         $this->assertEquals('гаспадарчыя пабудовы "астроўкі" (азярод), партрэт інфарматараў', $report->blocks[0]->photoNotes);
 
         $report = $reports[47];
-        $this->assertEquals('20210813_Kruk_01_Ордзеж_02', $report->code);
         $this->assertEquals('в. Ордзеж, Лёзненскі раён (Крынковский c/c)', $report->place);
         $this->assertEquals('2021-08-13', $report->dateCreated->format('Y-m-d'));
         $this->assertEquals('2021-08-13', $report->dateAction->format('Y-m-d'));
         $this->assertCount(2, $report->users);
         $this->assertCount(1, $report->blocks);
+        $this->assertEquals('20210813_Kruk_01_Ордзеж_02', $report->blocks[0]->code);
         $this->assertEquals('Наведаць могілкі в. Ордзеж (і Глінкі).', $report->blocks[0]->description);
         $this->assertEquals(ReportBlockType::TYPE_CONVERSATION, $report->blocks[0]->type);
         $this->assertCount(2, $report->blocks[0]->additional);
@@ -131,7 +131,6 @@ class KoboParserTest extends TestCase
         );
 
         $report = $reports[48];
-        $this->assertEquals('1-01', $report->code);
         $this->assertEquals('гп Лёзна, Лёзненскі раён, Віцебская вобласць, Беларусь', $report->place);
         $this->assertEquals('2021-08-13', $report->dateCreated->format('Y-m-d'));
         $this->assertEquals('2021-08-13', $report->dateAction->format('Y-m-d'));
@@ -139,13 +138,13 @@ class KoboParserTest extends TestCase
         $this->assertEquals('30.795776', $report->lon);
         $this->assertCount(3, $report->users);
         $this->assertCount(1, $report->blocks);
+        $this->assertEquals('1-01', $report->blocks[0]->code);
         $this->assertEquals(ReportBlockType::TYPE_PHOTO_OF_ITEMS, $report->blocks[0]->type);
         $this->assertCount(1, $report->blocks[0]->additional);
         $this->assertArrayHasKey(InformationType::PHOTO, $report->blocks[0]->additional);
         $this->assertEquals('Фота  рушнікоў, кашуль, андарака, посцілак, куфраў, збаноў, прасоў, жорны, свістуляк   А.М. Траяноўскага , скрыпка  А.Г. Антонава', $report->blocks[0]->photoNotes);
 
         $report = $reports[49];
-        $this->assertEquals('1-02', $report->code);
         $this->assertEquals('гп Лёзна, Лёзненскі раён, Віцебская вобласць, Беларусь', $report->place);
         $this->assertEquals('2021-08-13', $report->dateCreated->format('Y-m-d'));
         $this->assertEquals('2021-08-13', $report->dateAction->format('Y-m-d'));
@@ -153,6 +152,7 @@ class KoboParserTest extends TestCase
         $this->assertEquals('30.795776', $report->lon);
         $this->assertCount(3, $report->users);
         $this->assertCount(1, $report->blocks);
+        $this->assertEquals('1-02', $report->blocks[0]->code);
         $this->assertEquals(ReportBlockType::TYPE_PHOTO_OF_ITEMS, $report->blocks[0]->type);
         $this->assertCount(1, $report->blocks[0]->additional);
         $this->assertArrayHasKey(InformationType::PHOTO, $report->blocks[0]->additional);

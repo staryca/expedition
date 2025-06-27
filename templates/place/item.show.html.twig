@@ -19,7 +19,6 @@
                     <a href="{{ path('report_show', {id: report.id}) }}" class="list-group-item list-group-item-action">
                         <b>{{ report.expedition.name }}</b>,
                         {{ report.getTextDateAction() }}
-                        {% if report.code %}<small>&lt;{{ report.code }}&gt;</small>{% endif %}
 
                         {% for block in report.blocks %}
                             | {{ block.getTypeName() }}

@@ -23,6 +23,15 @@
             </div>
 
             <div class="input-group mb-3">
+                <label class="input-group-text">Код (назва папкі)</label>
+                <input type="text" class="form-control" value="{{ block.code }}" name="code"
+                       aria-label="Name of folder" placeholder="YYYYMMDD_Leader_NN_Place_NN">
+                <button type="button" class="btn btn-primary" data-bs-block="{{ blockIndex }}" id="generateBlockCode{{ blockIndex }}">
+                    Генерыраваць назву папкі на дыску для файлаў
+                </button>
+            </div>
+
+            <div class="input-group mb-3">
                 <span class="input-group-text">Вопіс блока</span>
                 <textarea class="form-control" aria-label="With textarea" name="description">{{ block.description }}</textarea>
             </div>

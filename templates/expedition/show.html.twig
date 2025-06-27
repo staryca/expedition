@@ -97,11 +97,6 @@
                     {% for report in reports %}
                         <a href="{{ path('report_show', {id: report.id}) }}" class="list-group-item list-group-item-action">
                             {{ report.getTextDateAction() }}
-                            {% if report.code %}
-                                <small>&lt;{{ report.code }}&gt;</small>
-                            {% else %}
-                                <span class="text-danger-emphasis" title="Няма кода ў справаздачы!"><i class="bi bi-exclamation-triangle"></i></span>
-                            {% endif %}
                             {% if report.geoPoint %}
                                 <b>{{ report.geoPoint.getLongBeName() }}</b>
                                 {% if report.geoPoint.district %}
@@ -136,7 +131,10 @@
                                 <span class="text-danger" title="Няма блокаў!"><i class="bi bi-exclamation-triangle"></i> Блокі</span>
                             {% endif %}
                             {% for block in report.blocks %}
-                                | {{ block.getTypeName() }}
+                                | <span title="Назва папкі на дыску для файлаў: {{ block.code }}">{{ block.getTypeName() }}</span>
+                                {% if block.code is empty %}
+                                    <span class="text-danger-emphasis" title="Няма кода ў блока!"><i class="bi bi-exclamation-triangle"></i></span>
+                                {% endif %}
                                 {% if block.type == constant('App\\Entity\\Type\\ReportBlockType::TYPE_CONVERSATION') %}
                                     {% if block.getInformants() is empty %}
                                         <span class="text-danger" title="Няма інфармантаў!"><i class="bi bi-exclamation-triangle"></i> Інф.</span>

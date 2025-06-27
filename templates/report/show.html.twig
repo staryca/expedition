@@ -94,6 +94,11 @@
                 <div class="col col-lg-4">
                     <p class="h4">Блок: {{ block.getTypeCorrectName() }}</p>
                 </div>
+                {% if block.code %}
+                    <div class="col col-12 col-sm-12 col-lg-8">
+                        Назва папкі на дыску для файлаў: <b>{{ block.code }}</b>
+                    </div>
+                {% endif %}
                 {% if block.userNotes %}
                     <div class="col col-12 col-sm-12 col-lg-8">
                         Заўвагі удзельнікаў: {{ block.userNotes }}
@@ -179,7 +184,7 @@
                     {% for file in files %}
                         <p>
                             {% include 'part/file.full.html.twig'
-                                with {'file': file, 'code': report.code, 'mediaFolder': mediaFolder} %}
+                                with {'file': file, 'code': block.code, 'mediaFolder': mediaFolder} %}
                         </p>
 
                         {% if file.fileMarkers|length %}

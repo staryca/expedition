@@ -27,7 +27,7 @@ class ExpeditionRepository extends ServiceEntityRepository
             ->innerJoin('e.reports', 'r')
             ->addSelect('r')
             ->setMaxResults(200)
-            ->addOrderBy('r.code', 'ASC')
+            ->addOrderBy('r.geoPoint', 'ASC')
             ->getQuery()
             ->getResult()
         ;

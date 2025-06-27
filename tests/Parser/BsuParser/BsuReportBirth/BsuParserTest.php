@@ -52,10 +52,10 @@ class BsuParserTest extends TestCase
         $this->assertCount(10, $dto->values);
 
         $reportData = $this->bsuParser->createReportData($dto);
-        $this->assertEquals($id, (int) $reportData->code);
         $this->assertEquals('Столбун Веткаўскі раён', $reportData->place);
         $this->assertNull($reportData->geoPoint);
         $this->assertCount(1, $reportData->blocks);
+        $this->assertEquals($id, (int) $reportData->blocks[$id]->code);
         $this->assertEquals('А на гарэ лён', $reportData->blocks[$id]->description);
         $this->assertEquals(
             'https://elib.bsu.by/handle/123456789/' . $id,
@@ -66,7 +66,7 @@ class BsuParserTest extends TestCase
         $this->assertEquals('Пазаабрадавая паэзія', $reportData->blocks[$id]->tags[0]);
         $this->assertEquals('сямейна-бытавыя песні', $reportData->blocks[$id]->tags[1]);
 
-        $personsBsu = $this->bsuParser->getBsuPersonsFromAuthors($dto->authors, $reportData);
+        $personsBsu = $this->bsuParser->getBsuPersonsFromAuthors($dto->authors, $reportData, (string) $id);
         $this->assertCount(5, $personsBsu);
         foreach ($personsBsu as $personBsu) {
             $this->assertFalse($personBsu->isStudent);
@@ -107,6 +107,8 @@ class BsuParserTest extends TestCase
         $this->assertArrayHasKey($id, $reportBlocksData);
 
         $this->bsuParser->mergeReportBlocks([$reportData], $reportBlocksData);
+        $this->assertCount(1, $reportBlocksData);
+        $this->assertArrayHasKey($id, $reportBlocksData);
         $this->assertNull($reportData->blocks[$id]->organizationKey);
         $this->assertCount(4, $reportData->blocks[$id]->informantKeys);
     }

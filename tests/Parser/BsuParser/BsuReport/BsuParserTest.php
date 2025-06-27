@@ -54,7 +54,7 @@ class BsuParserTest extends TestCase
         $expedition = new Expedition();
         $report = $this->bsuParser->createReport($dto, $expedition);
 
-        $this->assertEquals($id, $report->getCode());
+        $this->assertEquals($id, $report->getTempValue('id'));
         $this->assertEquals('в. Гальшаны Ашмянскі раён', $report->getGeoNotes());
         $this->assertNull($report->getGeoPoint());
 
@@ -83,6 +83,7 @@ class BsuParserTest extends TestCase
 
         $reportBlocksData = $this->bsuParser->getReportBlocks($organizations, $informants);
         $this->assertCount(1, $reportBlocksData);
+        $this->assertArrayHasKey($id, $reportBlocksData);
         $this->assertNull($reportBlocksData[$id]->organizationKey);
         $this->assertCount(2, $reportBlocksData[$id]->informantKeys);
     }

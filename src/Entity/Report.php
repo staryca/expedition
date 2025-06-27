@@ -35,9 +35,6 @@ class Report
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $dateAction = null;
 
-    #[ORM\Column(length: 200, nullable: true)]
-    private ?string $code = null;
-
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $dateCreated = null;
 
@@ -196,18 +193,6 @@ class Report
         return ($this->geoPoint !== null) ? $this->geoPoint->getName() : $this->geoNotes;
     }
 
-    public function getCode(): ?string
-    {
-        return $this->code;
-    }
-
-    public function setCode(?string $code): static
-    {
-        $this->code = $code;
-
-        return $this;
-    }
-
     public function getLat(): ?string
     {
         return $this->lat;
@@ -333,16 +318,20 @@ class Report
     public function __toString(): string
     {
         return sprintf(
-            '%s, %s%s',
+            '%s, %s',
             $this->expedition->getName(),
-            $this->getTextDateAction(),
-            $this->code ? ' #' . $this->code : ''
+            $this->getTextDateAction()
         );
     }
 
     public function getTemp(): ?array
     {
         return $this->temp;
+    }
+
+    public function getTempValue(string $key)
+    {
+        return $this->temp[$key] ?? null;
     }
 
     public function setTemp(?array $temp): static

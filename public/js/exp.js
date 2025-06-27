@@ -109,6 +109,7 @@ if (createNewBlock) {
         html = html.replaceAll('NUMBERBLOCK', '' + i)
         let mainElement = document.getElementById('mainBlock')
         mainElement.insertAdjacentHTML('beforeend', html)
+
         addActionBlock(i, false)
         document.getElementById("blockType" + i).focus()
     })
@@ -153,6 +154,30 @@ function addActionBlock(index, savedBlock) {
             showMessage(obj.status, 'Даныя захаваліся паспяхова!', 'Блок ' + obj.index, '#' + obj.id)
         })
     })
+
+    if (index !== 'NUMBERBLOCK') {
+        document.getElementById('generateBlockCode' + index).addEventListener('click', function (e) {
+            const form = document.forms['reportEdit']
+            let code = form.dateAction.value.replaceAll('-', '') + '_?_0?_'
+            const choiceIndex = form.querySelector('select[name="geoPoint"]').getAttribute('data-choice-index')
+
+            let location = choiceObjects[choiceIndex].getValue().label
+            const i = location.indexOf(',')
+            if (i > 0) {
+                location = location.substring(0, i - 1)
+            }
+            const types = ['аг.', 'в.', 'г.', 'п.', 'гп.', 'кп.', 'рп.', 'ур.', 'ф.', 'х.']
+            for (let i = 0; i < types.length; i++) {
+                location = location.replaceAll(types[i], '')
+            }
+            if (location.indexOf(' ') === 0) {
+                location = location.substring(1)
+            }
+            code += location + '_0' + index
+
+            document.forms["blockEdit" + index].code.value = code
+        })
+    }
 }
 
 function showSubBlocks(index) {

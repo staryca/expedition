@@ -14,8 +14,6 @@ class ReportDataDto extends PlaceDto
 
     public ?\DateTimeInterface $dateAction = null;
 
-    public ?string $code = null;
-
     /** @var array<ReportBlockDataDto> $blocks */
     public array $blocks = [];
 
@@ -39,7 +37,7 @@ class ReportDataDto extends PlaceDto
     public static function fromKobo(array $data): self
     {
         $dto = new self();
-        $dto->code = $data[KoboReportColumns::CODE] ?? null;
+
         if ($data[KoboReportColumns::PLACE] === 'няма ў спісе, дадаць населены пункт') {
             $place = $data[KoboReportColumns::PLACE_OTHER];
             if ($data[KoboReportColumns::DISTRICT] === 'other') {
