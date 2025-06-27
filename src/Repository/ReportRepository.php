@@ -7,6 +7,7 @@ namespace App\Repository;
 use App\Entity\Expedition;
 use App\Entity\GeoPoint;
 use App\Entity\Report;
+use App\Service\LocationService;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -59,6 +60,24 @@ class ReportRepository extends ServiceEntityRepository
             ->andWhere('r.temp IS NULL ')
             ->setParameter('geoPoint', $geoPoint)
             ->orderBy('r.dateAction', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @param GeoPoint $geoPoint
+     * @return array<Report>
+     */
+    public function findNearGeoPoint(GeoPoint $geoPoint): array
+    {
+        return $this->createQueryBuilder('r')
+            ->leftJoin('r.geoPoint', 'gp')
+            ->where('gp.lat between :minLat and :maxLat')
+            ->andWhere('gp.lon between :minLon and :maxLon')
+            ->setParameter('minLat', $geoPoint->getLat() - LocationService::LAT_RANGE_UP)
+            ->setParameter('maxLat', $geoPoint->getLat() + LocationService::LAT_RANGE_DOWN)
+            ->setParameter('minLon', $geoPoint->getLon() - LocationService::LON_RANGE_UP)
+            ->setParameter('maxLon', $geoPoint->getLon() + LocationService::LON_RANGE_DOWN)
             ->getQuery()
             ->getResult();
     }

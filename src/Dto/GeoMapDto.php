@@ -83,9 +83,7 @@ class GeoMapDto
     {
         $groups = $this->getGroupsByLocation();
         foreach ($groups as $keys) {
-            $latLon = new LatLonDto();
-            $latLon->lat = $this->points[current($keys)]->lat;
-            $latLon->lon = $this->points[current($keys)]->lon;
+            $latLon = clone $this->points[current($keys)];
 
             $types = [];
             $popup = '<ul>';
@@ -97,8 +95,11 @@ class GeoMapDto
             }
             $popup .= '</ul>';
 
-            $type = isset($types[GeoMapDto::TYPE_TIP]) ? GeoMapDto::TYPE_TIP : null;
-            $type = $type ?? (count($types) > 1 ? GeoMapDto::TYPE_COMPLEX : current($types));
+            if (isset($types[self::TYPE_COMMENT]) && count($types) > 1) {
+                unset($types[self::TYPE_COMMENT]);
+            }
+            $type = isset($types[self::TYPE_TIP]) ? self::TYPE_TIP : null;
+            $type = $type ?? (count($types) > 1 ? self::TYPE_COMPLEX : key($types));
 
             $this->addLatLon($latLon, $popup, $type);
         }

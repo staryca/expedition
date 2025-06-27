@@ -7,13 +7,13 @@ namespace App\Controller;
 use App\Entity\Expedition;
 use App\Entity\Report;
 use App\Entity\ReportBlock;
+use App\Manager\GeoMapManager;
 use App\Repository\ExpeditionRepository;
 use App\Repository\GeoPointRepository;
 use App\Repository\InformantRepository;
 use App\Repository\ReportRepository;
 use App\Repository\TagRepository;
 use App\Repository\UserRepository;
-use App\Service\LocationService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -28,7 +28,7 @@ class ReportController extends AbstractController
         private readonly GeoPointRepository $geoPointRepository,
         private readonly InformantRepository $informantRepository,
         private readonly TagRepository $tagRepository,
-        private readonly LocationService $locationService,
+        private readonly GeoMapManager $geoMapManager,
     ) {
     }
 
@@ -41,7 +41,7 @@ class ReportController extends AbstractController
             throw $this->createNotFoundException('The report does not exist');
         }
 
-        $geoMapData = $this->locationService->getGeoMapDataForReport($report);
+        $geoMapData = $this->geoMapManager->getGeoMapDataForReport($report);
 
         return $this->render('report/show.html.twig', [
             'report' => $report,
