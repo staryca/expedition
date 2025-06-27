@@ -10,6 +10,8 @@ use App\Parser\Columns\KoboReportColumns;
 
 class ReportBlockDataDto
 {
+    public ?string $code = null;
+
     public ?string $description = null;
 
     /** @var array<int, EpisodeDto> $episodes */
@@ -42,6 +44,9 @@ class ReportBlockDataDto
 
     public function merge(ReportBlockDataDto $dto): void
     {
+        if (null !== $dto->code) {
+            $this->code = $dto->code;
+        }
         if (null !== $dto->description) {
             $this->description = $dto->description;
         }
@@ -74,6 +79,8 @@ class ReportBlockDataDto
     public static function fromKobo(array $data): self
     {
         $dto = new self();
+
+        $dto->code = $data[KoboReportColumns::CODE] ?? null;
 
         $type = ReportBlockType::getType($data[KoboReportColumns::TYPE]);
         if ($type === ReportBlockType::TYPE_UNDEFINED) {

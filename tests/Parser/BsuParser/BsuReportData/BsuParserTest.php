@@ -59,12 +59,11 @@ class BsuParserTest extends TestCase
         $this->assertCount(10, $dto->values);
 
         $reportData = $this->bsuParser->createReportData($dto);
-        $this->assertEquals($id, (int) $reportData->code);
         $this->assertEquals('в. Палаткова Гродзенскі раён', $reportData->place);
         $this->assertNotNull($reportData->geoPoint);
 
-        $personsBsu = $this->bsuParser->getBsuPersonsFromAuthors($dto->authors, $reportData);
-        $this->assertCount(1, $personsBsu); // "невядомы" прапушчан ўжо
+        $personsBsu = $this->bsuParser->getBsuPersonsFromAuthors($dto->authors, $reportData, (string) $dto->id);
+        $this->assertCount(1, $personsBsu); // "невядомы" прапушчаны ўжо
         $this->assertNull($personsBsu[0]->birth); // 62 гады, але год запісу невядомы
         $this->assertFalse($personsBsu[0]->isStudent);
         $this->assertEquals($id, $personsBsu[0]->codeReport);
@@ -85,6 +84,7 @@ class BsuParserTest extends TestCase
 
         $reportBlocksData = $this->bsuParser->getReportBlocks($organizations, $informants);
         $this->assertCount(1, $reportBlocksData);
+        $this->assertArrayHasKey($id, $reportBlocksData);
         $this->assertNull($reportBlocksData[$id]->organizationKey);
         $this->assertCount(1, $reportBlocksData[$id]->informantKeys);
     }

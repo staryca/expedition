@@ -30,7 +30,7 @@ class ReportRepository extends ServiceEntityRepository
             ->andWhere('r.temp IS NULL ')
             ->setParameter('val', $expedition)
             ->orderBy('r.dateAction', 'ASC')
-            ->addOrderBy('r.code', 'ASC')
+            ->addOrderBy('r.geoPoint', 'ASC')
             ->getQuery()
             ->getResult()
         ;
@@ -44,7 +44,7 @@ class ReportRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('r')
             ->andWhere('r.temp IS NULL ')
             ->orderBy('r.dateAction', 'ASC')
-            ->addOrderBy('r.code', 'ASC')
+            ->addOrderBy('r.geoPoint', 'ASC')
             ->getQuery()
             ->getResult();
     }
@@ -59,7 +59,6 @@ class ReportRepository extends ServiceEntityRepository
             ->andWhere('r.temp IS NULL ')
             ->setParameter('geoPoint', $geoPoint)
             ->orderBy('r.dateAction', 'ASC')
-            ->addOrderBy('r.code', 'ASC')
             ->getQuery()
             ->getResult();
     }

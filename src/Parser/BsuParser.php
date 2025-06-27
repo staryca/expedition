@@ -138,7 +138,6 @@ class BsuParser
     public function createReport(BsuDto $dto, Expedition $expedition): Report
     {
         $report = new Report($expedition);
-        $report->setCode((string)$dto->id);
         $report->setDateCreated(
             isset($dto->dc['DCTERMS.available'])
             ? new \DateTimeImmutable($dto->dc['DCTERMS.available'])
@@ -170,8 +169,6 @@ class BsuParser
         if (isset($dto->dc['DCTERMS.created']) && (int) $dto->dc['DCTERMS.created'] > 1900) {
             $reportData->dateAction = (new \DateTimeImmutable())->setDate((int) $dto->dc['DCTERMS.created'], 1, 1);
         }
-        $code = $dto->id ? (string) $dto->id : null;
-        $reportData->code = $code;
 
         $location = trim(($dto->dc['DCTERMS.spatial'] ?? '') . ' ' . $dto->locationText);
         $notes = empty($location) ? '- ' . $dto->title : $location;
@@ -179,8 +176,10 @@ class BsuParser
         $reportData->geoPoint =
             $this->locationService->detectLocation($dto->dc['DCTERMS.spatial'] ?? '', $dto->locationText);
 
+        $code = $dto->id ? (string) $dto->id : null;
         if (null !== $code) {
             $reportBlockDataDto = new ReportBlockDataDto();
+            $reportBlockDataDto->code = $code;
             $reportBlockDataDto->tags = isset($dto->dc['DC.subject'])
                 ? $this->getTags($dto->dc['DC.subject'])
                 : [];
@@ -309,7 +308,7 @@ class BsuParser
                 $personBsu = (new PersonBsuDto())->make($person);
                 $personBsu->geoPoint = $report->getGeoPoint();
                 $personBsu->place = $report->getGeoNotes();
-                $personBsu->codeReport = $report->getCode();
+                $personBsu->codeReport = (string) $report->getTempValue('id');
 
                 $result[] = $personBsu;
             }
@@ -321,9 +320,10 @@ class BsuParser
     /**
      * @param array<string> $authors
      * @param ReportDataDto $reportData
+     * @param string $code
      * @return array<PersonBsuDto>
      */
-    public function getBsuPersonsFromAuthors(array $authors, ReportDataDto $reportData): array
+    public function getBsuPersonsFromAuthors(array $authors, ReportDataDto $reportData, string $code): array
     {
         $result = [];
 
@@ -335,7 +335,7 @@ class BsuParser
             $personBsu = (new PersonBsuDto())->make($person);
             $personBsu->geoPoint = $reportData->geoPoint;
             $personBsu->place = $reportData->place;
-            $personBsu->codeReport = $reportData->code;
+            $personBsu->codeReport = $code;
 
             $result[] = $personBsu;
         }

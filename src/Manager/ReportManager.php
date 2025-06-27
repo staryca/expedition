@@ -183,9 +183,7 @@ class ReportManager
             $informantsDb[$key] = $informantDb;
         }
 
-        foreach ($reportsData as $reportData) {
-            $code = $reportData->code;
-
+        foreach ($reportsData as $code => $reportData) {
             foreach ($reportData->blocks as $block) {
                 foreach ($block->informantKeys as $informantKey) {
                     $reportBlocks[$code]->addInformant($informantsDb[$informantKey]);
@@ -310,9 +308,7 @@ class ReportManager
     {
         $allTags = $this->tagRepository->getAllTags();
 
-        foreach ($reportsData as $reportData) {
-            $code = $reportData->code;
-
+        foreach ($reportsData as $code => $reportData) {
             foreach ($reportData->blocks as $block) {
                 $tags = $block->tags;
                 foreach ($tags as $tag) {
@@ -430,7 +426,6 @@ class ReportManager
             }
             $report->setLat($reportData->lat);
             $report->setLon($reportData->lon);
-            $report->setCode($reportData->code);
 
             $this->entityManager->persist($report);
             $expedition->addReport($report);
@@ -455,6 +450,7 @@ class ReportManager
 
             foreach ($reportData->blocks as $block) {
                 $reportBlock = new ReportBlock();
+                $reportBlock->setCode($block->code);
                 $reportBlock->setDateCreated($reportData->dateCreated ?? $reportData->dateAction);
                 $reportBlock->setType($block->type);
                 $reportBlock->setDescription($block->description);
