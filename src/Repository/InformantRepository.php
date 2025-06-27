@@ -6,6 +6,9 @@ namespace App\Repository;
 
 use App\Entity\GeoPoint;
 use App\Entity\Informant;
+use App\Entity\Task;
+use App\Entity\Type\TaskStatus;
+use App\Service\LocationService;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -44,5 +47,23 @@ class InformantRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult()
         ;
+    }
+
+    /**
+     * @param GeoPoint $geoPoint
+     * @return array<Informant>
+     */
+    public function findNearCurrentGeoPoint(GeoPoint $geoPoint): array
+    {
+        return $this->createQueryBuilder('i')
+            ->leftJoin('i.geoPointCurrent', 'gpCurrent')
+            ->where('gpCurrent.lat between :minLat and :maxLat')
+            ->andWhere('gpCurrent.lon between :minLon and :maxLon')
+            ->setParameter('minLat', $geoPoint->getLat() - LocationService::LAT_RANGE_UP)
+            ->setParameter('maxLat', $geoPoint->getLat() + LocationService::LAT_RANGE_DOWN)
+            ->setParameter('minLon', $geoPoint->getLon() - LocationService::LON_RANGE_UP)
+            ->setParameter('maxLon', $geoPoint->getLon() + LocationService::LON_RANGE_DOWN)
+            ->getQuery()
+            ->getResult();
     }
 }

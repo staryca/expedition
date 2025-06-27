@@ -9,7 +9,6 @@ use App\Entity\Type\ReportBlockType;
 use App\Helper\TextHelper;
 use App\Parser\DocParser;
 use App\Repository\GeoPointRepository;
-use App\Repository\TaskRepository;
 use App\Repository\UserRepository;
 use App\Service\LocationService;
 use App\Service\PersonService;
@@ -31,9 +30,7 @@ class DocParserTest extends TestCase
         $this->geoPointRepository = $this->createMock(GeoPointRepository::class);
 
         $textHelper = new TextHelper();
-        /** @var TaskRepository|MockObject $taskRepository */
-        $taskRepository = $this->createMock(TaskRepository::class);
-        $locationService = new LocationService($this->geoPointRepository, $taskRepository, $textHelper);
+        $locationService = new LocationService($this->geoPointRepository, $textHelper);
         $personService = new PersonService($textHelper);
         $userService = new UserService(
             $this->createMock(UserRepository::class),

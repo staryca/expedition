@@ -10,7 +10,6 @@ use App\Entity\Type\ReportBlockType;
 use App\Helper\TextHelper;
 use App\Parser\KoboParser;
 use App\Repository\GeoPointRepository;
-use App\Repository\TaskRepository;
 use App\Repository\UserRepository;
 use App\Service\LocationService;
 use App\Service\UserService;
@@ -30,9 +29,7 @@ class KoboParserTest extends TestCase
         $this->geoPointRepository = $this->createMock(GeoPointRepository::class);
 
         $textHelper = new TextHelper();
-        /** @var TaskRepository|MockObject $taskRepository */
-        $taskRepository = $this->createMock(TaskRepository::class);
-        $locationService = new LocationService($this->geoPointRepository, $taskRepository, $textHelper);
+        $locationService = new LocationService($this->geoPointRepository, $textHelper);
         $userService = new UserService(
             $this->createMock(UserRepository::class),
             $textHelper,

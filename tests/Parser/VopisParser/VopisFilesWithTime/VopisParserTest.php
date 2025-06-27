@@ -8,7 +8,6 @@ use App\Entity\Type\CategoryType;
 use App\Helper\TextHelper;
 use App\Parser\VopisParser;
 use App\Repository\GeoPointRepository;
-use App\Repository\TaskRepository;
 use App\Service\LocationService;
 use App\Service\PersonService;
 use Carbon\Carbon;
@@ -27,9 +26,7 @@ class VopisParserTest extends TestCase
         $this->geoPointRepository = $this->createMock(GeoPointRepository::class);
 
         $textHelper = new TextHelper();
-        /** @var TaskRepository|MockObject $taskRepository */
-        $taskRepository = $this->createMock(TaskRepository::class);
-        $locationService = new LocationService($this->geoPointRepository, $taskRepository, $textHelper);
+        $locationService = new LocationService($this->geoPointRepository, $textHelper);
         $personService = new PersonService($textHelper);
         $this->vopisParser = new VopisParser($locationService, $personService);
     }

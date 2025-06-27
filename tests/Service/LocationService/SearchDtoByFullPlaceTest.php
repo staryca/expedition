@@ -7,7 +7,6 @@ namespace App\Tests\Service\LocationService;
 use App\Entity\Type\GeoPointType;
 use App\Helper\TextHelper;
 use App\Repository\GeoPointRepository;
-use App\Repository\TaskRepository;
 use App\Service\LocationService;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -22,9 +21,7 @@ class SearchDtoByFullPlaceTest extends TestCase
 
         $geoPointRepository = $this->createMock(GeoPointRepository::class);
         $textHelper = new TextHelper();
-        /** @var TaskRepository|MockObject $taskRepository */
-        $taskRepository = $this->createMock(TaskRepository::class);
-        $this->locationService = new LocationService($geoPointRepository, $taskRepository, $textHelper);
+        $this->locationService = new LocationService($geoPointRepository, $textHelper);
     }
 
     public function testBrackets(): void

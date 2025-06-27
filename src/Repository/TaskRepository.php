@@ -41,7 +41,7 @@ class TaskRepository extends ServiceEntityRepository
      * @param GeoPoint $geoPoint
      * @return array<Task>
      */
-    public function findByInformantGeoPoint(GeoPoint $geoPoint): array
+    public function findTipsByInformantGeoPoint(GeoPoint $geoPoint): array
     {
         return $this->createQueryBuilder('t')
             ->leftJoin('t.informant', 'i')

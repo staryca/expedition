@@ -4,15 +4,11 @@ declare(strict_types=1);
 
 namespace App\Service;
 
-use App\Dto\GeoMapDto;
 use App\Dto\GeoPointSearchDto;
-use App\Entity\Expedition;
 use App\Entity\GeoPoint;
-use App\Entity\Report;
 use App\Entity\Type\GeoPointType;
 use App\Helper\TextHelper;
 use App\Repository\GeoPointRepository;
-use App\Repository\TaskRepository;
 
 class LocationService
 {
@@ -28,7 +24,6 @@ class LocationService
 
     public function __construct(
         private readonly GeoPointRepository $geoPointRepository,
-        private readonly TaskRepository $taskRepository,
         private readonly TextHelper $textHelper,
     ) {
     }
@@ -336,79 +331,5 @@ class LocationService
         }
 
         return null;
-    }
-
-    public function getGeoMapDataForExpedition(Expedition $expedition): GeoMapDto
-    {
-        $geoMapData = new GeoMapDto();
-
-        if ($expedition->getGeoPoint()) {
-            $latLon = $expedition->getGeoPoint()->getLatLonDto();
-            $popup = 'База: ' . $expedition->getGeoPoint()->getLongBeName();
-
-            $geoMapData->addLatLon($latLon, $popup, GeoMapDto::TYPE_BASE);
-        }
-
-        foreach ($expedition->getReports() as $report) {
-            $latLon = $report->getLatLon();
-            if ($latLon) {
-                $popup = 'Справаздача: ' . $report->getGeoPlace() . '<br>Блокаў: ' . $report->getBlocks()->count();
-                $geoMapData->addLatLon($latLon, $popup, GeoMapDto::TYPE_REPORT);
-            }
-        }
-
-        if ($expedition->getGeoPoint()) {
-            $tips = $this->taskRepository->findByInformantGeoPoint($expedition->getGeoPoint());
-            foreach ($tips as $tip) {
-                $latLon = $tip->getInformant()?->getGeoPointCurrent()?->getLatLonDto();
-                $popup = 'Наводка: ' . $tip->getContent() . '<br>Інфармант: ' . $tip->getInformant()?->getFirstName();
-
-                $geoMapData->addLatLon($latLon, $popup, GeoMapDto::TYPE_TIP);
-            }
-        }
-        if (count($geoMapData->points) === 1 && $expedition->getGeoPoint()) {
-            $places = $this->geoPointRepository->findNotFarFromPoint($expedition->getGeoPoint());
-            foreach ($places as $place) {
-                $latLon = $place->getLatLonDto();
-                $popup = $place->getLongBeName();
-
-                $geoMapData->addLatLon($latLon, $popup, GeoMapDto::TYPE_COMMENT);
-            }
-        }
-
-        // Group by location
-        $geoMapData->groupByLocation();
-
-        return $geoMapData;
-    }
-
-    public function getGeoMapDataForReport(Report $report): GeoMapDto
-    {
-        $geoMapData = new GeoMapDto();
-
-        $latLonReport = $report->getGeoPoint()?->getLatLonDto();
-        if ($latLonReport) {
-            $popup = 'Справаздача: ' . $report->getGeoPlace() . '<br>Блокаў: ' . $report->getBlocks()->count();
-
-            $geoMapData->addLatLon($latLonReport, $popup, GeoMapDto::TYPE_REPORT);
-        }
-
-        foreach ($report->getTasks() as $task) {
-            $latLon = $task->getInformant()?->getGeoPointCurrent()?->getLatLonDto();
-            if ($latLon) {
-                $popup = $task->getStatusText() . ': ' . $task->getContent() . '<br>Інфармант: ' . $task->getInformant()?->getFirstName();
-
-                $geoMapData->addLatLon($latLon, $popup, GeoMapDto::TYPE_TIP);
-            }
-        }
-
-        if ($latLonReport && $geoMapData->center === null) {
-            $geoMapData->setCenter($latLonReport);
-        }
-
-        // Group by location
-        $geoMapData->groupByLocation();
-
-        return $geoMapData;
     }
 }
