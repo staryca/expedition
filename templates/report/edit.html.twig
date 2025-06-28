@@ -405,7 +405,8 @@
                         <div class="mb-3">
                             <div class="input-group">
                                 <label class="input-group-text">Назва</label>
-                                <input type="text" class="form-control" name="name" aria-label="Name of organization" required>
+                                <input type="text" class="form-control" name="name" maxlength="255"
+                                       aria-label="Name of organization" required>
                                 <div class="invalid-feedback">
                                     Калі ласка, напішыце назву арганізацыі
                                 </div>
@@ -422,7 +423,7 @@
                         <div class="mb-3">
                             <div class="input-group">
                                 <span class="input-group-text">Адрас</span>
-                                <textarea class="form-control" aria-label="Address of organization" name="address"></textarea>
+                                <textarea class="form-control" aria-label="Address of organization" name="address" rows="2" maxlength="250"></textarea>
                             </div>
                         </div>
 
@@ -474,7 +475,8 @@
                         <div class="mb-3">
                             <div class="input-group">
                                 <label class="input-group-text">Імя</label>
-                                <input type="text" class="form-control" name="firstName" required aria-label="Name of informant">
+                                <input type="text" class="form-control" name="firstName" required
+                                       aria-label="Name of informant" maxlength="255">
                                 <div class="invalid-feedback">
                                     Калі ласка, напішыце імя
                                 </div>
@@ -506,7 +508,8 @@
                         </div>
                         <div class="input-group mb-3">
                             <span class="input-group-text">няма ў сьпісе</span>
-                            <input type="text" class="form-control" placeholder="вёска і раён" name="placeBirth" aria-label="Birth place">
+                            <input type="text" class="form-control" placeholder="вёска і раён" name="placeBirth"
+                                   maxlength="1000" aria-label="Birth place">
                         </div>
 
                         <div class="input-group mb-3">
@@ -523,7 +526,8 @@
                         </div>
                         <div class="input-group mb-3">
                             <span class="input-group-text">няма ў сьпісе</span>
-                            <input type="text" class="form-control" placeholder="вёска і раён" name="placeCurrent" aria-label="live place">
+                            <input type="text" class="form-control" placeholder="вёска і раён" name="placeCurrent"
+                                   maxlength="1000" aria-label="live place">
                         </div>
 
                         <div class="mb-3">
@@ -591,7 +595,7 @@
 
                         <div class="input-group mb-3">
                             <span class="input-group-text">Эпізод</span>
-                            <textarea class="form-control" aria-label="Text of episode" name="name" required></textarea>
+                            <textarea class="form-control" aria-label="Text of episode" name="name" rows="3" maxlength="255" required></textarea>
                             <div class="invalid-feedback">
                                 Калі ласка, апішыце эпізод
                             </div>
@@ -611,7 +615,7 @@
 
                         <div class="input-group mb-3">
                             <span class="input-group-text">Заўвагі</span>
-                            <textarea class="form-control" aria-label="Notes of episode" name="notes"></textarea>
+                            <textarea class="form-control" aria-label="Notes of episode" name="notes" rows="4"></textarea>
                         </div>
                     </form>
                 </div>
@@ -652,7 +656,7 @@
 
                         <div class="input-group mb-3">
                             <span class="input-group-text">Назва</span>
-                            <textarea class="form-control" aria-label="Name of subject" name="name" required></textarea>
+                            <textarea class="form-control" aria-label="Name of subject" name="name" rows="2" maxlength="200" required></textarea>
                             <div class="invalid-feedback">
                                 Калі ласка, напішыце назву
                             </div>
@@ -660,7 +664,7 @@
 
                         <div class="input-group mb-3">
                             <span class="input-group-text">Заўвагі</span>
-                            <textarea class="form-control" aria-label="Notes of subject" name="notes"></textarea>
+                            <textarea class="form-control" aria-label="Notes of subject" name="notes" rows="3"></textarea>
                         </div>
                     </form>
                 </div>
