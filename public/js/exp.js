@@ -300,7 +300,7 @@ if (addOrgModal) {
 
 // Base functions
 function showMessage(code, message, title, subtitle) {
-    const uuid = self.crypto.randomUUID()
+    const uuid = Date.now() - 1000000 * Math.random()
     let html = document.getElementById('toastBlockResult').outerHTML
 
     html = html.replace('toastBlockResult', 'toastBlockResult' + uuid)

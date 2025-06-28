@@ -14,7 +14,7 @@ class TaskStatus
     public const CANCELLED = 9;
 
     public const STATUSES = [
-        self::NEW => 'Дзеяньне',
+        self::NEW => 'Планы/дзеяньне',
         self::TIP => 'Наводка',
         self::QUESTION => 'Пытаньне',
     ];
@@ -29,10 +29,6 @@ class TaskStatus
 
     public static function getIcon(int $status): ?string
     {
-        if (!isset(self::ICONS[$status])) {
-            return null;
-        }
-
-        return self::ICONS[$status];
+        return self::ICONS[$status] ?? null;
     }
 }
