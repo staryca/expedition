@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Provider;
 
+use App\Entity\User;
 use App\Repository\UserRepository;
 use App\Service\UserService;
+use Doctrine\ORM\EntityManagerInterface;
 use HWI\Bundle\OAuthBundle\OAuth\Response\UserResponseInterface;
 use HWI\Bundle\OAuthBundle\Security\Core\Exception\AccountNotLinkedException;
 use HWI\Bundle\OAuthBundle\Security\Core\User\OAuthAwareUserProviderInterface;
@@ -33,6 +35,7 @@ class GoogleUserProvider implements UserProviderInterface, OAuthAwareUserProvide
         array $properties,
         private readonly UserRepository $userRepository,
         private readonly UserService $userService,
+        private readonly EntityManagerInterface $entityManager,
         private readonly LoggerInterface $logger,
     ) {
         $this->class = $class;
@@ -69,8 +72,23 @@ class GoogleUserProvider implements UserProviderInterface, OAuthAwareUserProvide
         $user = $this->findUser(['username' => $identifier]);
 
         if (!$user) {
-            throw $this->createUserNotFoundException($identifier, \sprintf("User '%s' not found.", $identifier));
+            throw $this->createUserNotFoundException($identifier, \sprintf("User '%s' not found", $identifier));
         }
+
+        return $user;
+    }
+
+    private function createUser(UserResponseInterface $response): User
+    {
+        $user = new User();
+        $user->setFirstName($response->getFirstName());
+        $user->setLastName($response->getLastName());
+        $user->setEmail($response->getEmail());
+        $user->setDateJoined(new \DateTime());
+        $user->setActive(false);
+
+        $this->entityManager->persist($user);
+        $this->entityManager->flush();
 
         return $user;
     }
@@ -100,7 +118,8 @@ class GoogleUserProvider implements UserProviderInterface, OAuthAwareUserProvide
 
         $email = method_exists($response, 'getEmail') ? $response->getEmail() : $response->getUsername();
         if (null === $user = $this->findUser([$this->properties['email'] => $email])) {
-            throw $this->createUserNotFoundException($email, \sprintf("User '%s' not found.", $email));
+            $user = $this->createUser($response);
+            // throw $this->createUserNotFoundException($email, \sprintf("User '%s' not found.", $email));
         }
 
         return $user;
