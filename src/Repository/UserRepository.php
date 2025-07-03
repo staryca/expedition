@@ -54,7 +54,7 @@ class UserRepository extends ServiceEntityRepository
      */
     public function getList(): array
     {
-        $list = $this->findBy([], ['lastName' => 'ASC', 'firstName' => 'ASC']);
+        $list = $this->findBy(['isActive' => true], ['lastName' => 'ASC', 'firstName' => 'ASC']);
 
         $result = [];
         foreach ($list as $user) {
