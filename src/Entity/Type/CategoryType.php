@@ -136,6 +136,12 @@ class CategoryType
         $text = mb_strtolower($text);
 
         foreach (self::TYPES as $key => $name) {
+            if ($text === mb_strtolower($name)) {
+                return $key;
+            }
+        }
+
+        foreach (self::TYPES as $key => $name) {
             if (!$isAll && !in_array($key, [self::ABOUT_RECORD, self::ABOUT_INFORMANT, self::ABOUT_OTHER_INFORMANTS])) {
                 continue;
             }

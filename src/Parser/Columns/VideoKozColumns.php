@@ -14,6 +14,7 @@ class VideoKozColumns
     public const TYPE_DANCE = 'Тып танцу';
     public const IMPROVISATION = 'Імп';
     public const RITUAL = 'Абрад';
+    public const TRADITION = 'Традыцыйнасць';
     public const DISTINCT = 'Раён';
     public const VILLAGE = 'Вёска';
     public const MAP_INDEX = 'Мапа';
@@ -22,6 +23,7 @@ class VideoKozColumns
     public const DESCRIPTION = 'Апісаньне';
     public const ORGANIZATION = 'Калектыў';
     public const INFORMANTS = 'Выканаўцы на відэа';
+    public const MUSICIANS = 'Музыкі';
     public const TEXTS = 'Прыпеўкі пад танец';
     public const TMKB = 'Наяўнасьць у ТМКБ';
 }

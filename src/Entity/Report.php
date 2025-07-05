@@ -107,6 +107,11 @@ class Report
             );
     }
 
+    public function getDateActionYear(): string
+    {
+        return !$this->dateAction ? '' : $this->dateAction->format('Y');
+    }
+
     public function setDateAction(\DateTimeInterface $dateAction): static
     {
         $this->dateAction = $dateAction;

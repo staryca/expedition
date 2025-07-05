@@ -6,6 +6,7 @@ namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
 use App\Dto\EpisodeDto;
+use App\Entity\Additional\FileMarkerAdditional;
 use App\Entity\Type\CategoryType;
 use App\Repository\FileMarkerRepository;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -216,12 +217,14 @@ class FileMarker
         return $this;
     }
 
-    public function getYoutubeTitle(): string
+    /**
+     * @param string $dateActionYear
+     * @param GeoPoint|null $geoPoint
+     * @param Collection<int, Informant> $informants
+     * @return string
+     */
+    public function getYoutubeDescription(string $dateActionYear, ?GeoPoint $geoPoint, Collection $informants): string
     {
-        $additional = $this->getAdditional();
-        $title = $this->name;
-
-        return $title;
     }
 
     public function getAdditional(): array
@@ -229,8 +232,20 @@ class FileMarker
         return $this->additional ?? [];
     }
 
+    public function getAdditionalValue(string $key): string
+    {
+        return isset($this->additional[$key]) ? trim($this->additional[$key]) : '';
+    }
+
     public function addAdditional(string $key, string $value): void
     {
         $this->additional[$key] = $value;
+    }
+
+    public function setAdditional(array $additional): static
+    {
+        $this->additional = $additional;
+
+        return $this;
     }
 }
