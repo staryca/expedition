@@ -7,6 +7,7 @@ namespace App\Controller;
 use App\Entity\Expedition;
 use App\Entity\Report;
 use App\Entity\ReportBlock;
+use App\Entity\Type\CategoryType;
 use App\Manager\GeoMapManager;
 use App\Repository\ExpeditionRepository;
 use App\Repository\GeoPointRepository;
@@ -103,6 +104,7 @@ class ReportController extends AbstractController
             'report' => $report ?? new Report($expedition),
             'newBlock' => new ReportBlock(),
             'users' => $this->userRepository->getList(),
+            'categories' => CategoryType::TYPES,
             'geoPoints' => $geoPoints,
             'tags' => $tags,
             'informantsAtLocation' => $informantsAtLocation,

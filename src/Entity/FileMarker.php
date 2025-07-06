@@ -113,7 +113,7 @@ class FileMarker
 
     public function getCategoryName(): string
     {
-        return CategoryType::TYPES[$this->category] ?? '[тып ?]';
+        return CategoryType::getSingleName($this->category) ?? '[тып ?]';
     }
 
     public function setCategory(int $category): void
@@ -215,16 +215,6 @@ class FileMarker
         $this->decoding = $decoding;
 
         return $this;
-    }
-
-    /**
-     * @param string $dateActionYear
-     * @param GeoPoint|null $geoPoint
-     * @param Collection<int, Informant> $informants
-     * @return string
-     */
-    public function getYoutubeDescription(string $dateActionYear, ?GeoPoint $geoPoint, Collection $informants): string
-    {
     }
 
     public function getAdditional(): array

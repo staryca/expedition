@@ -161,21 +161,28 @@ class YoutubeService
 
         $texts = $fileMarker->getDecoding();
         if (!empty($texts)) {
-            $parts[] = ($fileMarker->getCategory() === CategoryType::DANCE ? 'Прыпеўкі: ' : 'Словы: ') . $texts; // todo
+            $parts[] = ($fileMarker->getCategory() === CategoryType::DANCE ? 'Прыпеўкі:' : 'Словы:')
+                . (str_contains($texts, "\n") ? '<br>' : ' ')
+                . str_replace("\n", '<br>', $texts); // todo
         }
 
-        $tags = ['#танцыБеларусаў']; // todo
-        if (null !== $geoPoint) {
-            $prefix = $geoPoint->getPrefixBe();
-            $tags[] = '#' . (empty($prefix) ? '' : $prefix) . $geoPoint->getName();
-            $tags[] = '#' . str_replace(' ', '', $geoPoint->getDistrict());
-            $tags[] = '#' . str_replace(' ', '', $geoPoint->getRegion());
-        }
+        $category = $fileMarker->getCategory();
+        $categoryName = CategoryType::getSingleName($category);
+        $categoryNameMany = CategoryType::getManyOrSingleName($category);
+
+        $tags = ['#' . $this->textHelper->getTagFormat($categoryNameMany . ' беларусаў')];
         if (!empty($localName)) {
-            $tags[] = '#' . $fileMarker->getCategoryName() . $localName;
+            $tag = false !== mb_stripos($localName, $categoryName) ? $localName : $categoryName . ' ' . $localName;
+            $tags[] = '#' . $this->textHelper->getTagFormat($tag);
         }
-        if (!empty($baseName)) {
-            $tags[] = '#' . $fileMarker->getCategoryName() . $baseName;
+        if (!empty($baseName) && $baseName !== $localName) {
+            $tag = false !== mb_stripos($baseName, $categoryName) ? $baseName : $categoryName . ' ' . $baseName;
+            $tags[] = '#' . $this->textHelper->getTagFormat($tag);
+        }
+        if (null !== $geoPoint) {
+            $tags[] = '#' . $this->textHelper->getTagFormat($geoPoint->getPrefixBe() . ' ' . $geoPoint->getName());
+            $tags[] = '#' . $this->textHelper->getTagFormat($geoPoint->getDistrict(), true);
+            $tags[] = '#' . $this->textHelper->getTagFormat($geoPoint->getRegion(), true);
         }
         $parts[] = implode(' ', $tags);
 

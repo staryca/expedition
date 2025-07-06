@@ -241,7 +241,7 @@ class VideoKozHandler
                 $marker->name = $videoItem->localName . (empty($videoItem->baseName) ? '' : ' (' . $videoItem->baseName . ')');
                 $notes = '';
                 if ($videoItem->pack || !empty($videoItem->improvisation . $videoItem->ritual)) {
-                    $notes = ($videoItem->category ? CategoryType::TYPES[$videoItem->category] : '')
+                    $notes = CategoryType::getSingleName($videoItem->category)
                         . ($videoItem->pack ? ' ' . $videoItem->pack->getName() : '')
                         . (empty($videoItem->improvisation) ? '' : ', ' . $videoItem->improvisation)
                         . (empty($videoItem->ritual) ? '' : ', ' . $videoItem->ritual)

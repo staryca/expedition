@@ -9,7 +9,7 @@ use PHPUnit\Framework\TestCase;
 
 class FindIdTest extends TestCase
 {
-    public function testFindId(): void
+    public function testFindIdSingle(): void
     {
         foreach (CategoryType::TYPES as $type => $category) {
             $this->assertEquals(
@@ -17,6 +17,19 @@ class FindIdTest extends TestCase
                 CategoryType::findId($category, ''),
                 sprintf('Error findId() for "%s". Type is %d.', $category, $type)
             );
+        }
+    }
+
+    public function testFindIdMany(): void
+    {
+        foreach (CategoryType::TYPES_MANY as $type => $category) {
+            if (null !== $category) {
+                $this->assertEquals(
+                    $type,
+                    CategoryType::findId($category, ''),
+                    sprintf('Error findId() for "%s". Type is %d.', $category, $type)
+                );
+            }
         }
     }
 }

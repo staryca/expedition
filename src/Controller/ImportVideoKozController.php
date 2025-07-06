@@ -18,7 +18,7 @@ use Symfony\Component\Routing\Attribute\Route;
 class ImportVideoKozController extends AbstractController
 {
     private const EXPEDITION_ID = 182; // 9
-    private const FILENAME = '../var/data/video_koz/br-o.csv';
+    private const FILENAME = '../var/data/video_koz/br-i.csv';
 
     public function __construct(
         private readonly VideoKozHandler $videoKozHandler,
@@ -31,11 +31,7 @@ class ImportVideoKozController extends AbstractController
     #[Route('/import/video_koz/check', name: 'app_import_video_koz_check')]
     public function check(): Response
     {
-        try {
-            $files = $this->videoKozHandler->checkFile(self::FILENAME);
-        } catch (\Exception $exception) {
-            throw $exception;
-        }
+        $files = $this->videoKozHandler->checkFile(self::FILENAME);
 
         $data = [];
         $data['errors_type'] = [];
