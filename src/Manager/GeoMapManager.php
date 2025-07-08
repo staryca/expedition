@@ -58,7 +58,8 @@ class GeoMapManager
             }
         }
 
-        if (count($geoMapData->points) === 1 && $expedition->getGeoPoint()) {
+        $isPreview = count($geoMapData->points) === 1 && $expedition->getGeoPoint();
+        if ($isPreview) {
             $places = $this->geoPointRepository->findNotFarFromPoint($expedition->getGeoPoint());
             foreach ($places as $place) {
                 $latLon = $place->getLatLonDto();
@@ -86,7 +87,7 @@ class GeoMapManager
                 $latLon = $informants[0]->getGeoPointCurrent()?->getLatLonDto();
                 $popup = 'Інфарманты: ' . implode(', ', $names);
 
-                $geoMapData->addLatLon($latLon, $popup, GeoMapDto::TYPE_COMMENT);
+                $geoMapData->addLatLon($latLon, $popup, $isPreview ? GeoMapDto::TYPE_COMPLEX : GeoMapDto::TYPE_COMMENT);
             }
 
             foreach ($this->reportRepository->findNearGeoPoint($expedition->getGeoPoint()) as $otherReport) {
@@ -95,7 +96,7 @@ class GeoMapManager
                     $popup = 'Іншая справаздача за '
                         . ($otherReport->getDateAction() ? $otherReport->getDateAction()?->format('d.m.Y') : '?')
                         . ' (блокаў: ' . $otherReport->getBlocks()->count() . ')';
-                    $geoMapData->addLatLon($latLon, $popup, GeoMapDto::TYPE_COMMENT);
+                    $geoMapData->addLatLon($latLon, $popup, $isPreview ? GeoMapDto::TYPE_COMPLEX : GeoMapDto::TYPE_COMMENT);
                 }
             }
         }
