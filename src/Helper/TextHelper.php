@@ -19,14 +19,14 @@ class TextHelper
 
     public function lettersToUpper(string $text): string
     {
-        $result = '';
+        $result = [];
 
         $parts = explode(' ', $text);
         foreach ($parts as $part) {
-            $result .= mb_ucfirst($part);
+            $result[] = mb_ucfirst($part);
         }
 
-        return $result;
+        return implode(' ', $result);
     }
 
     /**
@@ -103,7 +103,7 @@ class TextHelper
     /* return true for Nameofsomething or (Nameofsomething) */
     public function isNameWithBrackets(string $name): bool
     {
-        if (mb_substr($name, 0, 1) === '(' && mb_substr($name, -1) === ')') {
+        if (str_starts_with($name, '(') && mb_substr($name, -1) === ')') {
             $name = mb_substr($name, 1, -1);
         }
 
