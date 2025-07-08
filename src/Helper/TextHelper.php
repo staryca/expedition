@@ -17,16 +17,40 @@ class TextHelper
         );
     }
 
-    public function lettersToUpper(string $string): string
+    public function lettersToUpper(string $text): string
     {
-        $string = ' ' . trim($string);
-        $pos = mb_strpos($string, ' ');
-        while ($pos !== false) {
-            $string = mb_substr($string, 0, $pos + 1) . mb_strtoupper(mb_substr($string, $pos + 1, 1)) . mb_substr($string, $pos + 2);
-            $pos = mb_strpos($string, ' ', $pos + 1);
+        $result = [];
+
+        $parts = explode(' ', $text);
+        foreach ($parts as $part) {
+            $result[] = mb_ucfirst($part);
         }
 
-        return trim($string);
+        return implode(' ', $result);
+    }
+
+    /**
+     * Convert 'aaaa Bbbb cccc DDDD' to 'aaaaBbbbCcccDddd'
+     *
+     * @param string $text
+     * @param bool $reverse
+     * @return string
+     */
+    public function getTagFormat(string $text, bool $reverse = false): string
+    {
+        $text = $this::replaceLetters($text);
+
+        if ($reverse) {
+            $parts = explode(' ', $text);
+            $parts = array_reverse($parts);
+            $text = implode(' ', $parts);
+        }
+
+        $text = str_replace(['-', ','], ' ', $text);
+        $text = $this->lettersToUpper(mb_strtolower($text));
+        $text = str_replace(' ', '', $text);
+
+        return mb_strtolower(mb_substr($text, 0, 1)) . mb_substr($text, 1);
     }
 
     /**
@@ -79,7 +103,7 @@ class TextHelper
     /* return true for Nameofsomething or (Nameofsomething) */
     public function isNameWithBrackets(string $name): bool
     {
-        if (mb_substr($name, 0, 1) === '(' && mb_substr($name, -1) === ')') {
+        if (str_starts_with($name, '(') && mb_substr($name, -1) === ')') {
             $name = mb_substr($name, 1, -1);
         }
 

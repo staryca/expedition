@@ -6,9 +6,7 @@ namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
 use App\Entity\Type\FileType;
-use App\Entity\Type\GeoPointType;
 use App\Entity\Type\ReportBlockType;
-use App\Entity\Type\TaskStatus;
 use App\Repository\ReportBlockRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;

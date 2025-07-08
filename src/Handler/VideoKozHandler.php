@@ -11,6 +11,7 @@ use App\Dto\OrganizationDto;
 use App\Dto\ReportBlockDataDto;
 use App\Dto\ReportDataDto;
 use App\Dto\UserRolesDto;
+use App\Entity\Additional\FileMarkerAdditional;
 use App\Entity\Expedition;
 use App\Entity\Report;
 use App\Entity\Type\CategoryType;
@@ -240,7 +241,7 @@ class VideoKozHandler
                 $marker->name = $videoItem->localName . (empty($videoItem->baseName) ? '' : ' (' . $videoItem->baseName . ')');
                 $notes = '';
                 if ($videoItem->pack || !empty($videoItem->improvisation . $videoItem->ritual)) {
-                    $notes = ($videoItem->category ? CategoryType::TYPES[$videoItem->category] : '')
+                    $notes = CategoryType::getSingleName($videoItem->category)
                         . ($videoItem->pack ? ' ' . $videoItem->pack->getName() : '')
                         . (empty($videoItem->improvisation) ? '' : ', ' . $videoItem->improvisation)
                         . (empty($videoItem->ritual) ? '' : ', ' . $videoItem->ritual)
@@ -253,6 +254,31 @@ class VideoKozHandler
 
                 $marker->reportKey = $videoItem->reportKey;
                 $marker->blockKey = $videoItem->blockKey;
+
+                if (!empty($videoItem->localName)) {
+                    $marker->additional[FileMarkerAdditional::LOCAL_NAME] = $videoItem->localName;
+                }
+                if (!empty($videoItem->baseName)) {
+                    $marker->additional[FileMarkerAdditional::BASE_NAME] = $videoItem->baseName;
+                }
+                if (!empty($videoItem->pack)) {
+                    $marker->additional[FileMarkerAdditional::DANCE_TYPE] = $videoItem->pack->getName();
+                }
+                if (!empty($videoItem->improvisation)) {
+                    $marker->additional[FileMarkerAdditional::IMPROVISATION] = $videoItem->improvisation;
+                }
+                if (!empty($videoItem->ritual)) {
+                    $marker->additional[FileMarkerAdditional::RITUAL] = $videoItem->ritual;
+                }
+                if (!empty($videoItem->tradition)) {
+                    $marker->additional[FileMarkerAdditional::TRADITION] = $videoItem->tradition;
+                }
+                if (!empty($videoItem->dateActionNotes)) {
+                    $marker->additional[FileMarkerAdditional::DATE_ACTION_NOTES] = $videoItem->dateActionNotes;
+                }
+                if (!empty($videoItem->tmkb)) {
+                    $marker->additional[FileMarkerAdditional::TMKB] = $videoItem->tmkb;
+                }
 
                 $file->markers[] = $marker;
             }

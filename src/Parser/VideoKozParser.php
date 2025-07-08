@@ -70,6 +70,7 @@ class VideoKozParser
             );
             $videoDto->improvisation = $record[VideoKozColumns::IMPROVISATION] ?? null;
             $videoDto->ritual = $record[VideoKozColumns::RITUAL] ?? null;
+            $videoDto->tradition = $record[VideoKozColumns::TRADITION] ?? null;
             $videoDto->notes = $record[VideoKozColumns::DESCRIPTION] ?? null;
             $videoDto->texts = $record[VideoKozColumns::TEXTS] ?? null;
             $videoDto->tmkb = $record[VideoKozColumns::TMKB] ?? null;
@@ -100,10 +101,11 @@ class VideoKozParser
             $dateAction = $record[VideoKozColumns::DATE_RECORD] ?? null;
             if (!empty(trim($dateAction))) {
                 if ($dateAction[0] === '(') {
+                    $dateActionNotes = trim(str_replace(['(', ')'], '', $dateAction));
+                    $videoDto->dateActionNotes = $dateActionNotes;
                     $videoDto->notes .=
                         (empty($videoDto->notes) ? '' : "\n\r")
-                        . 'Дата запісу: ' . trim(str_replace(['(', ')'], '', $dateAction))
-                    ;
+                        . 'Дата запісу: ' . $dateActionNotes;
                 } elseif (strlen($dateAction) < 5) {
                     $videoDto->dateAction = Carbon::createFromDate((int) $dateAction, 1, 1);
                 } else {

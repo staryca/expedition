@@ -27,6 +27,7 @@ class FileMarkerDto extends PlaceDto
     public ?string $timeTo = null;
     public ?string $name = null;
     public ?string $notes = null;
+    public array $additional = []; // Keys in FileMarkerAdditional
     public ?string $decoding = null;
     public ?int $category = null;
     public bool $isNewBlock = false;

@@ -238,6 +238,14 @@
         {% for block in report.blocks %}
             {% set blockIndex = loop.index %}
             {% include('report/part/block.html.twig') with {'blockIndex': loop.index, 'block': block} %}
+
+            {% if not block.getContentFile() %}
+                <script type="application/javascript">
+                    window.addEventListener("load", (event) => {
+                        createContentFile('{{ blockIndex }}', '{{ block.id }}')
+                    })
+                </script>
+            {% endif %}
         {% endfor %}
 
         <div class="d-none" id="createNewBlockTemplate">
@@ -581,10 +589,10 @@
                         <div class="input-group mb-3">
                             <span class="input-group-text">Тып</span>
                             <select class="form-select" aria-label="Type of episode" name="category" required>
-                                {% for id, name in constant('App\\Entity\\Type\\CategoryType::TYPES') %}
+                                {% for id, name in categories %}
                                     <option value="{{ id }}"
                                             {% if id == constant('App\\Entity\\Type\\CategoryType::STORY') %}selected{% endif %}>
-                                        {{ name }}
+                                        {{ name|capitalize }}
                                     </option>
                                 {% endfor %}
                             </select>

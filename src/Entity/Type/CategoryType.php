@@ -33,52 +33,70 @@ class CategoryType
     public const OTHER = 99;
 
     public const TYPES = [
-        self::KARAHOD => 'Карагод',
-        self::DANCE => 'Танец',
-        self::QUADRILLE => 'Кадрыля',
-        self::DANCE_GAME => 'Танец-гульня',
-        self::CHORUSES => 'Прыпеўкі',
-        self::MELODY => 'Найгрыш',
-        self::DANCE_MOVEMENTS => 'Рухі танца',
-        self::SONGS => 'Песьня',
-        self::POEMS => 'Вершы',
-        self::CEREMONY => 'Абрад',
-        self::GAME => 'Гульня',
-        self::STORY => 'Аповеды',
-        self::ABOUT_DANCES => 'Згадваньне пра танцы',
-        self::PROVERB => 'Прыказка',
-        self::FAIRY_TALE => 'Казка',
-        self::LULLABY => 'Калыханкі',
-        self::RIDDLE => 'Загадка',
-        self::PARABLE => 'Прыпавесць',
-        self::ABOUT_RECORD => 'Звесткі пра запіс',
-        self::ABOUT_INFORMANT => 'Звесткі пра інфармантаў',
-        self::ABOUT_OTHER_INFORMANTS => 'Звесткі пра іншых інфармантаў',
-        self::CHANGE_INFORMANTS => 'Змена інфармантаў',
-        self::STAGE_ACTION => 'Сцэнічная дзея',
-        self::FILM => 'Фільм',
-        self::OTHER => 'Іншае',
+        self::KARAHOD => 'карагод',
+        self::DANCE => 'танец',
+        self::QUADRILLE => 'кадрыля',
+        self::DANCE_GAME => 'танец-гульня',
+        self::CHORUSES => 'прыпеўкі',
+        self::MELODY => 'найгрыш',
+        self::DANCE_MOVEMENTS => 'рухі танца',
+        self::SONGS => 'песня',
+        self::POEMS => 'верш',
+        self::CEREMONY => 'абрад',
+        self::GAME => 'гульня',
+        self::STORY => 'аповед',
+        self::ABOUT_DANCES => 'згадванне пра танцы',
+        self::PROVERB => 'прыказка',
+        self::FAIRY_TALE => 'казка',
+        self::LULLABY => 'калыханка',
+        self::RIDDLE => 'загадка',
+        self::PARABLE => 'прыпавесць',
+        self::ABOUT_RECORD => 'звесткі пра запіс',
+        self::ABOUT_INFORMANT => 'звесткі пра інфармантаў',
+        self::ABOUT_OTHER_INFORMANTS => 'звесткі пра іншых інфармантаў',
+        self::CHANGE_INFORMANTS => 'змена інфармантаў',
+        self::STAGE_ACTION => 'сцэнічная дзея',
+        self::FILM => 'фільм',
+        self::OTHER => 'іншае',
+    ];
+
+    public const TYPES_MANY = [
+        self::KARAHOD => 'карагоды',
+        self::DANCE => 'танцы',
+        self::QUADRILLE => 'кадрылі',
+        self::DANCE_GAME => 'танец-гульні',
+        self::CHORUSES => null,
+        self::MELODY => 'найгрышы',
+        self::DANCE_MOVEMENTS => null,
+        self::SONGS => 'песні',
+        self::POEMS => 'вершы',
+        self::CEREMONY => 'абрады',
+        self::GAME => 'гульні',
+        self::STORY => 'аповеды',
+        self::ABOUT_DANCES => null,
+        self::PROVERB => 'прыказкі',
+        self::FAIRY_TALE => 'казкі',
+        self::LULLABY => 'калыханкі',
+        self::RIDDLE => 'загадкі',
+        self::PARABLE => 'прыпавесці',
+        self::ABOUT_RECORD => null,
+        self::ABOUT_INFORMANT => null,
+        self::ABOUT_OTHER_INFORMANTS => null,
+        self::CHANGE_INFORMANTS => null,
+        self::STAGE_ACTION => null,
+        self::FILM => null,
+        self::OTHER => null,
     ];
 
     private const VARIANTS_SAME = [
         self::DANCE_MOVEMENTS => ['рух танца', 'рухі танцаў'],
-
-        self::DANCE => ['танцы'],
         self::QUADRILLE => ['кадрыль'],
-        self::CHORUSES => ['прыпеўка'],
-        self::MELODY => ['найгрыш'],
-        self::SONGS => ['песень', 'песня', 'песні', 'песьні'],
-        self::POEMS => ['верш'],
-        self::CEREMONY => ['абрады'],
-        self::GAME => ['гульні'],
+        self::SONGS => ['песень', 'песьня', 'песьні'],
         self::STORY => ['аповеды пра', 'аповед пра', 'аповед'],
         self::ABOUT_DANCES => [
-            'згадванне пра танцы', 'як танцавалі', 'пра танец', 'каманда ў танцах', 'каманды ў танцах'
+            'згадваньне пра танцы', 'як танцавалі', 'пра танец', 'каманда ў танцах', 'каманды ў танцах'
         ],
-        self::PROVERB => ['прыказкі'],
         self::FAIRY_TALE => ['казка пра'],
-        self::LULLABY => ['калыханка'],
-        self::RIDDLE => ['загадкі'],
         self::PARABLE => ['прытча'],
         self::ABOUT_RECORD => [
             'зьвесткі пра запіс',
@@ -100,8 +118,6 @@ class CategoryType
     ];
 
     private const VARIANTS_OTHER = [
-        self::DANCE_GAME => ['танец-гульня'],
-
         self::SONGS => [
             'сьпявае', 'напеў', 'пятроўская', 'валачобная',
             'сьпявалі', 'масьленіца', 'бяседная', 'масьленка', 'жніўная', 'любоўная', 'вясельная',
@@ -116,7 +132,7 @@ class CategoryType
     ];
 
     public const TEXT_JOIN = [
-        self::OTHER => ['Цікавыя словы, дыялекты', 'Дыялекты', 'Цікавыя выразы'],
+        self::OTHER => ['цікавыя словы, дыялекты', 'дыялекты', 'цікавыя выразы'],
     ];
 
     public const SYSTEM_TYPES = [
@@ -125,6 +141,30 @@ class CategoryType
         self::ABOUT_OTHER_INFORMANTS,
         self::CHANGE_INFORMANTS,
     ];
+
+    public static function getSingleName(int $type): ?string
+    {
+        return isset(self::TYPES[$type]) ? mb_ucfirst(self::TYPES[$type]) : null;
+    }
+
+    public static function getManyOrSingleName(int $type): ?string
+    {
+        if (isset(self::TYPES_MANY[$type])) {
+            return mb_ucfirst(self::TYPES_MANY[$type]);
+        }
+
+        return self::getSingleName($type);
+    }
+
+    public static function getSingleManyNames(): array
+    {
+        $types = [];
+        foreach (self::TYPES as $key => $type) {
+            $types[$key] = mb_ucfirst($type) . (null !== self::TYPES_MANY[$key] ? '/' . self::TYPES_MANY[$key] : '');
+        }
+
+        return $types;
+    }
 
     public static function isTypeNextBlock(int $type): bool
     {
@@ -136,10 +176,22 @@ class CategoryType
         $text = mb_strtolower($text);
 
         foreach (self::TYPES as $key => $name) {
+            if ($text === $name) {
+                return $key;
+            }
+        }
+
+        foreach (self::TYPES_MANY as $key => $name) {
+            if ($text === $name) {
+                return $key;
+            }
+        }
+
+        foreach (self::TYPES as $key => $name) {
             if (!$isAll && !in_array($key, [self::ABOUT_RECORD, self::ABOUT_INFORMANT, self::ABOUT_OTHER_INFORMANTS])) {
                 continue;
             }
-            if (false !== mb_strstr($text, mb_strtolower($name))) {
+            if (false !== mb_strstr($text, $name)) {
                 return $key;
             }
         }
@@ -189,7 +241,13 @@ class CategoryType
         $text = mb_strtolower($text);
 
         foreach (self::TYPES as $key => $name) {
-            if ($text === mb_strtolower($name)) {
+            if ($text === $name) {
+                return $key;
+            }
+        }
+
+        foreach (self::TYPES_MANY as $key => $name) {
+            if ($text === $name) {
                 return $key;
             }
         }
@@ -205,10 +263,8 @@ class CategoryType
 
     public static function getIdForOther(string $text, string $textNext): ?int
     {
-        foreach (self::TEXT_JOIN[self::OTHER] as $name) {
-            if (mb_strtolower($text) === mb_strtolower($name)) {
-                return self::OTHER;
-            }
+        if (in_array(mb_strtolower($text), self::TEXT_JOIN[self::OTHER], true)) {
+            return self::OTHER;
         }
 
         foreach (self::VARIANTS_OTHER as $key => $variants) {

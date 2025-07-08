@@ -6,6 +6,7 @@ namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
 use App\Dto\EpisodeDto;
+use App\Entity\Additional\FileMarkerAdditional;
 use App\Entity\Type\CategoryType;
 use App\Repository\FileMarkerRepository;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -112,7 +113,7 @@ class FileMarker
 
     public function getCategoryName(): string
     {
-        return CategoryType::TYPES[$this->category] ?? '[тып ?]';
+        return CategoryType::getSingleName($this->category) ?? '[тып ?]';
     }
 
     public function setCategory(int $category): void
@@ -216,21 +217,25 @@ class FileMarker
         return $this;
     }
 
-    public function getYoutubeTitle(): string
-    {
-        $additional = $this->getAdditional();
-        $title = $this->name;
-
-        return $title;
-    }
-
     public function getAdditional(): array
     {
         return $this->additional ?? [];
     }
 
+    public function getAdditionalValue(string $key): string
+    {
+        return isset($this->additional[$key]) ? trim($this->additional[$key]) : '';
+    }
+
     public function addAdditional(string $key, string $value): void
     {
         $this->additional[$key] = $value;
+    }
+
+    public function setAdditional(array $additional): static
+    {
+        $this->additional = $additional;
+
+        return $this;
     }
 }
