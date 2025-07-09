@@ -25,12 +25,18 @@ class Musician
         return false;
     }
 
-    public function isMusician(string $text): ?bool
+    public function isMusician(?string $text): ?bool
     {
+        if (empty($text)) {
+            return null;
+        }
+
         $text = mb_strtolower($text);
 
-        if (in_array($text, $this->skip, true)) {
-            return null;
+        foreach ($this->skip as $text_musician) {
+            if (str_contains($text, $text_musician)) {
+                return null;
+            }
         }
 
         foreach ($this->texts as $text_musician) {
