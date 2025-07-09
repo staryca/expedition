@@ -90,7 +90,17 @@ class VideoKozParserTest extends TestCase
         $this->assertNull($item->dateAction);
         $this->assertEquals('Гутарка з мясцовым калектывам.' . "\n\r" . 'Дата запісу: сяр. 1990-х', $item->notes);
         $this->assertEquals('', $item->organizationName);
-        $this->assertCount(2, $item->informants);
+        $this->assertCount(3, $item->informants);
+        $this->assertEquals('Шурко Галіна Сцяпанаўна', $item->informants[0]->name);
+        $this->assertEquals(1938, $item->informants[0]->birth);
+        $this->assertEquals('Грыцкевіч Уладзімір Паўлавіч', $item->informants[1]->name);
+        $this->assertNull($item->informants[1]->birth);
+        $this->assertEquals('барабан', $item->informants[1]->notes);
+        $this->assertTrue($item->informants[1]->isMusician);
+        $this->assertEquals('Велескевіч Павел Міхайлавіч', $item->informants[2]->name);
+        $this->assertEquals(1949, $item->informants[2]->birth);
+        $this->assertEquals('баян, маст. кіраўнік', $item->informants[2]->notes);
+        $this->assertTrue($item->informants[2]->isMusician);
         $this->assertStringContainsString('Ой чого ты, лысый,', $item->texts);
         $this->assertEquals('', $item->tmkb);
     }

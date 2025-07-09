@@ -599,6 +599,7 @@ class PersonService
     {
         $informants = [];
         $hasSemicolon = str_contains($content, ';');
+        $musician = new Musician();
 
         $char = $hasSemicolon ? ';' : ',';
         // A, b  +  C, d => A, b, C, d
@@ -706,11 +707,15 @@ class PersonService
                 }
             }
             if (isset($parts[$key])) {
-                $location = str_replace('з ', '', trim($parts[$key], " .\t\n\r\0\x0B"));
-                if ('' !== $location) {
-                    $informant->addLocation($location);
+                $text = str_replace('з ', '', trim($parts[$key], " .\t\n\r\0\x0B"));
+                $hasMusician = $musician->hasMusicianText($text);
+                if (!$hasMusician) {
+                    // text is location
+                    if ('' !== $text) {
+                        $informant->addLocation($text);
+                    }
+                    $key++;
                 }
-                $key++;
             }
 
             while (isset($parts[$key])) {
