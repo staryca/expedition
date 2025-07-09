@@ -17,7 +17,7 @@ class LocationService
     public const SUBDISTRICT_SHORT = 'с/с';
     public const REGION = 'вобласць';
 
-    public const LAT_RANGE_UP = 0.55; // lat - // N
+    public const LAT_RANGE_UP = 0.35; // lat - // N
     public const LAT_RANGE_DOWN = 0.35; // lat + // S
     public const LON_RANGE_UP = 0.7; // lon - // E
     public const LON_RANGE_DOWN = 0.7; // lon + // W

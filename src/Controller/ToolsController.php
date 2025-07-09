@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Entity\Additional\Musician;
 use App\Entity\Type\GenderType;
 use App\Repository\InformantRepository;
 use App\Service\PersonService;
@@ -158,6 +159,38 @@ class ToolsController extends AbstractController
 
         return $this->render('import/show.table.result.html.twig', [
             'headers' => ['Імя 1', 'Нараджэньне 1', 'Зараз 1', 'Імя 2', 'Нараджэньне 2', 'Зараз 2'],
+            'data' => $data,
+        ]);
+    }
+
+    #[Route('/import/tools/update_all_musicians', name: 'app_import_tools_update_all_musicians')]
+    public function updateAllMusicians(): Response
+    {
+        $musician = new Musician();
+
+        $data = [];
+        $informants = $this->informantRepository->findAll();
+        foreach ($informants as $informant) {
+            $wasMusician = $informant->isMusician();
+            $isMusician = $musician->isMusician($informant->getNotes());
+            if ($wasMusician === $isMusician || is_null($isMusician)) {
+                continue;
+            }
+
+            $informant->setIsMusician($isMusician);
+            $data[] = [
+                'id' => $informant->getId(),
+                'name' => $informant->getFirstName(),
+                'was' => $wasMusician === null ? '?' : ($wasMusician ? 'Муз.' : 'не'),
+                'now' => $isMusician ? 'Муз.' : 'не',
+                'notes' => $informant->getNotes(),
+            ];
+        }
+
+        $this->entityManager->flush();
+
+        return $this->render('import/show.table.result.html.twig', [
+            'headers' => ['Id', 'Імя', 'Быў', 'Стаў', 'Заўвагі'],
             'data' => $data,
         ]);
     }

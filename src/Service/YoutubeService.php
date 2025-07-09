@@ -162,7 +162,9 @@ class YoutubeService
             if (!empty($part)) {
                 $part .= '<br>';
             }
-            $part .= 'Запісана Козенкам М.А. у ' . $date; // todo
+            $part .= $fileMarker->getCategory() !== CategoryType::FILM
+                ? 'Запісана Козенкам М.А. у ' . $date
+                : 'Запісаны ў ' . $date;
         }
         if (!empty($part)) {
             $parts[] = $part;

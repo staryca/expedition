@@ -2,6 +2,7 @@
     {% set isLink = true %}
 {% endif %}
 
+{% if informant.isMusician is same as(true) %}<i class="bi bi-music-note" title="Музыкант"></i>{% endif %}
 <b>{{ informant.firstName }}</b>
 {% if informant.yearBirth %}{{ informant.yearBirth }} г.н.{% endif %}
 {% if informant.isDied %}
