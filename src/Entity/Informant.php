@@ -92,6 +92,9 @@ class Informant
     #[ORM\OneToMany(targetEntity: Task::class, mappedBy: 'informant')]
     private Collection $tasks;
 
+    #[ORM\Column(nullable: true)]
+    private ?bool $isMusician = null;
+
     public function __construct()
     {
         $this->organizationInformants = new ArrayCollection();
@@ -471,6 +474,18 @@ class Informant
             $this->organizationInformants->add($organizationInformant);
             $organizationInformant->setInformant($this);
         }
+
+        return $this;
+    }
+
+    public function isMusician(): ?bool
+    {
+        return $this->isMusician;
+    }
+
+    public function setIsMusician(?bool $isMusician): static
+    {
+        $this->isMusician = $isMusician;
 
         return $this;
     }

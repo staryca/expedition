@@ -9,6 +9,7 @@ use App\Dto\NameGenderDto;
 use App\Dto\OrganizationDto;
 use App\Dto\PersonBsuDto;
 use App\Dto\StudentDto;
+use App\Entity\Additional\Musician;
 use App\Entity\Informant;
 use App\Entity\Type\GenderType;
 use App\Helper\TextHelper;
@@ -90,6 +91,7 @@ class PersonService
                 foreach ($parts as $part) {
                     $informant = $this->getPersonByFullName($part);
                     if (null !== $informant) {
+                        $informant->detectMusician();
                         $this->addInformants($dto->informants, $informant);
                         continue;
                     }
@@ -115,6 +117,7 @@ class PersonService
                     $informant = new InformantDto();
                     $informant->setNameAndGender($nameGenderDto);
                     $informant->addNotes($notes);
+                    $informant->detectMusician();
 
                     $this->addInformants($dto->informants, $informant);
                 }
@@ -589,12 +592,14 @@ class PersonService
     /**
      * @param string $content
      * @param string $additionalNotes
+     * @param null $isMusician
      * @return array<InformantDto>
      */
-    public function getInformants(string $content, string $additionalNotes = ''): array
+    public function getInformants(string $content, string $additionalNotes = '', $isMusician = null): array
     {
         $informants = [];
         $hasSemicolon = str_contains($content, ';');
+        $musician = new Musician();
 
         $char = $hasSemicolon ? ';' : ',';
         // A, b  +  C, d => A, b, C, d
@@ -702,11 +707,15 @@ class PersonService
                 }
             }
             if (isset($parts[$key])) {
-                $location = str_replace('з ', '', trim($parts[$key], " .\t\n\r\0\x0B"));
-                if ('' !== $location) {
-                    $informant->addLocation($location);
+                $text = str_replace('з ', '', trim($parts[$key], " .\t\n\r\0\x0B"));
+                $hasMusician = $musician->hasMusicianText($text);
+                if (!$hasMusician) {
+                    // text is location
+                    if ('' !== $text) {
+                        $informant->addLocation($text);
+                    }
+                    $key++;
                 }
-                $key++;
             }
 
             while (isset($parts[$key])) {
@@ -719,6 +728,12 @@ class PersonService
                 array_unshift($infNotes, $informant->notes);
             }
             $informant->notes = implode(', ', $infNotes);
+
+            if (null !== $isMusician) {
+                $informant->isMusician = $isMusician;
+            } else {
+                $informant->detectMusician();
+            }
 
             $dto = $informant->getNameAndGender();
             $this->fixNameAndGender($dto);

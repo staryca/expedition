@@ -231,12 +231,14 @@ class InformantTest extends TestCase
         $this->assertEquals(1958, $informant->birth);
         $this->assertEquals(GenderType::FEMALE, $informant->gender);
         $this->assertEquals('', $informant->notes);
+        $this->assertNull($informant->isMusician);
 
         $informant = $informants[1];
         $this->assertEquals('Якушка Аляксандр Васільевіч', $informant->name);
         $this->assertEquals(1956, $informant->birth);
         $this->assertEquals(GenderType::MALE, $informant->gender);
         $this->assertEquals('музыкант, баян', $informant->notes);
+        $this->assertTrue($informant->isMusician);
     }
 
     public function testInformantKoz2WithIAndAdditional(): void
@@ -343,5 +345,25 @@ class InformantTest extends TestCase
         $this->assertEquals('спявачка', $informant->notes);
         $this->assertCount(1, $informant->locations);
         $this->assertEquals('в. Зацесце Клетнянскі р-н Бранская вобласць', $informant->locations[0]);
+    }
+
+    public function testInformantWithEachNotes(): void
+    {
+        $content = 'Дарошка Аляксей Іванавіч,1944 г.н. (баян), Крук Аляксей Аляксандравіч, 1959 г.н. (бубен) ';
+
+        $informants = $this->personService->getInformants($content);
+        $this->assertCount(2, $informants);
+
+        $informant = $informants[0];
+        $this->assertEquals('Дарошка Аляксей Іванавіч', $informant->name);
+        $this->assertEquals(1944, $informant->birth);
+        $this->assertEquals(GenderType::MALE, $informant->gender);
+        $this->assertEquals('баян', $informant->notes);
+
+        $informant = $informants[1];
+        $this->assertEquals('Крук Аляксей Аляксандравіч', $informant->name);
+        $this->assertEquals(1959, $informant->birth);
+        $this->assertEquals(GenderType::MALE, $informant->gender);
+        $this->assertEquals('бубен', $informant->notes);
     }
 }

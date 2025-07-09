@@ -320,6 +320,20 @@ class ReportBlock
         return $this->informants;
     }
 
+    public function getInformantsWithoutMusicians(): Collection
+    {
+        return $this->informants->filter(function (Informant $informant) {
+            return $informant->isMusician() !== true;
+        });
+    }
+
+    public function getMusicians(): Collection
+    {
+        return $this->informants->filter(function (Informant $informant) {
+            return $informant->isMusician() === true;
+        });
+    }
+
     public function addInformant(Informant $informant): static
     {
         if (!$this->informants->contains($informant)) {
