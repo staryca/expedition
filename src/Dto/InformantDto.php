@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Dto;
 
+use App\Entity\Additional\Musician;
 use App\Entity\Type\GenderType;
 use App\Parser\Columns\KoboInformantColumns;
 use Carbon\Carbon;
@@ -20,6 +21,7 @@ class InformantDto extends StudentDto
     public ?string $photo = null;
     public ?string $photoUrl = null;
     public ?PlaceDto $birthPlace = null;
+    public ?bool $isMusician = null;
 
     public function isSameBirth(InformantDto $informantDto): ?bool
     {
@@ -75,6 +77,9 @@ class InformantDto extends StudentDto
         if (null !== $informantDto->birthPlace && !$this->birthPlace) {
             $this->birthPlace = $informantDto->birthPlace;
         }
+        if (null !== $informantDto->isMusician && null === $this->isMusician) {
+            $this->isMusician = $informantDto->isMusician;
+        }
     }
 
     public function addNotes(string $notes): void
@@ -129,5 +134,10 @@ class InformantDto extends StudentDto
             . $this->gender . '$3#'
             . $this->getPlaceHash() . '$4#'
         );
+    }
+
+    public function detectMusician(): void
+    {
+        $this->isMusician = (new Musician())->isMusician($this->notes);
     }
 }

@@ -77,6 +77,7 @@ class VideoKozParserTest extends TestCase
         $this->assertEquals('Якушка Аляксандр Васільевіч', $item->informants[1]->name);
         $this->assertEquals(1956, $item->informants[1]->birth);
         $this->assertEquals('музыкант, баян', $item->informants[1]->notes);
+        $this->assertTrue($item->informants[1]->isMusician);
         $this->assertEquals('няма', $item->texts);
         $this->assertEquals('Узгадваецца ў прадмове кнігі Традыцыйная мастацкая культура беларусаў на с. 12 (Беразляны “Мыкыта”).', $item->tmkb);
 
@@ -89,7 +90,7 @@ class VideoKozParserTest extends TestCase
         $this->assertNull($item->dateAction);
         $this->assertEquals('Гутарка з мясцовым калектывам.' . "\n\r" . 'Дата запісу: сяр. 1990-х', $item->notes);
         $this->assertEquals('', $item->organizationName);
-        $this->assertCount(0, $item->informants);
+        $this->assertCount(2, $item->informants);
         $this->assertStringContainsString('Ой чого ты, лысый,', $item->texts);
         $this->assertEquals('', $item->tmkb);
     }

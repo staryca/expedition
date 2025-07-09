@@ -178,6 +178,7 @@ class ReportManager
                 $informantDb->setGeoPointBirth($informant->birthPlace->geoPoint);
                 $informantDb->setPlaceBirth($informant->birthPlace->place);
             }
+            $informantDb->setIsMusician($informant->isMusician);
 
             $this->entityManager->persist($informantDb);
             $informantsDb[$key] = $informantDb;
@@ -521,6 +522,7 @@ class ReportManager
                     $informantDb->setConfession($informant->confession);
                     $informantDb->setPathPhoto($informant->photo);
                     $informantDb->setUrlPhoto($informant->photoUrl);
+                    $informantDb->setIsMusician($informant->isMusician);
 
                     $informantDb->setGeoPointCurrent($reportData->geoPoint);
                     if (null === $reportData->geoPoint) {

@@ -231,12 +231,14 @@ class InformantTest extends TestCase
         $this->assertEquals(1958, $informant->birth);
         $this->assertEquals(GenderType::FEMALE, $informant->gender);
         $this->assertEquals('', $informant->notes);
+        $this->assertNull($informant->isMusician);
 
         $informant = $informants[1];
         $this->assertEquals('Якушка Аляксандр Васільевіч', $informant->name);
         $this->assertEquals(1956, $informant->birth);
         $this->assertEquals(GenderType::MALE, $informant->gender);
         $this->assertEquals('музыкант, баян', $informant->notes);
+        $this->assertTrue($informant->isMusician);
     }
 
     public function testInformantKoz2WithIAndAdditional(): void

@@ -126,10 +126,7 @@ class YoutubeService
             $parts[] = $notes;
         }
 
-        // Musicians
-        // todo
-
-        $informants = $reportBlock->getInformants();
+        $informants = $reportBlock->getInformantsWithoutMusicians();
         $persons = [];
         foreach ($informants as $informant) {
             $persons[] = $informant->getFirstName()
@@ -138,6 +135,18 @@ class YoutubeService
         }
         if (!empty($persons)) {
             $parts[] = 'Выконваюць: ' . implode('; ', $persons); // todo
+        }
+
+        // Musicians
+        $informants = $reportBlock->getMusicians();
+        $persons = [];
+        foreach ($informants as $informant) {
+            $persons[] = $informant->getFirstName()
+                . (null !== $informant->getYearBirth() ? ', ' . $informant->getYearBirth() . ' г.н.' : '')
+                . (!empty($informant->getNotes()) ? ' (' . $informant->getNotes() . ')' : '');
+        }
+        if (!empty($persons)) {
+            $parts[] = 'Музык' . (count($persons) === 1 ? 'а' : 'і') . ': ' . implode('; ', $persons); // todo
         }
 
         $geoPoint = $report->getGeoPoint();

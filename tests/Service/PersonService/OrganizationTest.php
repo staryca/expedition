@@ -292,16 +292,19 @@ class OrganizationTest extends TestCase
         $this->assertEquals('Крывенька Уладзімір Ануфрыевіч', $informant->name);
         $this->assertEquals('баян', $informant->notes);
         $this->assertNull($informant->birth);
+        $this->assertTrue($informant->isMusician);
 
         $informant = $organization->informants[1];
         $this->assertEquals('Мялец Станіслаў Пятровіч [Мелец]', $informant->name);
         $this->assertEquals('скрыпка', $informant->notes);
         $this->assertNull($informant->birth);
+        $this->assertTrue($informant->isMusician);
 
         $informant = $organization->informants[2];
         $this->assertEquals('Буйко Віктар Антонавіч', $informant->name);
         $this->assertEquals('лыжкі', $informant->notes);
         $this->assertNull($informant->birth);
+        $this->assertTrue($informant->isMusician);
     }
 
     public function testParseOrganizationKozManyInformantsSimple(): void
@@ -346,6 +349,7 @@ class OrganizationTest extends TestCase
         $this->assertEquals('Якушка Аляксандр Васільевіч', $informant->name);
         $this->assertEquals(1956, $informant->birth);
         $this->assertEquals('музыкант, баян', $informant->notes);
+        $this->assertTrue($informant->isMusician);
     }
 
     public function testParseOrganizationKozOne(): void
@@ -374,15 +378,18 @@ class OrganizationTest extends TestCase
         $this->assertEquals('Астапчук Дзмітрый', $informant->name);
         $this->assertEquals(1920, $informant->birth);
         $this->assertEquals('музыкі, гармонік', $informant->notes);
+        $this->assertTrue($informant->isMusician);
 
         $informant = $organization->informants[3];
         $this->assertEquals('Краўчук Іван', $informant->name);
         $this->assertEquals(1922, $informant->birth);
         $this->assertEquals('музыкі, скрыпка', $informant->notes);
+        $this->assertTrue($informant->isMusician);
 
         $informant = $organization->informants[4];
         $this->assertEquals('Кавалевіч Мікалай', $informant->name);
         $this->assertEquals(1947, $informant->birth);
         $this->assertEquals('музыкі, бубен, мастацкі свіст', $informant->notes);
+        $this->assertTrue($informant->isMusician);
     }
 }

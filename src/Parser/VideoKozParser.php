@@ -97,6 +97,12 @@ class VideoKozParser
             if (isset($record[VideoKozColumns::INFORMANTS])) {
                 $videoDto->informants = $this->personService->getInformants($record[VideoKozColumns::INFORMANTS]);
             }
+            if (isset($record[VideoKozColumns::MUSICIANS])) {
+                $videoDto->informants = array_merge(
+                        $videoDto->informants,
+                        $this->personService->getInformants($record[VideoKozColumns::MUSICIANS], '', true)
+                    );
+            }
 
             $dateAction = $record[VideoKozColumns::DATE_RECORD] ?? null;
             if (!empty(trim($dateAction))) {
