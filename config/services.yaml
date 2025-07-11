@@ -7,6 +7,7 @@ parameters:
     bsu_url: '%env(string:BSU_URL)%'
     media_folder: '%env(string:MEDIA_FOLDER)%'
     google_credentials: '%kernel.project_dir%/%env(string:GOOGLE_APPLICATION_CREDENTIALS)%'
+    imef_url: '%env(string:IMEF_URL)%'
 
 services:
     # default configuration for services in *this* file

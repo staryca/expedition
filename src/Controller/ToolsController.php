@@ -166,13 +166,11 @@ class ToolsController extends AbstractController
     #[Route('/import/tools/update_all_musicians', name: 'app_import_tools_update_all_musicians')]
     public function updateAllMusicians(): Response
     {
-        $musician = new Musician();
-
         $data = [];
         $informants = $this->informantRepository->findAll();
         foreach ($informants as $informant) {
             $wasMusician = $informant->isMusician();
-            $isMusician = $musician->isMusician($informant->getNotes());
+            $isMusician = Musician::isMusician($informant->getNotes());
             if ($wasMusician === $isMusician || is_null($isMusician)) {
                 continue;
             }

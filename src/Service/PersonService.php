@@ -175,6 +175,7 @@ class PersonService
      */
     public function getPersonByFullName(string $name): ?InformantDto
     {
+        $name = str_replace(' г.н', 'г.н', $name);
         $parts = explode(' ', trim($name));
         if (count($parts) < 3) {
             return null;
@@ -184,7 +185,15 @@ class PersonService
         $partsNote = [];
         $informant = null;
         foreach ($parts as $part) {
-            if (!$informant && $this->textHelper->isNameWithBrackets($part)) {
+            $isName = $this->textHelper->isNameWithBrackets($part);
+            if (!$isName) {
+                $partU = TextHelper::lettersToUpper($part);
+                if (GenderType::getGender($partU) !== GenderType::UNKNOWN) {
+                    $part = $partU;
+                    $isName = true;
+                }
+            }
+            if (!$informant && $isName) {
                 $last = mb_substr($part, -1);
                 if (mb_strlen($part) > 2 && in_array($last, [',', ':', '.', ';', '-'])) {
                     if (count($partsName) >= 2) {
@@ -229,7 +238,7 @@ class PersonService
         if ($informant) {
             $parts = [];
             foreach ($partsNote as $part) {
-                if (str_contains($part, 'г.н.')) {
+                if (str_contains($part, 'г.н')) {
                     $informant->birth = (int) trim($part);
                 } else {
                     [$note, $name2] = $this->textHelper->getNames($part);
@@ -593,13 +602,13 @@ class PersonService
      * @param string $content
      * @param string $additionalNotes
      * @param null $isMusician
+     * @param int|null $yearReport
      * @return array<InformantDto>
      */
-    public function getInformants(string $content, string $additionalNotes = '', $isMusician = null): array
+    public function getInformants(string $content, string $additionalNotes = '', $isMusician = null, ?int $yearReport = null): array
     {
         $informants = [];
         $hasSemicolon = str_contains($content, ';');
-        $musician = new Musician();
 
         $char = $hasSemicolon ? ';' : ',';
         // A, b  +  C, d => A, b, C, d
@@ -656,7 +665,7 @@ class PersonService
                 //$name = trim($text);
                 //$text = '';
             }
-            $informant = $pos !== false ? $this->getPersonByFullName($name) : null;
+            $informant = $this->getPersonByFullName($name);
             if (null === $informant) {
                 $name = trim($name, " ,;\t\n\r\0\x0B");
                 $len = mb_strlen($name);
@@ -682,8 +691,24 @@ class PersonService
 
             $key = 0;
             $parts = explode(',', $text);
-            if (isset($parts[$key])) {
-                $birth = trim(str_replace(['г.н.', 'г.н'], '', $parts[$key]), " .,;\t\n\r\0\x0B");
+            if (isset($parts[$key]) && $informant->birth) {
+                $infNotes[] = $parts[$key];
+                $key++;
+            }
+            if (isset($parts[$key]) && !$informant->birth) {
+                $birth = null;
+                if (str_contains($parts[$key], 'год') || str_contains($parts[$key], 'гадоў') || str_contains($parts[$key], 'гады')) {
+                    $age = (int) $parts[$key];
+                    if ($age > 4 && $age < 120 && null !== $yearReport) {
+                        $birth = $yearReport - $age;
+                    } else {
+                        $infNotes[] = $parts[$key];
+                        $key++;
+                    }
+                }
+                if (null === $birth) {
+                    $birth = trim(str_replace(['г.н.', 'г.н'], '', $parts[$key]), " .,;\t\n\r\0\x0B");
+                }
                 try {
                     $date = Carbon::createFromFormat('d.m.Y', $birth);
                     if ($date instanceof Carbon) {
@@ -695,7 +720,7 @@ class PersonService
                 }
                 if (!$informant->birth && is_numeric($birth)) {
                     $birth = (int) $birth;
-                    if ($birth < 1900 || $birth > 2020) {
+                    if ($birth < 1850 || $birth > 2020) {
                         if ($birth !== 0) { // if = 0 then this text is location
                             $infNotes[] = $parts[$key];
                             $key++;
@@ -708,7 +733,7 @@ class PersonService
             }
             if (isset($parts[$key])) {
                 $text = str_replace('з ', '', trim($parts[$key], " .\t\n\r\0\x0B"));
-                $hasMusician = $musician->hasMusicianText($text);
+                $hasMusician = Musician::hasMusicianText($text);
                 if (!$hasMusician) {
                     // text is location
                     if ('' !== $text) {
@@ -897,6 +922,26 @@ class PersonService
             }
         }
 
+        // Case middle name as the second last name (ex: Сацэвіч Аўгіня Цітава) for female
+        $counts = array_count_values($detectedTypes);
+        if (($counts[self::NUM_LAST] ?? 0) >= 2) {
+            $genderTemp = $this->detectGenderByCounts($detectedGenders);
+            $genderTemp = $genderTemp === GenderType::UNKNOWN ? $dto->gender : $genderTemp;
+            if ($genderTemp === GenderType::FEMALE) {
+                $baseKey = null;
+                foreach ($detectedTypes as $key => $type) {
+                    if ($type !== self::NUM_LAST) {
+                        continue;
+                    }
+
+                    $baseKey = $key;
+                }
+                // Last name to middle name
+                $detectedTypes[$baseKey] = self::NUM_MIDDLE;
+                $detectedGenders[$baseKey] = GenderType::FEMALE;
+            }
+        }
+
         // Case middle name as the second last name (ex: Міхайлавіч Берташ), '...віч' as middle
         $counts = array_count_values($detectedTypes);
         if (($counts[self::NUM_LAST] ?? 0) >= 2) {
@@ -993,14 +1038,9 @@ class PersonService
         }
 
         // Detect gender
-        $counts = array_count_values($detectedGenders);
-        $amountMale = $counts[GenderType::MALE] ?? 0;
-        $amountFemale = $counts[GenderType::FEMALE] ?? 0;
-        if ($amountMale !== $amountFemale && max($amountMale, $amountFemale) > 0) {
-            $gender = $amountMale < $amountFemale ? GenderType::FEMALE : GenderType::MALE;
-            if ($dto->gender === GenderType::UNKNOWN) {
-                $dto->gender = $gender;
-            }
+        $gender = $this->detectGenderByCounts($detectedGenders);
+        if ($gender !== GenderType::UNKNOWN && $dto->gender === GenderType::UNKNOWN) {
+            $dto->gender = $gender;
         }
 
         // Case for female with first and last names as last (ex: Івандзілава Вольга Кулрыёнава)
@@ -1056,6 +1096,18 @@ class PersonService
         $dto->setName(trim(implode(' ', $resultParts)));
 
         return $middleNames;
+    }
+
+    private function detectGenderByCounts(array $detectedGenders): int
+    {
+        $counts = array_count_values($detectedGenders);
+        $amountMale = $counts[GenderType::MALE] ?? 0;
+        $amountFemale = $counts[GenderType::FEMALE] ?? 0;
+        if ($amountMale === $amountFemale || max($amountMale, $amountFemale) === 0) {
+            return GenderType::UNKNOWN;
+        }
+
+        return $amountMale < $amountFemale ? GenderType::FEMALE : GenderType::MALE;
     }
 
     /**

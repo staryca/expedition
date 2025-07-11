@@ -17,7 +17,7 @@ class TextHelper
         );
     }
 
-    public function lettersToUpper(string $text): string
+    public static function lettersToUpper(string $text): string
     {
         $result = [];
 
