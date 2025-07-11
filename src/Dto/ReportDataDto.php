@@ -146,8 +146,7 @@ class ReportDataDto extends PlaceDto
         }
 
         if ($isNew) {
-            $userDto = new UserDto();
-            $userDto->name = $name;
+            $userDto = new UserDto($name);
             $userDto->roles[] = $role;
             $this->users[] = $userDto;
         }

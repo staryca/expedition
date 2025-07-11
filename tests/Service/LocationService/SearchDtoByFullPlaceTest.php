@@ -118,6 +118,31 @@ class SearchDtoByFullPlaceTest extends TestCase
         $this->assertEquals('Смаляны', $dto->names[3]);
     }
 
+    public function testRevertBlocks(): void
+    {
+        $dto = $this->locationService->getSearchDtoByFullPlace('Крупскі раён, Самасадаўка');
+
+        $this->assertNull($dto->region);
+        $this->assertEquals('Крупскі раён', $dto->district);
+        $this->assertEquals(GeoPointType::BE_VILLAGE_LONGS, $dto->prefixes);
+        $this->assertCount(3, $dto->names);
+        $this->assertEquals('Самаседаўка', $dto->names[0]);
+        $this->assertEquals('Самасёдаўка', $dto->names[1]);
+        $this->assertEquals('Самасядаўка', $dto->names[2]);
+    }
+
+    public function testMiesto(): void
+    {
+        $dto = $this->locationService->getSearchDtoByFullPlace('Сенненскі раён, мяс. Багушэўск');
+
+        $this->assertNull($dto->region);
+        $this->assertEquals('Сенненскі раён', $dto->district);
+        $this->assertEquals(GeoPointType::BE_VILLAGE_LONGS, $dto->prefixes);
+        $this->assertCount(2, $dto->names);
+        $this->assertEquals('Багушэўск', $dto->names[0]);
+        $this->assertEquals('Багутэўск', $dto->names[1]);
+    }
+
     public function testWithRegion(): void
     {
         $dto = $this->locationService->getSearchDtoByFullPlace('в. Каржавы (Высокаўскі с/с), Аршанскі раён, Віцебская вобласць, Беларусь');

@@ -98,6 +98,51 @@ class InformantTest extends TestCase
         $this->assertEquals('Віцебск', $informant->locations[0]);
     }
 
+    public function testInformantWithYearReport(): void
+    {
+        $content = 'Сацэвіч Аўгіня Цітава, 88 год';
+
+        $informants = $this->personService->getInformants($content, '', null, 1990);
+
+        $this->assertCount(1, $informants);
+        $informant = $informants[0];
+        $this->assertEquals('Сацэвіч Аўгіня Цітава', $informant->name);
+        $this->assertEquals(1902, $informant->birth);
+        $this->assertEquals(GenderType::FEMALE, $informant->gender);
+        $this->assertEquals('', $informant->notes);
+        $this->assertCount(0, $informant->locations);
+    }
+
+    public function testInformantWithYearWithoutComma(): void
+    {
+        $content = 'Чыгілейчык Марыя Рыгораўна 1897 г.н';
+
+        $informants = $this->personService->getInformants($content);
+
+        $this->assertCount(1, $informants);
+        $informant = $informants[0];
+        $this->assertEquals('Чыгілейчык Марыя Рыгораўна', $informant->name);
+        $this->assertEquals(1897, $informant->birth);
+        $this->assertEquals(GenderType::FEMALE, $informant->gender);
+        $this->assertEquals('', $informant->notes);
+        $this->assertCount(0, $informant->locations);
+    }
+
+
+    public function testInformantWithYearReportY(): void
+    {
+        $content = 'Пышная Уляна Рыгораўна, 73 гады';
+
+        $informants = $this->personService->getInformants($content, '', null, 1990);
+
+        $this->assertCount(1, $informants);
+        $informant = $informants[0];
+        $this->assertEquals('Пышная Уляна Рыгораўна', $informant->name);
+        $this->assertEquals(1917, $informant->birth);
+        $this->assertEquals(GenderType::FEMALE, $informant->gender);
+        $this->assertEquals('', $informant->notes);
+        $this->assertCount(0, $informant->locations);
+    }
     public function testInformantWithLocation(): void
     {
         $content = 'Ніна Яўсееўна Хомчанка (Жукава), 1937 г.н., з в. Грышына';

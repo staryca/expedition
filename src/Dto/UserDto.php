@@ -9,4 +9,9 @@ class UserDto
     public string $name = '';
     /** @var array<string> $roles */
     public array $roles = [];
+
+    public function __construct(string $name)
+    {
+        $this->name = $name;
+    }
 }

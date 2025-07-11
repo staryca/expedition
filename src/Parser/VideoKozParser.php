@@ -95,7 +95,8 @@ class VideoKozParser
                 $videoDto->organizationName = trim($record[VideoKozColumns::ORGANIZATION]);
             }
             if (isset($record[VideoKozColumns::INFORMANTS])) {
-                $videoDto->informants = $this->personService->getInformants($record[VideoKozColumns::INFORMANTS]);
+                $isMusicians = $videoDto->category === CategoryType::MELODY;
+                $videoDto->informants = $this->personService->getInformants($record[VideoKozColumns::INFORMANTS], '', $isMusicians);
             }
             if (isset($record[VideoKozColumns::MUSICIANS])) {
                 $videoDto->informants =

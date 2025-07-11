@@ -52,4 +52,28 @@ class GetPersonNameTest extends TestCase
         $this->assertEquals('Хомчанка (Жукава) Ніна Яўсееўна', $informant->name);
         $this->assertEquals('жонка', $informant->notes);
     }
+
+    public function testSuccessWithBirth(): void
+    {
+        $name = 'жонка Чыгілейчык Марыя Рыгораўна 1897 г.н.';
+
+        $informant = $this->personService->getPersonByFullName($name);
+
+        $this->assertNotNull($informant);
+        $this->assertEquals('Чыгілейчык Марыя Рыгораўна', $informant->name);
+        $this->assertEquals(1897, $informant->birth);
+        $this->assertEquals('жонка', $informant->notes);
+    }
+
+    public function testSuccessWithBirthAndNotes(): void
+    {
+        $name = 'Бовіч Акуліна Адамаўна 1927 г.н., працуе ў КБО';
+
+        $informant = $this->personService->getPersonByFullName($name);
+
+        $this->assertNotNull($informant);
+        $this->assertEquals('Бовіч Акуліна Адамаўна', $informant->name);
+        $this->assertEquals(1927, $informant->birth);
+        $this->assertEquals('працуе ў КБО', $informant->notes);
+    }
 }

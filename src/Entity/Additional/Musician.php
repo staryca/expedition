@@ -6,17 +6,17 @@ namespace App\Entity\Additional;
 
 class Musician
 {
-    private array $texts = [
+    private const TEXTS = [
         'гарманіст', 'грае на ', 'гармонік', 'акардэон', 'баяніст', 'баян', 'скрыпак', 'скрыпка', 'музыкант', 'лыжкі',
         'бубен', 'мастацкі свіст', 'труба', 'флейта', 'барабан',
     ];
-    private array $skip = ['скрыпака', 'баяніста', 'гарманіста'];
+    private const SKIP = ['скрыпака', 'баяніста', 'гарманіста'];
 
-    public function hasMusicianText(string $text): bool
+    public static function hasMusicianText(string $text): bool
     {
         $text = mb_strtolower($text);
 
-        foreach ($this->texts as $text_musician) {
+        foreach (self::TEXTS as $text_musician) {
             if (str_contains($text, $text_musician)) {
                 return true;
             }
@@ -25,7 +25,7 @@ class Musician
         return false;
     }
 
-    public function isMusician(?string $text): ?bool
+    public static function isMusician(?string $text): ?bool
     {
         if (empty($text)) {
             return null;
@@ -33,13 +33,13 @@ class Musician
 
         $text = mb_strtolower($text);
 
-        foreach ($this->skip as $text_musician) {
+        foreach (self::SKIP as $text_musician) {
             if (str_contains($text, $text_musician)) {
                 return null;
             }
         }
 
-        foreach ($this->texts as $text_musician) {
+        foreach (self::TEXTS as $text_musician) {
             if (str_contains($text, $text_musician)) {
                 return true;
             }
