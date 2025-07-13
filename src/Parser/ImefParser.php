@@ -46,16 +46,17 @@ class ImefParser
 
     /**
      * @param string $content
+     * @param string $folder
      * @return array<ImefDto>
      */
-    public function parseItem(string $content): array
+    public function parseItem(string $content, string $folder = ''): array
     {
         $result = [];
         $crawler = new Crawler($content);
 
         $nodeTable = $crawler->filter('.row table')->first();
         if ($nodeTable->count() > 0) {
-            $nodeTable->filter('tr')->each(function (Crawler $node) use (&$result) {
+            $nodeTable->filter('tr')->each(function (Crawler $node) use ($folder, &$result) {
                 $columns = $node->children();
                 $dto = new ImefDto();
                 $dto->content = $node->outerHtml();
@@ -102,7 +103,7 @@ class ImefParser
                 }
                 $dto->category = $category ?? CategoryType::OTHER;
 
-                $key = md5(var_export($dto, true));
+                $key = $folder . md5(var_export($dto, true));
                 $result[$key] = $dto;
             });
         }

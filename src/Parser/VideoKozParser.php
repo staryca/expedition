@@ -95,7 +95,7 @@ class VideoKozParser
                 $videoDto->organizationName = trim($record[VideoKozColumns::ORGANIZATION]);
             }
             if (isset($record[VideoKozColumns::INFORMANTS])) {
-                $isMusicians = $videoDto->category === CategoryType::MELODY;
+                $isMusicians = $videoDto->category === CategoryType::MELODY ? true : null;
                 $videoDto->informants = $this->personService->getInformants($record[VideoKozColumns::INFORMANTS], '', $isMusicians);
             }
             if (isset($record[VideoKozColumns::MUSICIANS])) {
@@ -117,7 +117,7 @@ class VideoKozParser
                 } elseif (strlen($dateAction) < 5) {
                     $videoDto->dateAction = Carbon::createFromDate((int) $dateAction, 1, 1);
                 } else {
-                    $videoDto->dateAction = Carbon::createFromFormat('d.m.Y', $dateAction);
+                    $videoDto->dateAction = Carbon::createFromFormat('d.m.Y', (string) $dateAction);
                 }
             }
 

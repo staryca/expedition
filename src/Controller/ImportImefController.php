@@ -54,9 +54,10 @@ class ImportImefController extends AbstractController
         }
 
         $dtos = $this->imefHandler->check($baseUrl, $expedition);
+        $reports = $this->imefHandler->saveDtos($expedition, $dtos);
 
         return $this->render('import/show.json.result.html.twig', [
-            'data' => $dtos,
+            'data' => $reports,
         ]);
     }
 }

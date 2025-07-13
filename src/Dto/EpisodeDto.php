@@ -8,6 +8,8 @@ class EpisodeDto
 {
     private int $category;
     private string $text;
+    /** @var array<string> $tags */
+    public array $tags = [];
 
     public function __construct(int $category, string $text)
     {
