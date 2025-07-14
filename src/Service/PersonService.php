@@ -702,6 +702,7 @@ class PersonService
                     if ($age > 4 && $age < 120 && null !== $yearReport) {
                         $birth = $yearReport - $age;
                     } else {
+                        $birth = '';
                         $infNotes[] = $parts[$key];
                         $key++;
                     }

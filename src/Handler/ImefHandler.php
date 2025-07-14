@@ -53,7 +53,7 @@ class ImefHandler
         $newFolders = array_diff($folders, $importedFolders);
 
         $dtos = [];
-        $folder = $newFolders[182]; //184
+        $folder = $newFolders[189]; //184
         //foreach ($newFolders as $i => $folder) {
         //    if (count($dtos) > 100) {
         //        break;
@@ -107,7 +107,7 @@ class ImefHandler
 
             foreach (ImefParser::BAD_WORDS as $word) {
                 if (str_contains($dto->name, $word)) {
-                    $badNames[$dto->name] = $dto->category;
+                    $badNames[$dto->name] = CategoryType::getSingleName($dto->category);
                 }
             }
 
@@ -167,8 +167,8 @@ class ImefHandler
                 }
             } elseif (
                 $reportKey === -1
-                || (false !== $_key && $dto->isEmptyPlace())
-                || ($dto->isEmptyPlace() && !isset($hashReports[$_key]))
+                || false === $_key
+                || $dto->isEmptyPlace()
             ) {
                 $reportKey = count($hashReports);
                 $hashReports[$reportKey] = $hashReport;

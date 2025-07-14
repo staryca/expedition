@@ -24,6 +24,7 @@ class CategoryType
     public const LULLABY = 84;
     public const RIDDLE = 85;
     public const PARABLE = 86;
+    public const SPELL = 87;
     public const ABOUT_RECORD = 90;
     public const ABOUT_INFORMANT = 91;
     public const ABOUT_OTHER_INFORMANTS = 92;
@@ -51,6 +52,7 @@ class CategoryType
         self::LULLABY => 'калыханка',
         self::RIDDLE => 'загадка', // таксама малы жанр
         self::PARABLE => 'прыпавесць',
+        self::SPELL => 'замова',
         self::ABOUT_RECORD => 'звесткі пра запіс',
         self::ABOUT_INFORMANT => 'звесткі пра інфармантаў',
         self::ABOUT_OTHER_INFORMANTS => 'звесткі пра іншых інфармантаў',
@@ -79,6 +81,7 @@ class CategoryType
         self::LULLABY => 'калыханкі',
         self::RIDDLE => 'загадкі', // таксама малы жанр
         self::PARABLE => 'прыпавесці',
+        self::SPELL => 'замовы',
         self::ABOUT_RECORD => null,
         self::ABOUT_INFORMANT => null,
         self::ABOUT_OTHER_INFORMANTS => null,
@@ -98,6 +101,7 @@ class CategoryType
         ],
         self::FAIRY_TALE => ['казка пра'],
         self::PARABLE => ['прытча'],
+        self::SPELL => ['загавор', 'нагавор', 'шэпт', 'загаворы', 'нагаворы', 'шэпты'],
         self::PAREMIA => [
             'прыкмета', 'прыкметы', 'праклён', 'вітанне', 'вітання', 'афарызм', 'прымаўка', 'прымаўкі',
             'пажаданне', 'пажаданні', 'каламбур', 'тост', 'лічылка', 'лічылкі', 'прыказка', 'прыказкі',
@@ -155,25 +159,26 @@ class CategoryType
         self::MELODY =>  ['найгрыш'],
         self::DANCE_MOVEMENTS =>  ['рухі танца'],
         self::SONGS => [
-            'лірычныя песні', 'балады', 'савецкая песня', 'жартоўная песня',
+            'лірычныя песні', 'балады', 'савецкая песня', 'жартоўная песня', 'раманс',
             'касецкая песня (сенакосная)', 'восеньская песня', 'талака і талочныя песні',
         ],
         self::POEMS =>  ['верш'],
         self::CEREMONY =>  ['абрад'],
         self::GAME => ['гульні'],
         self::STORY => [
-            'размова', 'звычаі', 'апісанні розныя',
+            'размова', 'звычаі', 'апісанні розныя', 'народная проза',
             'каляндарная абраднасць і паэзія', 'сямейная абраднасць і паэзія',
         ],
         self::ABOUT_DANCES =>  ['згадванне пра танцы'],
         self::PAREMIA => [
-            'прыкметы', 'праклёны', 'вітання', 'афарызмы', 'прымаўкі',
-            'пажаданні', 'каламбуры', 'тосты', 'лічылкі', 'прыказкі',
+            'прыкметы', 'праклёны', 'вітання', 'афарызмы', 'прымаўкі', 'выслоўі',
+            'пажаданні', 'каламбуры', 'тосты', 'лічылкі', 'прыказкі', 'забаўлянкі',
         ], // малыя жанры
         self::FAIRY_TALE => ['казка'],
         self::LULLABY => ['калыханкі'],
         self::RIDDLE => ['загадкі'],
-        self::PARABLE =>  ['прыпавесць'],
+        self::PARABLE => ['прытчы'],
+        self::SPELL => ['замовы', 'загавор', 'нагавор', 'шэпт'],
         self::OTHER => [],
     ];
 

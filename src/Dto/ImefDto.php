@@ -8,7 +8,7 @@ use Carbon\Carbon;
 
 class ImefDto extends PlaceDto
 {
-    public Carbon $date;
+    public ?Carbon $date = null;
     public string $name = '';
     public ?int $category = null;
 

@@ -6,6 +6,7 @@ namespace App\Parser;
 
 use App\Dto\ImefDto;
 use App\Dto\UserDto;
+use App\Entity\Additional\Month;
 use App\Entity\Type\CategoryType;
 use App\Service\LocationService;
 use App\Service\PersonService;
@@ -61,11 +62,30 @@ class ImefParser
                 $dto = new ImefDto();
                 $dto->content = $node->outerHtml();
 
-                $date = $columns->eq(0)->text();
-                if ((int) $date < 1900) {
+                $date = trim($columns->eq(0)->text());
+                if ($date === 'Год') {
                     return;
                 }
-                $dto->date = Carbon::createFromDate((int) $date, 1, 1);
+                if ((int) $date < 1900) {
+                    $parts = explode(' ', $date);
+                    if (count($parts) >= 2) {
+                        $month = Month::getMonth($parts[0]);
+                        $day = 15;
+                        $year = (int) $parts[1];
+                        $dto->date = Carbon::createFromDate($year, $month, $day);
+                    }
+                } elseif (mb_strlen($date) > 5 && $date[4] === '.') {
+                    $dto->date = Carbon::createFromFormat('Y.d.m', $date);
+                } elseif (str_contains($date, ',')) {
+                    $year = (int) $date;
+                    $date = trim(mb_substr($date, 5));
+                    $day = (int) $date;
+                    $date = trim(mb_substr($date, 2));
+                    $month = Month::getMonth($date);
+                    $dto->date = Carbon::createFromDate($year, $month, $day);
+                } else {
+                    $dto->date = Carbon::createFromDate((int) $date, 1, 1);
+                }
 
                 $users = $columns->eq(1)->text();
                 foreach (explode(';', $users) as $user) {
@@ -83,7 +103,12 @@ class ImefParser
 
                 $informants = $columns->eq(3)->text();
                 $informants = str_replace(['|','(',')'], ['; ','',''], $informants);
-                $dto->informants = $this->personService->getInformants($informants, '', null, $dto->date->year);
+                $dto->informants = $this->personService->getInformants(
+                    $informants,
+                    '',
+                    null,
+                    ($dto->date ? $dto->date->year : null),
+                );
 
                 $name = $columns->eq(4)->text();
                 $dto->name = trim($name, " ,.;:\t\n\r\0\x0B");

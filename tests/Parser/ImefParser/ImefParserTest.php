@@ -62,7 +62,7 @@ class ImefParserTest extends TestCase
 
         /** @var ImefDto $dto */
         $dto = array_shift($dtos);
-        $this->assertEquals(1973, $dto->date->year);
+        $this->assertEquals('19830615', $dto->date->format('Ymd'));
         $this->assertCount(1, $dto->users);
         $this->assertEquals('Бахмет Святлана Трафімаўна', $dto->users[0]->name);
         $this->assertEquals('Асіповіцкі раён, в. Зборск', $dto->place);
@@ -76,7 +76,7 @@ class ImefParserTest extends TestCase
 
         /** @var ImefDto $dto */
         $dto = array_shift($dtos);
-        $this->assertEquals(1973, $dto->date->year);
+        $this->assertEquals('19720712', $dto->date->format('Ymd'));
         $this->assertCount(1, $dto->users);
         $this->assertEquals('Бахмет Святлана Трафімаўна', $dto->users[0]->name);
         $this->assertEquals('Асіповіцкі раён, в. Бірча-2', $dto->place);
@@ -92,7 +92,7 @@ class ImefParserTest extends TestCase
 
         /** @var ImefDto $dto */
         $dto = array_shift($dtos);
-        $this->assertEquals(1973, $dto->date->year);
+        $this->assertEquals('19730120', $dto->date->format('Ymd'));
         $this->assertCount(1, $dto->users);
         $this->assertEquals('Бахмет Святлана Трафімаўна', $dto->users[0]->name);
         $this->assertEquals('Асіповіцкі раён, в. Дрычын', $dto->place);
@@ -107,7 +107,7 @@ class ImefParserTest extends TestCase
 
         /** @var ImefDto $dto */
         $dto = array_shift($dtos);
-        $this->assertEquals(1973, $dto->date->year);
+        $this->assertNull($dto->date);
         $this->assertCount(1, $dto->users);
         $this->assertEquals('Бахмет Святлана Трафімаўна', $dto->users[0]->name);
         $this->assertEquals('Асіповіцкі раён, в. Дрычын', $dto->place);
@@ -126,7 +126,7 @@ class ImefParserTest extends TestCase
 
         /** @var ImefDto $dto */
         $dto = array_shift($dtos);
-        $this->assertEquals(1974, $dto->date->year);
+        $this->assertNull($dto->date);
         $this->assertCount(2, $dto->users);
         $this->assertEquals('Бахмет Святлана Трафімаўна', $dto->users[0]->name);
         $this->assertEquals('Акунькова Алена Міхайлаўна', $dto->users[1]->name);
