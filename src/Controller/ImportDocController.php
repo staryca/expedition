@@ -77,7 +77,7 @@ class ImportDocController extends AbstractController
                         $data['errors_informant_place'][] = $informant->place;
                     }
                 }
-                foreach ($block->episodes as $episode) {
+                foreach ($block->getEpisodes() as $episode) {
                     $episodes[$reportKey . "_" . $blockKey][] = $episode->toArray();
                 }
             }

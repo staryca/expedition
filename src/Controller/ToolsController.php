@@ -6,6 +6,7 @@ namespace App\Controller;
 
 use App\Entity\Additional\Musician;
 use App\Entity\Type\GenderType;
+use App\Handler\GeoPointHandler;
 use App\Repository\InformantRepository;
 use App\Service\PersonService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -17,6 +18,7 @@ class ToolsController extends AbstractController
 {
     public function __construct(
         private readonly InformantRepository $informantRepository,
+        private readonly GeoPointHandler $geoPointHandler,
         private readonly PersonService $personService,
         private readonly EntityManagerInterface $entityManager,
     ) {
@@ -189,6 +191,17 @@ class ToolsController extends AbstractController
 
         return $this->render('import/show.table.result.html.twig', [
             'headers' => ['Id', 'Імя', 'Быў', 'Стаў', 'Заўвагі'],
+            'data' => $data,
+        ]);
+    }
+
+    #[Route('/import/tools/update_geo', name: 'app_import_tools_update_geo')]
+    public function updateGeoPoints(): Response
+    {
+        $data = $this->geoPointHandler->setRegionsAndDistricts();
+
+        return $this->render('import/show.table.result.html.twig', [
+            'headers' => ['Id', 'Месца', 'Тып', 'К.', 'Рэгіёны', 'Раёны', 'Тыпы', 'Новае', '!'],
             'data' => $data,
         ]);
     }

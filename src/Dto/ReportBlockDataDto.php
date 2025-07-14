@@ -15,7 +15,7 @@ class ReportBlockDataDto
     public ?string $description = null;
 
     /** @var array<int, EpisodeDto> $episodes */
-    public array $episodes = [];
+    private array $episodes = [];
 
     /** @var array<int> $informantKeys */
     public array $informantKeys = [];
@@ -41,6 +41,25 @@ class ReportBlockDataDto
     public ?string $photoNotes = null;
 
     public ?string $userNotes = null;
+
+    public function getEpisodes(): array
+    {
+        return $this->episodes;
+    }
+
+    public function addEpisode(string $key, EpisodeDto $episode): void
+    {
+        if (isset($this->episodes[$key])) {
+            throw new \Exception('Episode "' . $key . '" already exists!');
+        }
+
+        $this->episodes[$key] = $episode;
+    }
+
+    public function setEpisodes(array $episodes): void
+    {
+        $this->episodes = $episodes;
+    }
 
     public function merge(ReportBlockDataDto $dto): void
     {

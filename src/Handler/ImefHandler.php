@@ -152,6 +152,7 @@ class ImefHandler
         $reports = [];
         $reportKey = -1;
         $blockKey = -1;
+        $episodeKey = -1;
 
         foreach ($dtos as $dto) {
             /* for Report */
@@ -220,7 +221,7 @@ class ImefHandler
 
             $episode = new EpisodeDto($dto->category, $dto->name);
             $episode->tags = $dto->tags;
-            $reports[$reportKey]->blocks[$blockKey]->episodes[] = $episode;
+            $reports[$reportKey]->blocks[$blockKey]->addEpisode((string) ++$episodeKey, $episode);
         }
 
         return $reports;

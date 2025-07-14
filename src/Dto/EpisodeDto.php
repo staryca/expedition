@@ -27,9 +27,6 @@ class EpisodeDto
         return $this->text;
     }
 
-    /**
-     * @param string $text
-     */
     public function addText(string $text): void
     {
         $this->text .= "\n" . $text;
@@ -40,6 +37,7 @@ class EpisodeDto
         return [
             'category' => $this->category,
             'text' => $this->text,
+            'tags' => $this->tags,
         ];
     }
 }

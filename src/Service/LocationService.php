@@ -22,6 +22,8 @@ class LocationService
     public const LON_RANGE_UP = 0.7; // lon - // E
     public const LON_RANGE_DOWN = 0.7; // lon + // W
 
+    public const POINT_NEIGHBOR = 0.1;
+
     public function __construct(
         private readonly GeoPointRepository $geoPointRepository,
         private readonly TextHelper $textHelper,

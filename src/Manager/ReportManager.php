@@ -102,12 +102,12 @@ class ReportManager
 
         foreach ($contents as $key => $content) {
             if (isset($reports[$content->reportIndex])) {
-                $reports[$content->reportIndex]->blocks[0]->episodes[$key] = new EpisodeDto(
+                $reports[$content->reportIndex]->blocks[0]->addEpisode((string) $key, new EpisodeDto(
                     $reports[$content->reportIndex]->blocks[0]->type === ReportBlockType::TYPE_CONVERSATION
                         ? CategoryType::STORY
                         : CategoryType::OTHER,
                     $content->notes
-                );
+                ));
             }
         }
 
@@ -471,7 +471,7 @@ class ReportManager
 
                 $report->addBlock($reportBlock);
 
-                if (count($block->episodes) > 0) {
+                if (count($block->getEpisodes()) > 0) {
                     $file = new File();
                     $file->setType(FileType::TYPE_VIRTUAL_CONTENT_LIST);
                     $file->setProcessed(true);
@@ -479,7 +479,7 @@ class ReportManager
                     $reportBlock->addFile($file);
                     $this->entityManager->persist($file);
 
-                    foreach ($block->episodes as $contentIndex => $episode) {
+                    foreach ($block->getEpisodes() as $contentIndex => $episode) {
                         $fileMarker = FileMarker::makeFromEpisode($episode);
 
                         if (isset($tagsForContent[$contentIndex])) {
@@ -573,6 +573,16 @@ class ReportManager
         }
 
         return $reportsDb;
+    }
+
+    /**
+     * @param array<int, array<Tag>> $tagsForContent
+     * @param array<ReportDataDto> $reportsData
+     * @return void
+     */
+    private function updateTagsFromEpisodes(array &$tagsForContent, array $reportsData): void
+    {
+
     }
 
     /**

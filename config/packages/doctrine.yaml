@@ -30,6 +30,7 @@ doctrine:
                 alias: App
         dql:
             string_functions:
+                RANDOM: MartinGeorgiev\Doctrine\ORM\Query\AST\Functions\Random
                 TO_TSQUERY: MartinGeorgiev\Doctrine\ORM\Query\AST\Functions\ToTsquery
                 TO_TSVECTOR: MartinGeorgiev\Doctrine\ORM\Query\AST\Functions\ToTsvector
                 TSMATCH: MartinGeorgiev\Doctrine\ORM\Query\AST\Functions\Tsmatch

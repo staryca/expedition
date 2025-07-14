@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repository;
 
 use App\Dto\GeoPointSearchDto;
+use App\Dto\LatLonDto;
 use App\Entity\GeoPoint;
 use App\Entity\Type\GeoPointType;
 use App\Service\LocationService;
@@ -91,6 +92,39 @@ class GeoPointRepository extends ServiceEntityRepository
 
         return $qb
             ->orderBy('gp.name', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @return array<GeoPoint>
+     */
+    public function findWithoutDistrict(int $amount): array
+    {
+        return $this->createQueryBuilder('gp')
+            ->where('gp.district = :empty')
+            ->setParameter('empty', '')
+            ->orderBy('RANDOM()')
+            ->setMaxResults($amount)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @param LatLonDto $dto
+     * @return array<GeoPoint>
+     */
+    public function findNeighbors(LatLonDto $dto): array
+    {
+        $qb = $this->createQueryBuilder('gp')
+            ->where('gp.lat between :minLat and :maxLat')
+            ->andWhere('gp.lon between :minLon and :maxLon')
+            ->setParameter('minLat', $dto->lat - LocationService::POINT_NEIGHBOR)
+            ->setParameter('maxLat', $dto->lat + LocationService::POINT_NEIGHBOR)
+            ->setParameter('minLon', $dto->lon - LocationService::POINT_NEIGHBOR)
+            ->setParameter('maxLon', $dto->lon + LocationService::POINT_NEIGHBOR);
+
+        return $qb
             ->getQuery()
             ->getResult();
     }
