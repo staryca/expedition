@@ -31,7 +31,7 @@ class DocParserTest extends TestCase
         $this->geoPointRepository = $this->createMock(GeoPointRepository::class);
 
         $textHelper = new TextHelper();
-        $locationService = new LocationService($this->geoPointRepository, $textHelper);
+        $locationService = new LocationService($this->geoPointRepository);
         $personService = new PersonService($textHelper);
         $userService = new UserService(
             $this->createMock(UserRepository::class),
@@ -81,8 +81,8 @@ class DocParserTest extends TestCase
         $this->assertCount(1, $report->blocks[0]->informants);
         $this->assertEquals('Марозаў Анатолій Уладзіміравіч', $report->blocks[0]->informants[0]->name);
         $this->assertEquals(243026442, $report->blocks[0]->informants[0]->geoPoint->getId());
-        $this->assertCount(10, $report->blocks[0]->episodes);
-        $this->assertEquals(CategoryType::SONGS, $report->blocks[0]->episodes[1]->getCategory());
+        $this->assertCount(10, $report->blocks[0]->getEpisodes());
+        $this->assertEquals(CategoryType::SONGS, $report->blocks[0]->getEpisodes()[1]->getCategory());
 
         $this->assertEquals(ReportBlockType::TYPE_CONVERSATION, $report->blocks[1]->type);
         $this->assertCount(4, $report->blocks[1]->additional);
@@ -93,8 +93,8 @@ class DocParserTest extends TestCase
         $this->assertCount(1, $report->blocks[0]->informants);
         $this->assertEquals('Пацук (Барадулькіна) Зінаіда Сьцяпанаўна', $report->blocks[1]->informants[0]->name);
         $this->assertEquals(243026442, $report->blocks[1]->informants[0]->geoPoint->getId());
-        $this->assertCount(28, $report->blocks[1]->episodes);
-        $this->assertEquals(CategoryType::STORY, $report->blocks[1]->episodes[0]->getCategory());
+        $this->assertCount(28, $report->blocks[1]->getEpisodes());
+        $this->assertEquals(CategoryType::STORY, $report->blocks[1]->getEpisodes()[0]->getCategory());
 
         $this->assertEquals(ReportBlockType::TYPE_CONVERSATION, $report->blocks[2]->type);
         $this->assertCount(4, $report->blocks[2]->additional);
@@ -105,13 +105,13 @@ class DocParserTest extends TestCase
         $this->assertCount(1, $report->blocks[0]->informants);
         $this->assertEquals('Барадулькіна (Жукава) Марыя Сьцяпанаўна', $report->blocks[2]->informants[0]->name);
         $this->assertEquals(243026442, $report->blocks[2]->informants[0]->geoPoint->getId());
-        $this->assertCount(24, $report->blocks[2]->episodes);
+        $this->assertCount(24, $report->blocks[2]->getEpisodes());
 
         $this->assertEquals(ReportBlockType::TYPE_VILLAGE_TOUR, $report->blocks[3]->type);
         $this->assertCount(2, $report->blocks[3]->additional);
         $this->assertArrayHasKey('Photo', $report->blocks[3]->additional);
         $this->assertArrayHasKey('code', $report->blocks[3]->additional);
         $this->assertCount(0, $report->blocks[3]->informants);
-        $this->assertCount(1, $report->blocks[3]->episodes);
+        $this->assertCount(1, $report->blocks[3]->getEpisodes());
     }
 }

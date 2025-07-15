@@ -49,7 +49,7 @@ class InformantTest extends TestCase
         $this->assertEquals(GenderType::FEMALE, $informant->gender);
         $this->assertEquals('але сказала, што ёй 96 год', $informant->notes);
         $this->assertCount(1, $informant->locations);
-        $this->assertEquals('хутар Пакава', $informant->locations[0]);
+        $this->assertEquals('х. Пакава', $informant->locations[0]);
     }
 
     public function testInformantWithLastNotes(): void
@@ -113,6 +113,21 @@ class InformantTest extends TestCase
         $this->assertCount(0, $informant->locations);
     }
 
+    public function testInformantWithShortYearReport(): void
+    {
+        $content = 'Андрыеўскі Фама Антонавіч, 86 г.';
+
+        $informants = $this->personService->getInformants($content, '', null, 2010);
+
+        $this->assertCount(1, $informants);
+        $informant = $informants[0];
+        $this->assertEquals('Андрыеўскі Фама Антонавіч', $informant->name);
+        $this->assertEquals(1924, $informant->birth);
+        $this->assertEquals(GenderType::MALE, $informant->gender);
+        $this->assertEquals('', $informant->notes);
+        $this->assertCount(0, $informant->locations);
+    }
+
     public function testInformantWithYearWithoutComma(): void
     {
         $content = 'Чыгілейчык Марыя Рыгораўна 1897 г.н';
@@ -128,7 +143,6 @@ class InformantTest extends TestCase
         $this->assertCount(0, $informant->locations);
     }
 
-
     public function testInformantWithYearReportY(): void
     {
         $content = 'Пышная Уляна Рыгораўна, 73 гады';
@@ -143,6 +157,39 @@ class InformantTest extends TestCase
         $this->assertEquals('', $informant->notes);
         $this->assertCount(0, $informant->locations);
     }
+
+    public function testInformantWithManyInfo(): void
+    {
+        $content = 'Раманоўская Агапа Савічна 85 год, в. Кашэвічы, Петрыкаўскага раёна Гомельскай вобласці';
+
+        $informants = $this->personService->getInformants($content, '', null, 2000);
+
+        $this->assertCount(1, $informants);
+        $informant = $informants[0];
+        $this->assertEquals('Раманоўская Агапа Савічна', $informant->name);
+        $this->assertEquals(1915, $informant->birth);
+        $this->assertEquals(GenderType::FEMALE, $informant->gender);
+        $this->assertEquals('', $informant->notes);
+        $this->assertCount(1, $informant->locations);
+        $this->assertEquals('в. Кашэвічы, Петрыкаўскага раёна Гомельскай вобласці', $informant->locations[0]);
+    }
+
+    public function testInformantWithManyInfoAndNotes(): void
+    {
+        $content = 'Тагай Вольга Астапаўна, 1914 г.эн., пенсіянерка, в. Кашэвічы, Петрыкаўскага раёна, Гомельскай вобласці';
+
+        $informants = $this->personService->getInformants($content, '', null, 2000);
+
+        $this->assertCount(1, $informants);
+        $informant = $informants[0];
+        $this->assertEquals('Тагай Вольга Астапаўна', $informant->name);
+        $this->assertEquals(1914, $informant->birth);
+        $this->assertEquals(GenderType::FEMALE, $informant->gender);
+        $this->assertEquals('пенсіянерка', $informant->notes);
+        $this->assertCount(1, $informant->locations);
+        $this->assertEquals('в. Кашэвічы, Петрыкаўскага раёна, Гомельскай вобласці', $informant->locations[0]);
+    }
+
     public function testInformantWithLocation(): void
     {
         $content = 'Ніна Яўсееўна Хомчанка (Жукава), 1937 г.н., з в. Грышына';
@@ -336,6 +383,7 @@ class InformantTest extends TestCase
         $informant = $informants[0];
         $this->assertEquals('Мазько Кацярына Мікалаеўна', $informant->name);
         $this->assertNull($informant->birth);
+
         $this->assertEquals(GenderType::FEMALE, $informant->gender);
         $this->assertEquals('19.. г.н.', $informant->notes);
     }

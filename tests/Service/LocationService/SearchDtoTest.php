@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Tests\Service\LocationService;
 
 use App\Entity\Type\GeoPointType;
-use App\Helper\TextHelper;
 use App\Repository\GeoPointRepository;
 use App\Service\LocationService;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -20,8 +19,7 @@ class SearchDtoTest extends TestCase
         parent::setUp();
 
         $geoPointRepository = $this->createMock(GeoPointRepository::class);
-        $textHelper = new TextHelper();
-        $this->locationService = new LocationService($geoPointRepository, $textHelper);
+        $this->locationService = new LocationService($geoPointRepository);
     }
 
     public function testGetGeoPointSearchLetterO(): void

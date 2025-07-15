@@ -27,7 +27,7 @@ class ImefParserTest extends TestCase
         $this->geoPointRepository = $this->createMock(GeoPointRepository::class);
 
         $textHelper = new TextHelper();
-        $locationService = new LocationService($this->geoPointRepository, $textHelper);
+        $locationService = new LocationService($this->geoPointRepository);
         $personService = new PersonService($textHelper);
         $userService = new UserService(
             $this->createMock(UserRepository::class),
@@ -144,7 +144,7 @@ class ImefParserTest extends TestCase
 
         /** @var ImefDto $dto */
         $dto = array_shift($dtos);
-        $this->assertEquals(1975, $dto->date->year);
+        $this->assertEquals('19750919', $dto->date->format('Ymd'));
         $this->assertCount(2, $dto->users);
         $this->assertEquals('Бахмет Святлана Трафімаўна', $dto->users[0]->name);
         $this->assertEquals('Акунькова Алена Міхайлаўна', $dto->users[1]->name);
@@ -161,7 +161,7 @@ class ImefParserTest extends TestCase
 
         /** @var ImefDto $dto */
         $dto = array_shift($dtos);
-        $this->assertEquals(1945, $dto->date->year);
+        $this->assertEquals('19750627', $dto->date->format('Ymd'));
         $this->assertCount(1, $dto->users);
         $this->assertEquals('Меяровіч Марыя Самуілаўна', $dto->users[0]->name);
         $this->assertEquals('Бабруйскі раён, Плешчаніцы', $dto->place);

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Tests\Service\LocationService;
 
 use App\Entity\Type\GeoPointType;
-use App\Helper\TextHelper;
 use App\Repository\GeoPointRepository;
 use App\Service\LocationService;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -20,8 +19,7 @@ class SearchDtoByFullPlaceTest extends TestCase
         parent::setUp();
 
         $geoPointRepository = $this->createMock(GeoPointRepository::class);
-        $textHelper = new TextHelper();
-        $this->locationService = new LocationService($geoPointRepository, $textHelper);
+        $this->locationService = new LocationService($geoPointRepository);
     }
 
     public function testBrackets(): void
@@ -184,6 +182,36 @@ class SearchDtoByFullPlaceTest extends TestCase
         $this->assertEquals('Сялёц', $dto->names[1]);
         $this->assertEquals('Сяляц', $dto->names[2]);
         $this->assertEquals('Селец', $dto->names[3]);
+    }
+
+    public function testNameWithPoint(): void
+    {
+        $dto = $this->locationService->getSearchDtoByFullPlace('Глыбоцкі раён, в. Забор.е');
+
+        $this->assertNull($dto->region);
+        $this->assertEquals('Глыбоцкі раён', $dto->district);
+        $this->assertNull($dto->subDistrict);
+        $this->assertEquals(GeoPointType::BE_VILLAGE_LONGS, $dto->prefixes);
+        $this->assertCount(4, $dto->names);
+        $this->assertEquals('Забор.е', $dto->names[0]);
+        $this->assertEquals('Забар.е', $dto->names[1]);
+        $this->assertEquals('Забор.я', $dto->names[2]);
+        $this->assertEquals('Забор’е', $dto->names[3]);
+    }
+
+    public function testNameWithLongText(): void
+    {
+        $dto = $this->locationService->getSearchDtoByFullPlace('в. Кашэвічы, Петрыкаўскага раёна Гомельскай вобласці');
+
+        $this->assertEquals('Гомельская вобласць', $dto->region);
+        $this->assertEquals('Петрыкаўскі раён', $dto->district);
+        $this->assertNull($dto->subDistrict);
+        $this->assertEquals(GeoPointType::BE_VILLAGE_LONGS, $dto->prefixes);
+        $this->assertCount(4, $dto->names);
+        $this->assertEquals('Кашэвічы', $dto->names[0]);
+        $this->assertEquals('Кашэвіча', $dto->names[1]);
+        $this->assertEquals('Катэвічы', $dto->names[2]);
+        $this->assertEquals('Кашэвячы', $dto->names[3]);
     }
 
     public function testUrbanSettlement(): void

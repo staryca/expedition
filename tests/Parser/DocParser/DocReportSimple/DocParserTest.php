@@ -30,7 +30,7 @@ class DocParserTest extends TestCase
         $this->geoPointRepository = $this->createMock(GeoPointRepository::class);
 
         $textHelper = new TextHelper();
-        $locationService = new LocationService($this->geoPointRepository, $textHelper);
+        $locationService = new LocationService($this->geoPointRepository);
         $personService = new PersonService($textHelper);
         $userService = new UserService(
             $this->createMock(UserRepository::class),
@@ -66,6 +66,6 @@ class DocParserTest extends TestCase
         $this->assertCount(2, $report->blocks[0]->additional);
         $this->assertArrayHasKey('Photo', $report->blocks[0]->additional);
         $this->assertArrayHasKey('code', $report->blocks[0]->additional);
-        $this->assertCount(7, $report->blocks[0]->episodes);
+        $this->assertCount(7, $report->blocks[0]->getEpisodes());
     }
 }

@@ -24,7 +24,7 @@ class BsuParserTest extends TestCase
 
         $geoPointRepository = $this->createMock(GeoPointRepository::class);
         $textHelper = new TextHelper();
-        $locationService = new LocationService($geoPointRepository, $textHelper);
+        $locationService = new LocationService($geoPointRepository);
         $personService = new PersonService($textHelper);
         $this->bsuParser = new BsuParser($locationService, $personService);
     }

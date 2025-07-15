@@ -13,7 +13,7 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class ImportImefController extends AbstractController
 {
-    private const EXPEDITION_ID = 242; // 10
+    private const EXPEDITION_ID = 5; // 10
 
     public function __construct(
         private readonly ExpeditionRepository $expeditionRepository,

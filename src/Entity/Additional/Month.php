@@ -34,13 +34,16 @@ class Month
         self::DECEMBER => ['снежань', 'снежня'],
     ];
 
-    public static function getMonth(string $text): ?int
+    public static function getMonth(string &$text): ?int
     {
         $text = mb_strtolower($text);
 
         foreach (self::VARIANTS as $month => $values) {
-            if (in_array($text, $values, true)) {
-                return $month;
+            foreach ($values as $value) {
+                if (str_starts_with($text, $value)) {
+                    $text = mb_substr($text, mb_strlen($value));
+                    return $month;
+                }
             }
         }
 

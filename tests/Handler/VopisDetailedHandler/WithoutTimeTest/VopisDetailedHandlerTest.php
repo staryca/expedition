@@ -32,7 +32,7 @@ class VopisDetailedHandlerTest extends TestCase
         $this->geoPointRepository = $this->createMock(GeoPointRepository::class);
 
         $textHelper = new TextHelper();
-        $locationService = new LocationService($this->geoPointRepository, $textHelper);
+        $locationService = new LocationService($this->geoPointRepository);
         /** @var ExpeditionRepository|MockObject $expeditionRepository */
         $expeditionRepository = $this->createMock(ExpeditionRepository::class);
         $personService = new PersonService($textHelper);

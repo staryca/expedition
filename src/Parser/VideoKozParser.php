@@ -23,7 +23,6 @@ class VideoKozParser
     public function __construct(
         private readonly LocationService $locationService,
         private readonly PersonService $personService,
-        private readonly TextHelper $textHelper,
         private readonly PackRepository $packRepository,
     ) {
     }
@@ -47,7 +46,7 @@ class VideoKozParser
         $header = $csv->getHeader();
         foreach ($csv->getRecords($header) as $record) {
             $filename = $record[VideoKozColumns::FILENAME];
-            [$filename] = $this->textHelper->getNotes($filename);
+            [$filename] = TextHelper::getNotes($filename);
             if ($filename === '') {
                 continue;
             }

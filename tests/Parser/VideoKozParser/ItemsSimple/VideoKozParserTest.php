@@ -30,9 +30,9 @@ class VideoKozParserTest extends TestCase
         $this->packRepository = $this->createMock(PackRepository::class);
 
         $textHelper = new TextHelper();
-        $locationService = new LocationService($this->geoPointRepository, $textHelper);
+        $locationService = new LocationService($this->geoPointRepository);
         $personService = new PersonService($textHelper);
-        $this->parser = new VideoKozParser($locationService, $personService, $textHelper, $this->packRepository);
+        $this->parser = new VideoKozParser($locationService, $personService, $this->packRepository);
     }
 
     public function testParse(): void

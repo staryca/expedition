@@ -53,7 +53,7 @@ class ImefHandler
         $newFolders = array_diff($folders, $importedFolders);
 
         $dtos = [];
-        $folder = $newFolders[189]; //184
+        $folder = $newFolders[223]; //184
         //foreach ($newFolders as $i => $folder) {
         //    if (count($dtos) > 100) {
         //        break;
@@ -80,7 +80,9 @@ class ImefHandler
         $badCategory = [];
         $unknownCategory = [];
         $badNames = [];
+        $informantLocations = [];
         $informantNotes = [];
+        $emptyYears = [];
         $badLocations = [];
         foreach ($dtos as $dto) {
             $tags = implode('#', $dto->tags);
@@ -113,9 +115,14 @@ class ImefHandler
 
             foreach ($dto->informants as $informant) {
                 if (count($informant->locations) > 0) {
-                    $notes = implode(', ', $informant->locations);
-                    $informantNotes[$informant->name] = $notes;
-                    $informant->notes .= ' ' . $notes;
+                    $locations = implode(', ', $informant->locations);
+                    $informantLocations[$informant->name] = $locations;
+                }
+                if (!empty($informant->notes)) {
+                    $informantNotes[$informant->name] = $informant->notes;
+                }
+                if ($informant->birthDay !== null && $informant->birthDay->year < 1800) {
+                    $emptyYears[$informant->name] = $informant->birthDay->format('Y-m-d');
                 }
             }
 
@@ -123,13 +130,16 @@ class ImefHandler
                 $badLocations[$dto->place] = '-';
             }
         }
+        ksort($badLocations);
 
         $data = [
             'items' => $dtos,
             'badCategory' => $badCategory,
             'unknownCategory' => $unknownCategory,
             'badNames' => $badNames,
-            'informantNotesAsLocation' => $informantNotes,
+            'informantLocations' => $informantLocations,
+            'informantNotes' => $informantNotes,
+            'emptyYears' => $emptyYears,
             'badLocations' => $badLocations,
             'tagToCategory' => $tagCategory,
             'tags' => $this->getTagTree($dtos),
@@ -160,12 +170,10 @@ class ImefHandler
                 return $user->name;
             }, $dto->users);
             $hashReport = ($dto->date->format('Ymd')) . '_' . $dto->getPlaceHash() . '_' . implode('-', $users);
-            $_key = array_search($hashReport, $reports, true);
+            $_key = array_search($hashReport, $hashReports, true);
             if (false !== $_key && !$dto->isEmptyPlace()) {
                 $reportKey = $_key;
-                if ($reportKey + 1 !== count($hashReports)) {
-                    $blockKey = count($reports[$reportKey]->blocks) - 1;
-                }
+                $blockKey = count($reports[$reportKey]->blocks) - 1;
             } elseif (
                 $reportKey === -1
                 || false === $_key

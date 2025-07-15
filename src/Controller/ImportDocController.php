@@ -104,7 +104,7 @@ class ImportDocController extends AbstractController
 
         $reportsData = $this->parser->parseDoc($content);
 
-        $this->reportManager->createReports($expedition, $reportsData, [], [], []);
+        $this->reportManager->createReports($expedition, $reportsData, [], []);
         $this->entityManager->flush();
 
         return $this->render('import/show.json.result.html.twig', [

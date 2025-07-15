@@ -8,6 +8,7 @@ use App\Dto\ImefDto;
 use App\Dto\UserDto;
 use App\Entity\Additional\Month;
 use App\Entity\Type\CategoryType;
+use App\Helper\TextHelper;
 use App\Service\LocationService;
 use App\Service\PersonService;
 use App\Service\UserService;
@@ -62,11 +63,22 @@ class ImefParser
                 $dto = new ImefDto();
                 $dto->content = $node->outerHtml();
 
-                $date = trim($columns->eq(0)->text());
+                $date = TextHelper::cleanManySpaces($columns->eq(0)->text());
                 if ($date === 'Год') {
                     return;
                 }
-                if ((int) $date < 1900) {
+                if ((int) $date >= 1 && (int) $date <= 31) {
+                    $parts = explode(' ', $date);
+                    if (count($parts) >= 2) {
+                        $day = (int) $parts[0];
+                        $month = Month::getMonth($parts[1]);
+                        $year = (int) $parts[1];
+                        if (($year < 1800 || $year > 2020) && isset($parts[2])) {
+                            $year = (int) $parts[2];
+                        }
+                        $dto->date = Carbon::createFromDate($year, $month, $day);
+                    }
+                } elseif ((int) $date < 1900) {
                     $parts = explode(' ', $date);
                     if (count($parts) >= 2) {
                         $month = Month::getMonth($parts[0]);

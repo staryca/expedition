@@ -47,7 +47,7 @@ class TextHelper
         }
 
         $text = str_replace(['-', ','], ' ', $text);
-        $text = $this->lettersToUpper(mb_strtolower($text));
+        $text = self::lettersToUpper(mb_strtolower($text));
         $text = str_replace(' ', '', $text);
 
         return mb_strtolower(mb_substr($text, 0, 1)) . mb_substr($text, 1);
@@ -57,18 +57,18 @@ class TextHelper
      * @param string $content
      * @return array<string>
      */
-    public function getNotes(string $content): array
+    public static function getNotes(string $content): array
     {
-        return $this->getParts($content, '(', ')');
+        return self::getParts($content, '(', ')');
     }
 
     /**
      * @param string $content
      * @return array<string>
      */
-    public function getNames(string $content): array
+    public static function getNames(string $content): array
     {
-        return $this->getParts($content, '[', ']');
+        return self::getParts($content, '[', ']');
     }
 
     /**
@@ -77,7 +77,7 @@ class TextHelper
      * @param string $end
      * @return array<string>
      */
-    public function getParts(string $content, string $start, string $end): array
+    public static function getParts(string $content, string $start, string $end): array
     {
         $notes = '';
         $pos = mb_strpos($content, $start);
@@ -94,20 +94,20 @@ class TextHelper
     }
 
     /* return true for Nameofsomething */
-    public function isName(string $name): bool
+    public static function isName(string $name): bool
     {
         $nameLower = mb_strtolower(mb_substr($name, 0, 1)) . mb_substr($name, 1);
         return $name !== $nameLower && $nameLower === mb_strtolower($name);
     }
 
     /* return true for Nameofsomething or (Nameofsomething) */
-    public function isNameWithBrackets(string $name): bool
+    public static function isNameWithBrackets(string $name): bool
     {
         if (str_starts_with($name, '(') && mb_substr($name, -1) === ')') {
             $name = mb_substr($name, 1, -1);
         }
 
-        return $this->isName($name);
+        return self::isName($name);
     }
 
     /**

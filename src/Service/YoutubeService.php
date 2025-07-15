@@ -154,7 +154,7 @@ class YoutubeService
         $geoPoint = $report->getGeoPoint();
         $part = '';
         if (null !== $geoPoint) {
-            $part = $this->textHelper->lettersToUpper($geoPoint->getPrefixBe())
+            $part = TextHelper::lettersToUpper($geoPoint->getPrefixBe())
                 . ' ' . $geoPoint->getName() . ', ' . $geoPoint->getDistrict() . ', ' . $geoPoint->getRegion() . '.';
         }
         $date = !empty($dateActionNotes)

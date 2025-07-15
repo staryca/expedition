@@ -47,6 +47,12 @@ class ReportBlockDataDto
         return $this->episodes;
     }
 
+    /**
+     * @param string $key
+     * @param EpisodeDto $episode
+     * @return void
+     * @throws \Exception
+     */
     public function addEpisode(string $key, EpisodeDto $episode): void
     {
         if (isset($this->episodes[$key])) {

@@ -9,7 +9,6 @@ use App\Dto\NameGenderDto;
 use App\Dto\OrganizationDto;
 use App\Dto\PersonBsuDto;
 use App\Dto\StudentDto;
-use App\Entity\Additional\Musician;
 use App\Entity\Informant;
 use App\Entity\Type\GenderType;
 use App\Helper\TextHelper;
@@ -108,7 +107,7 @@ class PersonService
         } else {
             // Name as person with gender
             $informant = null;
-            [$person, $notes] = $this->textHelper->getNotes($text);
+            [$person, $notes] = TextHelper::getNotes($text);
             $parts = explode(' ', trim($person));
             if (count($parts) === 2) {
                 $nameGenderDto = new NameGenderDto($person);
@@ -140,7 +139,7 @@ class PersonService
         }
 
         foreach ($parts as $part) {
-            if (!$this->textHelper->isName($part)) {
+            if (!TextHelper::isName($part)) {
                 return false;
             }
         }
@@ -171,9 +170,10 @@ class PersonService
     /**
      * Sample: f d y g F K F f q a => person: F K F
      * @param string $name
+     * @param int|null $yearReport
      * @return InformantDto|null
      */
-    public function getPersonByFullName(string $name): ?InformantDto
+    public function getPersonByFullName(string $name, ?int $yearReport = null): ?InformantDto
     {
         $name = str_replace(' г.н', 'г.н', $name);
         $parts = explode(' ', trim($name));
@@ -185,7 +185,7 @@ class PersonService
         $partsNote = [];
         $informant = null;
         foreach ($parts as $part) {
-            $isName = $this->textHelper->isNameWithBrackets($part);
+            $isName = TextHelper::isNameWithBrackets($part);
             if (!$isName) {
                 $partU = TextHelper::lettersToUpper($part);
                 if (GenderType::getGender($partU) !== GenderType::UNKNOWN) {
@@ -241,11 +241,11 @@ class PersonService
                 if (str_contains($part, 'г.н')) {
                     $informant->birth = (int) trim($part);
                 } else {
-                    [$note, $name2] = $this->textHelper->getNames($part);
+                    [$note, $name2] = TextHelper::getNames($part);
                     if ($name2 !== '') {
                         $informant->name .= ' [' . $name2 . ']';
                     }
-                    [$note1, $note2] = $this->textHelper->getNotes($note);
+                    [$note1, $note2] = TextHelper::getNotes($note);
                     if ($note1 !== '') {
                         $parts[] = $note1;
                     }
@@ -254,9 +254,15 @@ class PersonService
                     }
                 }
             }
-            $notes = trim(implode(' ', $parts), " .;,\t\n\r\0\x0B");
-            $notes = str_replace([' ,', ' .'], [',', '.'], $notes);
-            $informant->notes = $notes;
+            $birth = self::getBirthYearFromNotes($parts, $yearReport);
+            if ($birth) {
+                $informant->birth = $birth;
+            }
+            if (!empty($parts)) {
+                $notes = trim(implode(' ', $parts), " .;,\t\n\r\0\x0B");
+                $notes = str_replace([' ,', ' .'], [',', '.'], $notes);
+                $informant->notes = $notes;
+            }
         }
 
         return $informant;
@@ -628,10 +634,10 @@ class PersonService
             $parts = explode(',', $partBase);
             $name = '';
             foreach ($parts as $part) {
-                [$text, $notes] = $this->textHelper->getNotes($part);
+                [$text, $notes] = TextHelper::getNotes($part);
                 $isNotLocation =
                     !str_contains($part, 'в.') && !str_contains($part, 'р-н') && !str_contains($part, 'раён');
-                if ($isNotLocation && ($this->isPersonName($text) || null !== $this->getPersonByFullName($text))) {
+                if ($isNotLocation && ($this->isPersonName($text) || null !== $this->getPersonByFullName($text, $yearReport))) {
                     if ($name !== '') {
                         $persons[] = $name;
                     }
@@ -661,18 +667,18 @@ class PersonService
                 $name = trim(mb_substr($text, 0, $pos));
                 $text = mb_substr($text, $pos + 1);
             } else {
-                [$name, $text] = $this->textHelper->getNotes($text);
+                [$name, $text] = TextHelper::getNotes($text);
                 //$name = trim($text);
                 //$text = '';
             }
-            $informant = $this->getPersonByFullName($name);
+            $informant = $this->getPersonByFullName($name, $yearReport);
             if (null === $informant) {
                 $name = trim($name, " ,;\t\n\r\0\x0B");
                 $len = mb_strlen($name);
                 if (
                     $len > 2
                     && mb_substr($name, -1) === '.'
-                    && !$this->textHelper->isName(mb_substr($name, $len - 2, 1))
+                    && !TextHelper::isName(mb_substr($name, $len - 2, 1))
                 ) {
                     $name = mb_substr($name, 0, -1);
                 }
@@ -680,7 +686,7 @@ class PersonService
                 $informant->name = $name;
             }
 
-            [$text, $notes] = $this->textHelper->getNotes($text);
+            [$text, $notes] = TextHelper::getNotes($text);
             if ($text === '' && $notes !== '') {
                 $text = $notes;
                 $notes = '';
@@ -689,77 +695,47 @@ class PersonService
                 $infNotes[] = $notes;
             }
 
-            $key = 0;
             $parts = explode(',', $text);
-            if (isset($parts[$key]) && $informant->birth) {
-                $infNotes[] = $parts[$key];
-                $key++;
-            }
-            if (isset($parts[$key]) && !$informant->birth) {
-                $birth = null;
-                if (str_contains($parts[$key], 'год') || str_contains($parts[$key], 'гадоў') || str_contains($parts[$key], 'гады')) {
-                    $age = (int) $parts[$key];
-                    if ($age > 4 && $age < 120 && null !== $yearReport) {
-                        $birth = $yearReport - $age;
-                    } else {
-                        $birth = '';
-                        $infNotes[] = $parts[$key];
-                        $key++;
-                    }
+            foreach ($parts as $key => $part) {
+                $part = preg_replace('!\s+!', ' ', $part);
+                if (mb_substr($part, -2) === ' .') {
+                    $part = substr($part, 0, -2);
                 }
-                if (null === $birth) {
-                    $birth = trim(str_replace(['г.н.', 'г.н'], '', $parts[$key]), " .,;\t\n\r\0\x0B");
-                }
-                try {
-                    $date = Carbon::createFromFormat('d.m.Y', $birth);
-                    if ($date instanceof Carbon) {
-                        $informant->birthDay = $date;
-                        $informant->birth = $date->year;
-                        $key++;
-                    }
-                } catch (\Exception $e) {
-                }
-                if (!$informant->birth && is_numeric($birth)) {
-                    $birth = (int) $birth;
-                    if ($birth < 1850 || $birth > 2020) {
-                        if ($birth !== 0) { // if = 0 then this text is location
-                            $infNotes[] = $parts[$key];
-                            $key++;
-                        }
-                    } else {
-                        $informant->birth = $birth;
-                        $key++;
-                    }
-                }
-            }
-            if (isset($parts[$key])) {
-                $text = str_replace('з ', '', trim($parts[$key], " .\t\n\r\0\x0B"));
-                $hasMusician = Musician::hasMusicianText($text);
-                if (!$hasMusician) {
-                    // text is location
-                    if ('' !== $text) {
-                        $informant->addLocation($text);
-                    }
-                    $key++;
+                $part = trim($part, " ;\t\n\r\0\x0B");
+                if ($part === '') {
+                    unset($parts[$key]);
+                } else {
+                    $parts[$key] = $part;
                 }
             }
 
-            while (isset($parts[$key])) {
-                $note = trim($parts[$key]);
-                $note = preg_replace('!\s+!', ' ', $note);
-                $infNotes[] = $note;
-                $key++;
+            $birth = null;
+            $date = self::getBirthDayFromNotes($parts);
+            if ($date) {
+                $informant->birthDay = $date;
+                $informant->birth = $date->year;
+            } else {
+                $birth = self::getBirthYearFromNotes($parts, $yearReport);
             }
+            if (!$informant->birth && is_numeric($birth)) {
+                $informant->birth = $birth;
+            }
+            $location = LocationService::getLocationFromNotes($parts);
+            if ($location) {
+                $informant->addLocation($location);
+            }
+
             if (!empty($informant->notes)) {
                 array_unshift($infNotes, $informant->notes);
             }
+            foreach ($parts as $part) {
+                if (!empty($part)) {
+                    $infNotes[] = $part;
+                }
+            }
             $informant->notes = implode(', ', $infNotes);
 
-            if (null !== $isMusician) {
-                $informant->isMusician = $isMusician;
-            } else {
-                $informant->detectMusician();
-            }
+            $informant->detectMusician();
 
             $dto = $informant->getNameAndGender();
             $this->fixNameAndGender($dto);
@@ -770,6 +746,77 @@ class PersonService
         }
 
         return $informants;
+    }
+
+    private static function getBirthYearFromNotes(array &$notes, ?int $yearReport = null): ?int
+    {
+        foreach ($notes as $key => $note) {
+            if (
+                str_contains($note, 'год')
+                || str_contains($note, 'гадоў')
+                || str_contains($note, 'гады')
+                || (str_contains($note, 'г.') && !str_contains($note, 'г.н'))
+            ) {
+                $age = (int) $note;
+                if ($age > 4 && $age < 120) {
+                    if ($yearReport) {
+                        unset($notes[$key]);
+                        return $yearReport - $age;
+                    }
+                    continue;
+                }
+                if ($key === 0) {
+                    continue;
+                }
+                $age = (int) $notes[$key - 1];
+                if ($age > 4 && $age < 120 && null !== $yearReport) {
+                    unset($notes[$key - 1], $notes[$key]);
+                    return $yearReport - $age;
+                }
+                if ($age > 0) {
+                    $notes[$key - 1] .= ' ' . $note;
+                    $notes[$key] = '';
+                }
+            }
+
+            if ($key > 0 && str_contains($note, 'г.н')) {
+                $year = (int) $notes[$key - 1];
+                if ($year > 1800 && $year < 2020) {
+                    unset($notes[$key - 1], $notes[$key]);
+                    return $year;
+                }
+                if ($year > 0) {
+                    $notes[$key - 1] .= ' ' . $note;
+                    $notes[$key] = '';
+                }
+            }
+        }
+
+        foreach ($notes as $key => $note) {
+            $year = (int) $note;
+            if ($year > 1800 && $year < 2020) {
+                unset($notes[$key]);
+                return $year;
+            }
+        }
+
+        return null;
+    }
+
+    private static function getBirthDayFromNotes(array &$notes): ?Carbon
+    {
+        foreach ($notes as $key => $note) {
+            try {
+                $date = Carbon::createFromFormat('d.m.Y', $note);
+                if ($date instanceof Carbon) {
+                    unset($notes[$key]);
+                    return $date;
+                }
+            } catch (\Exception $e) {
+            }
+        }
+
+        return null;
     }
 
     public function normalizeName(string $name): string
@@ -819,14 +866,14 @@ class PersonService
 
             // Hide notes from text
             [$onlyName, $notes] = !$isMayByLastName
-                ? $this->textHelper->getNotes($part)
+                ? TextHelper::getNotes($part)
                 : [$part, ''];
 
             // A.A. as two names
             $names = explode(' ', trim(str_replace(['.', '(', ')'], ['. ', '', ''], $onlyName)));
             $isName = true;
             foreach ($names as $name) {
-                if (!$this->textHelper->isNameWithBrackets($name)) {
+                if (!TextHelper::isNameWithBrackets($name)) {
                     $isName = false;
                     break;
                 }
@@ -839,7 +886,7 @@ class PersonService
                 continue;
             }
 
-            $withBrackets = $this->textHelper->isNameWithBrackets($onlyName) !== $this->textHelper->isName($onlyName);
+            $withBrackets = TextHelper::isNameWithBrackets($onlyName) !== TextHelper::isName($onlyName);
             $onlyName = str_replace(['(', ')'], '', $onlyName);
 
             foreach (GenderType::REPLACE_NAMES as $name => $correctName) {

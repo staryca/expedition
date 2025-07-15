@@ -41,12 +41,12 @@ class UserService
             if (str_contains($block, '-')) {
                 [$fullName, $rolesText] = explode('-', $block);
             } else {
-                [$part1, $part2] = $this->textHelper->getNotes($block);
+                [$part1, $part2] = TextHelper::getNotes($block);
                 $fullName = $part1;
                 $rolesText = $part2;
             }
 
-            [$part1, $part2] = $this->textHelper->getNotes($rolesText);
+            [$part1, $part2] = TextHelper::getNotes($rolesText);
             if ($part2 === '') {
                 $rolesText = $part1;
             } else {
