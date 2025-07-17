@@ -279,6 +279,65 @@ class SearchDtoByFullPlaceTest extends TestCase
         $this->assertEquals('Навалукомль', $dto->names[1]);
     }
 
+    public function testGreski(): void
+    {
+        $dto = $this->locationService->getSearchDtoByFullPlace('Т(Г)рэскага раён, Такавішча');
+
+        $this->assertNull($dto->region);
+        $this->assertEquals('Слуцкі раён', $dto->district);
+        $this->assertEquals(GeoPointType::BE_VILLAGE_LONGS, $dto->prefixes);
+        $this->assertCount(4, $dto->names);
+        $this->assertEquals('Такавішча', $dto->names[0]);
+        $this->assertEquals('Такавішчча', $dto->names[1]);
+        $this->assertEquals('Такавітча', $dto->names[2]);
+        $this->assertEquals('Такавяшча', $dto->names[3]);
+    }
+
+    public function testShortPart(): void
+    {
+        $dto = $this->locationService->getSearchDtoByFullPlace('Бялыніцкі раён, Ст.Сяло');
+
+        $this->assertNull($dto->region);
+        $this->assertEquals('Бялыніцкі раён', $dto->district);
+        $this->assertEquals(GeoPointType::BE_VILLAGE_LONGS, $dto->prefixes);
+        $this->assertCount(6, $dto->names);
+        $this->assertEquals('Сяло', $dto->names[0]);
+        $this->assertEquals('Сяла', $dto->names[1]);
+        $this->assertEquals('Село', $dto->names[2]);
+        $this->assertEquals('Старое Сяло', $dto->names[3]);
+        $this->assertEquals('Стары Сяло', $dto->names[4]);
+        $this->assertEquals('Старая Сяло', $dto->names[5]);
+    }
+
+    public function testTwoParts(): void
+    {
+        $dto = $this->locationService->getSearchDtoByFullPlace('Мсціслаўскі раён, Вялікая Багацькаўка');
+
+        $this->assertNull($dto->region);
+        $this->assertEquals('Мсціслаўскі раён', $dto->district);
+        $this->assertEquals(GeoPointType::BE_VILLAGE_LONGS, $dto->prefixes);
+        $this->assertCount(4, $dto->names);
+        $this->assertEquals('Вялікая Багацькаўка', $dto->names[0]);
+        $this->assertEquals('Велікая Багацькаўка', $dto->names[1]);
+        $this->assertEquals('Вялякая Багацькаўка', $dto->names[2]);
+        $this->assertEquals('Багацькаўка', $dto->names[3]);
+    }
+
+    public function testMaybeSubdistrict(): void
+    {
+        $dto = $this->locationService->getSearchDtoByFullPlace('Слуцкі раён, Белькавічы, Рачкавіцкі	');
+
+        $this->assertNull($dto->region);
+        $this->assertEquals('Слуцкі раён', $dto->district);
+        $this->assertEquals(GeoPointType::BE_VILLAGE_LONGS, $dto->prefixes);
+        $this->assertCount(5, $dto->names);
+        $this->assertEquals('Белькавічы', $dto->names[0]);
+        $this->assertEquals('Бёлькавічы', $dto->names[1]);
+        $this->assertEquals('Белькавіча', $dto->names[2]);
+        $this->assertEquals('Бялькавічы', $dto->names[3]);
+        $this->assertEquals('Белькавячы', $dto->names[4]);
+    }
+
     public function testWithoutDistrict(): void
     {
         $dto = $this->locationService->getSearchDtoByFullPlace('в. Рублева -2, Бабінавіцкі с/с');

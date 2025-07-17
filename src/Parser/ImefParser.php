@@ -11,7 +11,6 @@ use App\Entity\Type\CategoryType;
 use App\Helper\TextHelper;
 use App\Service\LocationService;
 use App\Service\PersonService;
-use App\Service\UserService;
 use Carbon\Carbon;
 use Symfony\Component\DomCrawler\Crawler;
 
@@ -26,7 +25,6 @@ class ImefParser
     public function __construct(
         private readonly LocationService $locationService,
         private readonly PersonService $personService,
-        private readonly UserService $userService,
     ) {
     }
 
@@ -47,18 +45,20 @@ class ImefParser
     }
 
     /**
+     * @param bool $previousDateDayMonth
      * @param string $content
      * @param string $folder
      * @return array<ImefDto>
+     * @throws \Exception
      */
-    public function parseItem(string $content, string $folder = ''): array
+    public function parseItem(bool &$previousDateDayMonth, string $content, string $folder = ''): array
     {
         $result = [];
         $crawler = new Crawler($content);
 
         $nodeTable = $crawler->filter('.row table')->first();
         if ($nodeTable->count() > 0) {
-            $nodeTable->filter('tr')->each(function (Crawler $node) use ($folder, &$result) {
+            $nodeTable->filter('tr')->each(function (Crawler $node) use ($previousDateDayMonth, $folder, &$result) {
                 $columns = $node->children();
                 $dto = new ImefDto();
                 $dto->content = $node->outerHtml();
@@ -87,7 +87,23 @@ class ImefParser
                         $dto->date = Carbon::createFromDate($year, $month, $day);
                     }
                 } elseif (mb_strlen($date) > 5 && $date[4] === '.') {
-                    $dto->date = Carbon::createFromFormat('Y.d.m', $date);
+                    // Y.m.d or Y.d.m
+                    $parts = explode('.', $date);
+                    if (count($parts) > 2) {
+                        $year = (int) $parts[0];
+                        $part1 = (int) $parts[1];
+                        $part2 = (int) $parts[2];
+                        if ($part1 > 12) {
+                            $previousDateDayMonth = true;
+                        }
+                        if ($part2 > 12) {
+                            $previousDateDayMonth = false;
+                        }
+                        // if part1 and part2 <= 12 then we see form previous item
+                        $month = $previousDateDayMonth ? $part2 : $part1;
+                        $day = $previousDateDayMonth ? $part1 : $part2;
+                        $dto->date = Carbon::createFromDate($year, $month, $day);
+                    }
                 } elseif (str_contains($date, ',')) {
                     $year = (int) $date;
                     $date = trim(mb_substr($date, 5));

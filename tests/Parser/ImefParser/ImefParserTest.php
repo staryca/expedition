@@ -43,7 +43,8 @@ class ImefParserTest extends TestCase
         $filename = __DIR__ . '/content.html';
         $content = file_get_contents($filename);
 
-        $dtos = $this->parser->parseItem($content);
+        $previousDateDayMonth = true;
+        $dtos = $this->parser->parseItem($previousDateDayMonth, $content);
         $this->assertCount(29, $dtos);
 
         /** @var ImefDto $dto */
@@ -154,7 +155,7 @@ class ImefParserTest extends TestCase
         $this->assertEquals('', $dto->informants[0]->notes);
         $this->assertNull($dto->informants[0]->birth);
         $this->assertEquals('', $dto->informants[0]->notes);
-        $this->assertEquals('Было гора, дай пагоршала', $dto->name);
+        $this->assertEquals('Каліна-маліна |Край мора стаяла…', $dto->name);
         $this->assertCount(1, $dto->tags);
         $this->assertEquals('Лірычныя песні', $dto->tags[0]);
         $this->assertEquals(CategoryType::SONGS, $dto->category);
@@ -172,6 +173,23 @@ class ImefParserTest extends TestCase
         $this->assertEquals('', $dto->informants[0]->notes);
         $this->assertEquals('Мы йшлі на дзела ночкаю цёмнаю…', $dto->name);
         $this->assertCount(2, $dto->tags);
+        $this->assertEquals('Лірычныя песні', $dto->tags[0]);
+        $this->assertEquals(CategoryType::SONGS, $dto->category);
+
+
+        /** @var ImefDto $dto */
+        $dto = array_shift($dtos);
+        $this->assertEquals('19460818', $dto->date->format('Ymd'));
+        $this->assertCount(2, $dto->users);
+        $this->assertEquals('Бахмет Святлана Трафімаўна', $dto->users[0]->name);
+        $this->assertEquals('Бабруйскі раён, в. Тажылавічы', $dto->place);
+        $this->assertCount(1, $dto->informants);
+        $this->assertEquals('Гацко ... Дзмітрыеўна', $dto->informants[0]->name);
+        $this->assertEquals('', $dto->informants[0]->notes);
+        $this->assertNull($dto->informants[0]->birth);
+        $this->assertEquals('', $dto->informants[0]->notes);
+        $this->assertEquals('Я ля чаю хадзіла', $dto->name);
+        $this->assertCount(1, $dto->tags);
         $this->assertEquals('Лірычныя песні', $dto->tags[0]);
         $this->assertEquals(CategoryType::SONGS, $dto->category);
     }

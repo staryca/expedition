@@ -80,10 +80,10 @@ class VopisDetailedHandlerTest extends TestCase
         $organization = $organizations[1];
         $this->assertEquals('сямейнае трыё цымбалістаў', $organization->name);
         $this->assertEquals('в. Пожарцы, Пастаўскі р-н', $organization->place);
-        $this->assertCount(2, $organization->informants);
-        $this->assertCount(2, $organization->informantKeys);
+        $this->assertCount(3, $organization->informants);
+        $this->assertCount(3, $organization->informantKeys);
 
-        $this->assertCount(7, $informants);
+        $this->assertCount(8, $informants);
         $informant = $informants[0];
         $this->assertEquals('Мацкевіч Вольга Ўладзіміраўна', $informant->name);
         $this->assertEquals(1902, $informant->birth);
@@ -94,7 +94,7 @@ class VopisDetailedHandlerTest extends TestCase
         $this->assertEquals(1922, $informant->birth);
         $this->assertEquals('в. Пожарцы, Пастаўскі р-н', $informant->place);
         $informant = $informants[2];
-        $this->assertEquals('Марыя Ігнацьеўна (жонка)', $informant->name);
+        $this->assertEquals('Марыя Ігнацьеўна', $informant->name);
         $this->assertEquals(1922, $informant->birth);
         $this->assertEquals('в. Пожарцы, Пастаўскі р-н', $informant->place);
         // ... (only 3 from 7)
@@ -119,9 +119,9 @@ class VopisDetailedHandlerTest extends TestCase
         $this->assertEquals('01/01/1971', $report->dateAction->format('d/m/Y'));
         $this->assertCount(1, $report->blocks);
         $this->assertCount(4, $report->blocks[0]->informantKeys);
-        $this->assertContains(3, $report->blocks[0]->informantKeys);
         $this->assertContains(4, $report->blocks[0]->informantKeys);
         $this->assertContains(5, $report->blocks[0]->informantKeys);
         $this->assertContains(6, $report->blocks[0]->informantKeys);
+        $this->assertContains(7, $report->blocks[0]->informantKeys);
     }
 }

@@ -47,6 +47,8 @@ class GenderType
         'Сергей' => 'Сяргей',
         'Сергеевіч' => 'Сяргеевіч',
         'Стефан' => 'Стэфан',
+        'Мар\'і' => 'Мар\'я',
+        'Алесі' => 'Алеся',
     ];
 
     public const FEMALE_NAMES = [
@@ -114,7 +116,7 @@ class GenderType
         'Маргарыта' => ['Маргуся', 'Магарэта', 'Магарэся', 'Магурэта'],
         'Марта' => [],
         'Марына' => ['Марыня'],
-        'Марыя' => ['Маня', 'Манька', 'Марыля', 'Маруся', 'Марка', 'Мар\'яна', 'Мара', 'Марця', 'Марыся'],
+        'Марыя' => ['Маня', 'Манька', 'Марыля', 'Маруся', 'Марка', 'Мар\'яна', 'Мар\'я', 'Мара', 'Марця', 'Марыся'],
         'Надзея' => ['Надзя', 'Надзька', 'Надзі'],
         'Наталля' => ['Наталка', 'Наталька', 'Натася', 'Наталя', 'Наташа'],
         'Ніна' => ['Нінка', 'Нінуся'],
@@ -507,6 +509,31 @@ class GenderType
         foreach (self::MIDDLE_NAMES as $others) {
             if (in_array($name, $others, true)) {
                 return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static function isShortMiddle(string $name): bool
+    {
+        $last = mb_substr($name, -1);
+        if ($last !== '.' && mb_strlen($name) > 3) {
+            return false;
+        }
+
+        $part = mb_substr($name, 0, -1);
+        $length = mb_strlen($part);
+
+        foreach (self::MIDDLE_NAMES as $middle => $others) {
+            if ($part === mb_substr($middle, 0, $length) && mb_strlen($middle) > $length) {
+                return true;
+            }
+
+            foreach ($others as $other) {
+                if ($part === mb_substr($other, 0, $length) && mb_strlen($middle) > $length) {
+                    return true;
+                }
             }
         }
 

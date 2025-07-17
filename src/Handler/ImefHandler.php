@@ -52,20 +52,23 @@ class ImefHandler
         $importedFolders = $this->getAllImportedFolders($expedition);
         $newFolders = array_diff($folders, $importedFolders);
 
+        $previousDateDayMonth = true;
         $dtos = [];
-        $folder = $newFolders[223]; //184
-        //foreach ($newFolders as $i => $folder) {
-        //    if (count($dtos) > 100) {
-        //        break;
-        //   }
+        foreach ($newFolders as $i => $folder) {
+            if ($i < 35) {
+                continue;
+            }
+            if (count($dtos) > 100) {
+                break;
+            }
 
-        $content = file_get_contents(
-            $baseUrl . $folder,
-            false,
-            stream_context_create($arrContextOptions)
-        );
-        $dtos = $this->parser->parseItem($content, $folder);
-        //}
+            $content = file_get_contents(
+                $baseUrl . $folder,
+                false,
+                stream_context_create($arrContextOptions)
+            );
+            $dtos = $this->parser->parseItem($previousDateDayMonth, $content, $folder);
+        }
 
         return $dtos;
     }
@@ -169,7 +172,7 @@ class ImefHandler
             $users = array_map(static function (UserDto $user) {
                 return $user->name;
             }, $dto->users);
-            $hashReport = ($dto->date->format('Ymd')) . '_' . $dto->getPlaceHash() . '_' . implode('-', $users);
+            $hashReport = ($dto->date?->format('Ymd')) . '_' . $dto->getPlaceHash() . '_' . implode('-', $users);
             $_key = array_search($hashReport, $hashReports, true);
             if (false !== $_key && !$dto->isEmptyPlace()) {
                 $reportKey = $_key;

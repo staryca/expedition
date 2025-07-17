@@ -53,15 +53,16 @@ class LocationService
     public function getSearchDtoByFullPlace(string $fullPlace): GeoPointSearchDto
     {
         $fullPlace = str_replace(
-            ['р-н', 'раёна', 'сельсавет', 'вобл.', 'вобласці', '(', ')', '  ', ' - ', ' -', '- '],
-            [self::DISTRICT, self::DISTRICT, self::SUBDISTRICT_SHORT, self::REGION, self::REGION, ',', '', ' ', '-', '-', '-'],
+            ['р-н', 'раёна', 'сельсавет', 'вобл.', 'вобласці', '  ', ' - ', ' -', '- '],
+            [self::DISTRICT, self::DISTRICT, self::SUBDISTRICT_SHORT, self::REGION, self::REGION, ' ', '-', '-', '-'],
             TextHelper::replaceLetters($fullPlace)
         );
         $fullPlace = self::addComma($fullPlace, self::DISTRICT);
         $fullPlace = self::addComma($fullPlace, self::SUBDISTRICT_SHORT);
         $fullPlace = self::addComma($fullPlace, self::REGION);
 
-        $parts = explode(',', $fullPlace);
+        $parts = TextHelper::explodeBySeparatorAndBrackets(',', $fullPlace);
+
         $district = null;
         $subDistrict = null;
         $region = null;
@@ -147,8 +148,8 @@ class LocationService
         }
 
         $place = str_replace(
-            array('и', 'Дя', 'тё', 'Б. ', 'В. ', ' е', '  ', "'", '`'),
-            array('і', 'Дзя', 'цё', 'Вялікая ', 'Вялікая ', ' Е', ' ', '’', ''),
+            array('и', 'Дя', 'тё', 'Бальшая ', ' е', '  ', "'", '`'),
+            array('і', 'Дзя', 'цё', 'Вялікая ', ' Е', ' ', '’', ''),
             $place
         );
         [$place, $place2] = TextHelper::getNames($place);
@@ -169,6 +170,7 @@ class LocationService
         }
 
         $prefix = self::getPrefixForPlace($place);
+        $shortPart = '';
         $village = $place;
 
         if ($prefix === GeoPointType::BE_VILLAGE_SHORT) {
@@ -181,6 +183,7 @@ class LocationService
                 $district = null; // For 'гарадскі пасёлак' district can be wrong
             }
         } else {
+            $shortPart = $prefix;
             $dto->prefixes = GeoPointType::BE_VILLAGE_LONGS;
         }
 
@@ -285,6 +288,19 @@ class LocationService
             if (mb_strpos($village, '.') > 0) {
                 $dto->names[] = str_replace('.', '’', $village);
             }
+            if ($shortPart === 'Ст') {
+                $dto->names[] = 'Старое ' . $village;
+                $dto->names[] = 'Стары ' . $village;
+                $dto->names[] = 'Старая ' . $village;
+            }
+            if ($shortPart === 'В' || $shortPart === 'Б') {
+                $dto->names[] = 'Вялікае ' . $village;
+                $dto->names[] = 'Вялікі ' . $village;
+                $dto->names[] = 'Вялікая ' . $village;
+            }
+            if (str_contains($village, 'Вялікая ') || str_contains($village, 'Малая ')) {
+                $dto->names[] = str_replace(['Вялікая ', 'Малая '], '', $village);
+            }
         }
 
         if ($place2 !== '') {
@@ -315,6 +331,14 @@ class LocationService
         $place = $village;
 
         return $prefix;
+    }
+
+    public static function isLocation(string $text): bool
+    {
+        $parts = [$text];
+        $location = self::getLocationFromNotes($parts);
+
+        return $location !== null;
     }
 
     public static function getLocationFromNotes(array &$notes): ?string

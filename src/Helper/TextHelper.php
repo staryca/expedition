@@ -29,6 +29,15 @@ class TextHelper
         return implode(' ', $result);
     }
 
+    /* Replace AbcdeF to Abcdef */
+    public static function fixName(string $text): string
+    {
+        $name = mb_strtoupper(mb_substr($text, 0, 1)) . mb_strtolower(mb_substr($text, 1));
+        $nameWithLast = mb_substr($name, 0, -1) . mb_strtoupper(mb_substr($name, -1));
+
+        return $nameWithLast === $text ? $name : $text;
+    }
+
     /**
      * Convert 'aaaa Bbbb cccc DDDD' to 'aaaaBbbbCcccDddd'
      *
@@ -100,14 +109,27 @@ class TextHelper
         return $name !== $nameLower && $nameLower === mb_strtolower($name);
     }
 
-    /* return true for Nameofsomething or (Nameofsomething) */
+    /* return true for Nameofsomething or (Nameofsomething) or Name-Something */
     public static function isNameWithBrackets(string $name): bool
     {
         if (str_starts_with($name, '(') && mb_substr($name, -1) === ')') {
             $name = mb_substr($name, 1, -1);
         }
 
-        return self::isName($name);
+        return self::isMultiName($name);
+    }
+
+    /* return true for Nameofsomething or Name-Something */
+    public static function isMultiName(string $name): bool
+    {
+        $parts = explode('-', $name);
+        foreach ($parts as $part) {
+            if (!self::isName($part)) {
+                return false;
+            }
+        }
+
+        return count($parts) > 0;
     }
 
     /**
@@ -115,7 +137,7 @@ class TextHelper
      * @param string $text
      * @return array<string>
      */
-    public function explodeWithBrackets(array $separators, string $text): array
+    public static function explodeWithBrackets(array $separators, string $text): array
     {
         $separatorBlock = '^^^';
         $key = 0;
@@ -167,5 +189,61 @@ class TextHelper
         $text = str_replace(["\r", "\n", ';;', ' ', ''], [";", ";", ';', ' ', ''], $text);
 
         return trim(preg_replace('!\s+!', ' ', $text));
+    }
+
+    /**
+     * @param string $text
+     * @return array<string>
+     */
+    public static function explodeByBrackets(string $text): array
+    {
+        $blocks = [];
+
+        $posA = mb_strpos($text, '(');
+        while ($posA !== false) {
+            $posB = mb_strpos($text, ')', $posA);
+            $posStart = 0;
+            if ($posB !== false) {
+                if ($posA > 0 && $posB - $posA === 2) {
+                    $posStart = $posB;
+                    $block = '';
+                } else {
+                    if ($posA > 0) {
+                        $block = trim(mb_substr($text, 0, $posA - 1));
+                        if (!empty($block)) {
+                            $blocks[] = $block;
+                        }
+                    }
+                    $block = mb_substr($text, $posA + 1, $posB - $posA - 1);
+                    $text = mb_substr($text, $posB + 1);
+                }
+            } else {
+                $block = mb_substr($text, $posA + 1);
+                $text = mb_substr($text, 0, $posA);
+            }
+            if (!empty($block)) {
+                $blocks[] = $block;
+            }
+
+            $posA = mb_strpos($text, '(', $posStart);
+        }
+        $text = trim($text);
+        if (!empty($text)) {
+            $blocks[] = $text;
+        }
+
+        return $blocks;
+    }
+
+    public static function explodeBySeparatorAndBrackets(string $separator, string $text): array
+    {
+        $parts = [];
+
+        $blocks = self::explodeByBrackets($text);
+        foreach ($blocks as $block) {
+            $parts = [...$parts, ...explode($separator, $block)];
+        }
+
+        return $parts;
     }
 }

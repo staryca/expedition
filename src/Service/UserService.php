@@ -34,7 +34,7 @@ class UserService
 
         $blocks = explode(';', $text);
         if (count($blocks) === 1) {
-            $blocks = $this->textHelper->explodeWithBrackets([','], $text);
+            $blocks = TextHelper::explodeWithBrackets([','], $text);
         }
         foreach ($blocks as $block) {
             $block = trim($block);
