@@ -190,6 +190,59 @@ class InformantTest extends TestCase
         $this->assertEquals('в. Кашэвічы, Петрыкаўскага раёна, Гомельскай вобласці', $informant->locations[0]);
     }
 
+    public function testInformantsAsOneText(): void
+    {
+        $content = 'Ласця П.А. 1932 г.н., Протчанка М.М. 1932 г.н.';
+
+        $informants = $this->personService->getInformants($content);
+
+        $this->assertCount(2, $informants);
+
+        $informant = $informants[0];
+        $this->assertEquals('Ласця П.А.', $informant->name);
+        $this->assertEquals(1932, $informant->birth);
+        $this->assertEquals(GenderType::UNKNOWN, $informant->gender);
+        $this->assertEquals('', $informant->notes);
+        $this->assertCount(0, $informant->locations);
+
+        $informant = $informants[1];
+        $this->assertEquals('Протчанка М.М.', $informant->name);
+        $this->assertEquals(1932, $informant->birth);
+        $this->assertEquals(GenderType::UNKNOWN, $informant->gender);
+        $this->assertEquals('', $informant->notes);
+        $this->assertCount(0, $informant->locations);
+    }
+
+    public function testInformantsWithAgeAsOneText(): void
+    {
+        $content = 'Пяхота Е.З. 77 г., Галка З. П. 58 г., Дзям\'яненка П.Я.';
+
+        $informants = $this->personService->getInformants($content, '', null, 1950);
+
+        $this->assertCount(3, $informants);
+
+        $informant = $informants[0];
+        $this->assertEquals('Пяхота Е.З.', $informant->name);
+        $this->assertEquals(1873, $informant->birth);
+        $this->assertEquals(GenderType::UNKNOWN, $informant->gender);
+        $this->assertEquals('', $informant->notes);
+        $this->assertCount(0, $informant->locations);
+
+        $informant = $informants[1];
+        $this->assertEquals('Галка З. П.', $informant->name);
+        $this->assertEquals(1892, $informant->birth);
+        $this->assertEquals(GenderType::UNKNOWN, $informant->gender);
+        $this->assertEquals('', $informant->notes);
+        $this->assertCount(0, $informant->locations);
+
+        $informant = $informants[2];
+        $this->assertEquals('Дзям\'яненка П.Я.', $informant->name);
+        $this->assertNull($informant->birth);
+        $this->assertEquals(GenderType::UNKNOWN, $informant->gender);
+        $this->assertEquals('', $informant->notes);
+        $this->assertCount(0, $informant->locations);
+    }
+
     public function testInformantWithLocation(): void
     {
         $content = 'Ніна Яўсееўна Хомчанка (Жукава), 1937 г.н., з в. Грышына';

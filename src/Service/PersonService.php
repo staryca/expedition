@@ -187,9 +187,12 @@ class PersonService
         $partsName = [];
         $partsNote = [];
         $informant = null;
+        $hasShortNames = false;
         foreach ($parts as $part) {
             $part = TextHelper::fixName($part);
-            $isName = TextHelper::isNameWithBrackets($part);
+            $isShortNames = TextHelper::isShortNames($part);
+            $hasShortNames = $hasShortNames || $isShortNames;
+            $isName = TextHelper::isNameWithBrackets($part) || $isShortNames;
             if (!$isName) {
                 $partU = TextHelper::lettersToUpper($part);
                 if (GenderType::getGender($partU) !== GenderType::UNKNOWN) {
@@ -199,7 +202,8 @@ class PersonService
             }
             if (!$informant && $isName) {
                 $last = mb_substr($part, -1);
-                if (mb_strlen($part) > 2 && in_array($last, [',', ':', '.', ';', '-']) && !GenderType::isShortMiddle($part)) {
+                $hasShortNames = $hasShortNames || (mb_strlen($part) === 2 && $last === '.');
+                if (!$isShortNames && mb_strlen($part) > 2 && in_array($last, [',', ':', '.', ';', '-']) && !GenderType::isShortMiddle($part)) {
                     if (count($partsName) >= 2) {
                         $part = mb_substr($part, 0, -1);
                         $partsNote[] = $last;
@@ -235,7 +239,7 @@ class PersonService
         if (count($partsName) >= $amount) {
             $dto = new NameGenderDto(implode(' ', $partsName));
             $this->fixNameAndGender($dto);
-            if (!$hasOnlyTwoNames || $dto->gender !== GenderType::UNKNOWN) {
+            if (!$hasOnlyTwoNames || $dto->gender !== GenderType::UNKNOWN || ($hasShortNames && empty($partsNote))) {
                 $informant = new InformantDto();
                 $informant->setNameAndGender($dto);
             }

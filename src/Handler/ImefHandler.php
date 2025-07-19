@@ -54,14 +54,7 @@ class ImefHandler
 
         $previousDateDayMonth = true;
         $dtos = [];
-        foreach ($newFolders as $i => $folder) {
-            if ($i < 35) {
-                continue;
-            }
-            if (count($dtos) > 100) {
-                break;
-            }
-
+        foreach ($newFolders as $folder) {
             $content = file_get_contents(
                 $baseUrl . $folder,
                 false,

@@ -132,6 +132,26 @@ class TextHelper
         return count($parts) > 0;
     }
 
+    /* return true for A.B. */
+    public static function isShortNames(string $name): bool
+    {
+        $name = trim($name);
+
+        $parts = explode('.', $name);
+        if (count($parts) < 3 || !empty($parts[2])) {
+            return false;
+        }
+        unset($parts[2]);
+
+        foreach ($parts as $part) {
+            if (mb_strlen($part) > 1 || mb_strtoupper($part) !== $part) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     /**
      * @param array<string> $separators
      * @param string $text
