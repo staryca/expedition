@@ -100,14 +100,18 @@ class ReportManager
         array $tags,
     ): void {
 
-        foreach ($contents as $key => $content) {
+        foreach ($contents as $contentIndex => $content) {
             if (isset($reports[$content->reportIndex])) {
-                $reports[$content->reportIndex]->blocks[0]->episodes[$key] = new EpisodeDto(
+                $episode = new EpisodeDto(
                     $reports[$content->reportIndex]->blocks[0]->type === ReportBlockType::TYPE_CONVERSATION
                         ? CategoryType::STORY
                         : CategoryType::OTHER,
                     $content->notes
                 );
+                if (isset($tags[$contentIndex])) {
+                    $episode->tags = $tags[$contentIndex];
+                }
+                $reports[$content->reportIndex]->blocks[0]->addEpisode((string) $contentIndex, $episode);
             }
         }
 
@@ -132,17 +136,7 @@ class ReportManager
 
         $this->entityManager->getConnection()->beginTransaction();
         try {
-            $tagsDb = $this->getAllTags($tags);
-            $tagsForContent = [];
-            foreach ($tags as $contentIndex => $tagList) {
-                foreach ($tagList as $tag) {
-                    if (isset($tagsDb[mb_strtolower($tag)])) {
-                        $tagsForContent[$contentIndex][] = $tagsDb[mb_strtolower($tag)];
-                    }
-                }
-            }
-
-            $this->createReports($expedition, $reports, $tagsForContent, [], []);
+            $this->createReports($expedition, $reports, [], []);
 
             $this->entityManager->flush();
             $this->entityManager->getConnection()->commit();
@@ -336,33 +330,6 @@ class ReportManager
     }
 
     /**
-     * @param array<int, array<string>> $tags
-     * @return array<Tag>
-     */
-    public function getAllTags(array $tags): array
-    {
-        $allTags = $this->tagRepository->getAllTags();
-
-        foreach ($tags as $tagList) {
-            foreach ($tagList as $tag) {
-                $tag = mb_strtolower($tag);
-                if (!isset($allTags[$tag])) {
-                    $tagDb = new Tag();
-                    $tagDb->setName($tag);
-                    $tagDb->setBase(false);
-                    $tagDb->setSortOrder(60);
-
-                    $allTags[$tag] = $tagDb;
-
-                    $this->entityManager->persist($tagDb);
-                }
-            }
-        }
-
-        return $allTags;
-    }
-
-    /**
      * @param Expedition $expedition
      * @param array<ReportDataDto> $reportsData
      * @param array<FileDto> $filesData
@@ -376,7 +343,7 @@ class ReportManager
     ): void {
         $this->entityManager->getConnection()->beginTransaction();
         try {
-            $reports = $this->createReports($expedition, $reportsData, [], [], []);
+            $reports = $this->createReports($expedition, $reportsData, [], []);
 
             $reportBlocks = [];
             foreach ($reports as $reportKey => $report) {
@@ -402,18 +369,19 @@ class ReportManager
     /**
      * @param Expedition $expedition
      * @param array<ReportDataDto> $reportsData
-     * @param array<int, array<Tag>> $tagsForContent
      * @param array<Informant> $informantsDb
      * @param array<Organization> $organizationsDb
      * @return array<Report>
+     * @throws \Exception
      */
     public function createReports(
         Expedition $expedition,
         array $reportsData,
-        array $tagsForContent,
         array $informantsDb,
         array $organizationsDb,
     ): array {
+        $allTags = $this->getTagsFromEpisodes($reportsData);
+
         $reportsDb = [];
         foreach ($reportsData as $reportKey => $reportData) {
             $report = new Report($expedition);
@@ -471,7 +439,7 @@ class ReportManager
 
                 $report->addBlock($reportBlock);
 
-                if (count($block->episodes) > 0) {
+                if (count($block->getEpisodes()) > 0) {
                     $file = new File();
                     $file->setType(FileType::TYPE_VIRTUAL_CONTENT_LIST);
                     $file->setProcessed(true);
@@ -479,13 +447,15 @@ class ReportManager
                     $reportBlock->addFile($file);
                     $this->entityManager->persist($file);
 
-                    foreach ($block->episodes as $contentIndex => $episode) {
+                    foreach ($block->getEpisodes() as $episode) {
                         $fileMarker = FileMarker::makeFromEpisode($episode);
 
-                        if (isset($tagsForContent[$contentIndex])) {
-                            foreach ($tagsForContent[$contentIndex] as $tagDb) {
-                                $fileMarker->addTag($tagDb);
+                        foreach ($episode->tags as $tag) {
+                            $tag = mb_strtolower($tag);
+                            if (!isset($allTags[$tag])) {
+                                throw new \Exception("Unknown tag in episode: $tag");
                             }
+                            $fileMarker->addTag($allTags[$tag]);
                         }
 
                         $this->entityManager->persist($fileMarker);
@@ -573,6 +543,39 @@ class ReportManager
         }
 
         return $reportsDb;
+    }
+
+    /**
+     * @param array<ReportDataDto> $reportsData
+     * @return array<Tag>
+     */
+    private function getTagsFromEpisodes(array $reportsData): array
+    {
+        $allTags = $this->tagRepository->getAllTags();
+
+        foreach ($reportsData as $reportData) {
+            foreach ($reportData->blocks as $block) {
+                foreach ($block->getEpisodes() as $episode) {
+                    $amount = 0;
+                    foreach ($episode->tags as $tag) {
+                        $amount++;
+                        $tag = mb_strtolower($tag);
+                        if (!isset($allTags[$tag])) {
+                            $tagDb = new Tag();
+                            $tagDb->setName($tag);
+                            $tagDb->setBase(false);
+                            $tagDb->setSortOrder(70 + $amount);
+
+                            $allTags[$tag] = $tagDb;
+
+                            $this->entityManager->persist($tagDb);
+                        }
+                    }
+                }
+            }
+        }
+
+        return $allTags;
     }
 
     /**
@@ -670,7 +673,7 @@ class ReportManager
         try {
             $informantsDb = $this->saveInformants($informants, [], []);
             $organizationsDb = $this->saveOrganizations($organizations, $informantsDb, []);
-            $reports = $this->createReports($expedition, $reportsData, [], $informantsDb, $organizationsDb);
+            $reports = $this->createReports($expedition, $reportsData, $informantsDb, $organizationsDb);
 
             $reportBlocks = [];
             foreach ($reports as $reportKey => $report) {
@@ -714,7 +717,7 @@ class ReportManager
         try {
             $informantsDb = $this->saveInformants($informants, [], []);
             $organizationsDb = $this->saveOrganizations($organizations, $informantsDb, []);
-            $reports = $this->createReports($expedition, $reportsData, [], $informantsDb, $organizationsDb);
+            $reports = $this->createReports($expedition, $reportsData, $informantsDb, $organizationsDb);
 
             $reportBlocks = [];
             foreach ($reports as $reportKey => $report) {

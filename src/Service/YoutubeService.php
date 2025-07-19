@@ -29,7 +29,9 @@ class YoutubeService
         $parts = [];
 
         $part = $localName;
-        $part .= empty($baseName) || str_contains(mb_strtolower($localName), mb_strtolower($baseName)) || $improvisation === FileMarkerAdditional::IMPROVISATION_MIKITA
+        $localNameText = str_replace(' ', '', mb_strtolower($localName));
+        $baseNameText = str_replace(' ', '', mb_strtolower($baseName));
+        $part .= empty($baseName) || str_contains($localNameText, $baseNameText) || $improvisation === FileMarkerAdditional::IMPROVISATION_MIKITA
             ? ''
             : ' (' . $baseName . ') ';
         if (!empty($part)) {
@@ -152,7 +154,7 @@ class YoutubeService
         $geoPoint = $report->getGeoPoint();
         $part = '';
         if (null !== $geoPoint) {
-            $part = $this->textHelper->lettersToUpper($geoPoint->getPrefixBe())
+            $part = TextHelper::lettersToUpper($geoPoint->getPrefixBe())
                 . ' ' . $geoPoint->getName() . ', ' . $geoPoint->getDistrict() . ', ' . $geoPoint->getRegion() . '.';
         }
         $date = !empty($dateActionNotes)

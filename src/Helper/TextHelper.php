@@ -17,7 +17,7 @@ class TextHelper
         );
     }
 
-    public function lettersToUpper(string $text): string
+    public static function lettersToUpper(string $text): string
     {
         $result = [];
 
@@ -27,6 +27,15 @@ class TextHelper
         }
 
         return implode(' ', $result);
+    }
+
+    /* Replace AbcdeF to Abcdef */
+    public static function fixName(string $text): string
+    {
+        $name = mb_strtoupper(mb_substr($text, 0, 1)) . mb_strtolower(mb_substr($text, 1));
+        $nameWithLast = mb_substr($name, 0, -1) . mb_strtoupper(mb_substr($name, -1));
+
+        return $nameWithLast === $text ? $name : $text;
     }
 
     /**
@@ -47,7 +56,7 @@ class TextHelper
         }
 
         $text = str_replace(['-', ','], ' ', $text);
-        $text = $this->lettersToUpper(mb_strtolower($text));
+        $text = self::lettersToUpper(mb_strtolower($text));
         $text = str_replace(' ', '', $text);
 
         return mb_strtolower(mb_substr($text, 0, 1)) . mb_substr($text, 1);
@@ -57,18 +66,18 @@ class TextHelper
      * @param string $content
      * @return array<string>
      */
-    public function getNotes(string $content): array
+    public static function getNotes(string $content): array
     {
-        return $this->getParts($content, '(', ')');
+        return self::getParts($content, '(', ')');
     }
 
     /**
      * @param string $content
      * @return array<string>
      */
-    public function getNames(string $content): array
+    public static function getNames(string $content): array
     {
-        return $this->getParts($content, '[', ']');
+        return self::getParts($content, '[', ']');
     }
 
     /**
@@ -77,7 +86,7 @@ class TextHelper
      * @param string $end
      * @return array<string>
      */
-    public function getParts(string $content, string $start, string $end): array
+    public static function getParts(string $content, string $start, string $end): array
     {
         $notes = '';
         $pos = mb_strpos($content, $start);
@@ -94,20 +103,53 @@ class TextHelper
     }
 
     /* return true for Nameofsomething */
-    public function isName(string $name): bool
+    public static function isName(string $name): bool
     {
         $nameLower = mb_strtolower(mb_substr($name, 0, 1)) . mb_substr($name, 1);
         return $name !== $nameLower && $nameLower === mb_strtolower($name);
     }
 
-    /* return true for Nameofsomething or (Nameofsomething) */
-    public function isNameWithBrackets(string $name): bool
+    /* return true for Nameofsomething or (Nameofsomething) or Name-Something */
+    public static function isNameWithBrackets(string $name): bool
     {
         if (str_starts_with($name, '(') && mb_substr($name, -1) === ')') {
             $name = mb_substr($name, 1, -1);
         }
 
-        return $this->isName($name);
+        return self::isMultiName($name);
+    }
+
+    /* return true for Nameofsomething or Name-Something */
+    public static function isMultiName(string $name): bool
+    {
+        $parts = explode('-', $name);
+        foreach ($parts as $part) {
+            if (!self::isName($part)) {
+                return false;
+            }
+        }
+
+        return count($parts) > 0;
+    }
+
+    /* return true for A.B. */
+    public static function isShortNames(string $name): bool
+    {
+        $name = trim($name);
+
+        $parts = explode('.', $name);
+        if (count($parts) < 3 || !empty($parts[2])) {
+            return false;
+        }
+        unset($parts[2]);
+
+        foreach ($parts as $part) {
+            if (mb_strlen($part) > 1 || mb_strtoupper($part) !== $part) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
@@ -115,7 +157,7 @@ class TextHelper
      * @param string $text
      * @return array<string>
      */
-    public function explodeWithBrackets(array $separators, string $text): array
+    public static function explodeWithBrackets(array $separators, string $text): array
     {
         $separatorBlock = '^^^';
         $key = 0;
@@ -167,5 +209,61 @@ class TextHelper
         $text = str_replace(["\r", "\n", ';;', ' ', ''], [";", ";", ';', ' ', ''], $text);
 
         return trim(preg_replace('!\s+!', ' ', $text));
+    }
+
+    /**
+     * @param string $text
+     * @return array<string>
+     */
+    public static function explodeByBrackets(string $text): array
+    {
+        $blocks = [];
+
+        $posA = mb_strpos($text, '(');
+        while ($posA !== false) {
+            $posB = mb_strpos($text, ')', $posA);
+            $posStart = 0;
+            if ($posB !== false) {
+                if ($posA > 0 && $posB - $posA === 2) {
+                    $posStart = $posB;
+                    $block = '';
+                } else {
+                    if ($posA > 0) {
+                        $block = trim(mb_substr($text, 0, $posA - 1));
+                        if (!empty($block)) {
+                            $blocks[] = $block;
+                        }
+                    }
+                    $block = mb_substr($text, $posA + 1, $posB - $posA - 1);
+                    $text = mb_substr($text, $posB + 1);
+                }
+            } else {
+                $block = mb_substr($text, $posA + 1);
+                $text = mb_substr($text, 0, $posA);
+            }
+            if (!empty($block)) {
+                $blocks[] = $block;
+            }
+
+            $posA = mb_strpos($text, '(', $posStart);
+        }
+        $text = trim($text);
+        if (!empty($text)) {
+            $blocks[] = $text;
+        }
+
+        return $blocks;
+    }
+
+    public static function explodeBySeparatorAndBrackets(string $separator, string $text): array
+    {
+        $parts = [];
+
+        $blocks = self::explodeByBrackets($text);
+        foreach ($blocks as $block) {
+            $parts = [...$parts, ...explode($separator, $block)];
+        }
+
+        return $parts;
     }
 }

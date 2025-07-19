@@ -8,7 +8,6 @@ class GeoPointType
 {
     public const NAME = 'geo_point';
 
-    public const BE_EMPTY = '';
     public const BE_AGRO_CITY = 'аграгарадок';
     public const BE_VILLAGE = 'вёска';
     public const BE_OLD_VILLAGE = 'раней вёска';

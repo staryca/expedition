@@ -22,9 +22,10 @@ class LocationService
     public const LON_RANGE_UP = 0.7; // lon - // E
     public const LON_RANGE_DOWN = 0.7; // lon + // W
 
+    public const POINT_NEIGHBOR = 0.1;
+
     public function __construct(
         private readonly GeoPointRepository $geoPointRepository,
-        private readonly TextHelper $textHelper,
     ) {
     }
 
@@ -52,15 +53,16 @@ class LocationService
     public function getSearchDtoByFullPlace(string $fullPlace): GeoPointSearchDto
     {
         $fullPlace = str_replace(
-            ['р-н', 'раёна', 'сельсавет', 'вобл.', 'вобласці', '(', ')', '  ', ' - ', ' -', '- '],
-            [self::DISTRICT, self::DISTRICT, self::SUBDISTRICT_SHORT, self::REGION, self::REGION, ',', '', ' ', '-', '-', '-'],
+            ['р-н', 'раёна', 'сельсавет', 'вобл.', 'вобласці', '  ', ' - ', ' -', '- '],
+            [self::DISTRICT, self::DISTRICT, self::SUBDISTRICT_SHORT, self::REGION, self::REGION, ' ', '-', '-', '-'],
             TextHelper::replaceLetters($fullPlace)
         );
         $fullPlace = self::addComma($fullPlace, self::DISTRICT);
         $fullPlace = self::addComma($fullPlace, self::SUBDISTRICT_SHORT);
         $fullPlace = self::addComma($fullPlace, self::REGION);
 
-        $parts = explode(',', $fullPlace);
+        $parts = TextHelper::explodeBySeparatorAndBrackets(',', $fullPlace);
+
         $district = null;
         $subDistrict = null;
         $region = null;
@@ -146,11 +148,11 @@ class LocationService
         }
 
         $place = str_replace(
-            array('и', 'Дя', 'тё', 'Б. ', 'В. ', ' е', '  ', "'", '`'),
-            array('і', 'Дзя', 'цё', 'Вялікая ', 'Вялікая ', ' Е', ' ', '’', ''),
+            array('и', 'Дя', 'тё', 'Бальшая ', ' е', '  ', "'", '`'),
+            array('і', 'Дзя', 'цё', 'Вялікая ', ' Е', ' ', '’', ''),
             $place
         );
-        [$place, $place2] = $this->textHelper->getNames($place);
+        [$place, $place2] = TextHelper::getNames($place);
 
         $replacer_index = trim($place . ' ' . ($district ?? ''));
         if (isset(GeoPointSearchDto::REPLACER[$replacer_index])) {
@@ -167,21 +169,10 @@ class LocationService
             $place = str_replace($search, $prefix, $place);
         }
 
-        $prefix = '';
-        $pos = mb_strpos($place, '.');
-        if ($pos !== false) {
-            $prefix = mb_substr($place, 0, $pos);
-            $village = trim(mb_substr($place, $pos + 1));
-        } else {
-            $village = $place;
-            foreach (GeoPointType::BE_SHORT_LONG as $prefix_short => $prefix_long) {
-                if (0 === mb_strpos($place, $prefix_long)) {
-                    $prefix = $prefix_short;
-                    $village = trim(mb_substr($place, mb_strlen($prefix_long)));
-                    break;
-                }
-            }
-        }
+        $prefix = self::getPrefixForPlace($place);
+        $shortPart = '';
+        $village = $place;
+
         if ($prefix === GeoPointType::BE_VILLAGE_SHORT) {
             $dto->prefixes = GeoPointType::BE_VILLAGE_LONGS;
         } elseif ($prefix === GeoPointType::BE_SETTLEMENT_SHORT) {
@@ -192,6 +183,7 @@ class LocationService
                 $district = null; // For 'гарадскі пасёлак' district can be wrong
             }
         } else {
+            $shortPart = $prefix;
             $dto->prefixes = GeoPointType::BE_VILLAGE_LONGS;
         }
 
@@ -204,7 +196,7 @@ class LocationService
         $dto->region = $region;
 
         if (!empty($village)) {
-            $village = $this->textHelper->lettersToUpper($village);
+            $village = TextHelper::lettersToUpper($village);
             if (mb_substr($village, -2) === 'чі') {
                 $village = mb_substr($village, 0, -2) . 'чы';
             }
@@ -293,6 +285,22 @@ class LocationService
             if (($pos = mb_strpos($village, 'сь')) > 0) {
                 $dto->names[] = mb_substr($village, 0, $pos + 1) . mb_substr($village, $pos + 2);
             }
+            if (mb_strpos($village, '.') > 0) {
+                $dto->names[] = str_replace('.', '’', $village);
+            }
+            if ($shortPart === 'Ст') {
+                $dto->names[] = 'Старое ' . $village;
+                $dto->names[] = 'Стары ' . $village;
+                $dto->names[] = 'Старая ' . $village;
+            }
+            if ($shortPart === 'В' || $shortPart === 'Б') {
+                $dto->names[] = 'Вялікае ' . $village;
+                $dto->names[] = 'Вялікі ' . $village;
+                $dto->names[] = 'Вялікая ' . $village;
+            }
+            if (str_contains($village, 'Вялікая ') || str_contains($village, 'Малая ')) {
+                $dto->names[] = str_replace(['Вялікая ', 'Малая '], '', $village);
+            }
         }
 
         if ($place2 !== '') {
@@ -300,6 +308,81 @@ class LocationService
         }
 
         return $dto;
+    }
+
+    public static function getPrefixForPlace(string &$place): string
+    {
+        $prefix = '';
+
+        $pos = mb_strpos($place, '.');
+        if ($pos !== false) {
+            $prefix = mb_substr($place, 0, $pos);
+            $village = trim(mb_substr($place, $pos + 1));
+        } else {
+            $village = $place;
+            foreach (GeoPointType::BE_SHORT_LONG as $prefix_short => $prefix_long) {
+                if (str_starts_with($place, $prefix_long)) {
+                    $prefix = $prefix_short;
+                    $village = trim(mb_substr($place, mb_strlen($prefix_long)));
+                    break;
+                }
+            }
+        }
+        $place = $village;
+
+        return $prefix;
+    }
+
+    public static function isLocation(string $text): bool
+    {
+        $parts = [$text];
+        $location = self::getLocationFromNotes($parts);
+
+        return $location !== null;
+    }
+
+    public static function getLocationFromNotes(array &$notes): ?string
+    {
+        $locations = [];
+        $hasVillage = false;
+
+        $words = ['р-н', 'сельсавет', 'вобл.', 'вобласці', self::DISTRICT, self::SUBDISTRICT_SHORT, self::REGION];
+
+        foreach ($notes as $key => $note) {
+            if (str_contains($note, 'г.н')) {
+                continue;
+            }
+
+            if (str_starts_with($note, 'з ')) {
+                $note = mb_substr($note, 2);
+            }
+
+            $prefix = self::getPrefixForPlace($note);
+            if (!empty($prefix)) {
+                $note = $prefix . '. ' . $note;
+                if (isset(GeoPointType::BE_SHORT_LONG[$prefix])) {
+                    $locations[] = $note;
+                    unset($notes[$key]);
+                    $hasVillage = true;
+                    continue;
+                }
+            }
+
+            foreach ($words as $word) {
+                if (str_contains($note, $word)) {
+                    $locations[] = $note;
+                    unset($notes[$key]);
+                    break;
+                }
+            }
+
+            if (!$hasVillage && !str_contains($note, ' ') && TextHelper::isName($note)) {
+                $locations[] = $note;
+                unset($notes[$key]);
+            }
+        }
+
+        return empty($locations) ? null : implode(', ', $locations);
     }
 
     public function detectLocation(string $place, ?string $district = null, ?string $subDistrict = null): ?GeoPoint

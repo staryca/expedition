@@ -19,11 +19,12 @@ class CategoryType
     public const GAME = 50;
     public const STORY = 80;
     public const ABOUT_DANCES = 81;
-    public const PROVERB = 82;
+    public const PAREMIA = 82;
     public const FAIRY_TALE = 83;
     public const LULLABY = 84;
     public const RIDDLE = 85;
     public const PARABLE = 86;
+    public const SPELL = 87;
     public const ABOUT_RECORD = 90;
     public const ABOUT_INFORMANT = 91;
     public const ABOUT_OTHER_INFORMANTS = 92;
@@ -46,11 +47,12 @@ class CategoryType
         self::GAME => 'гульня',
         self::STORY => 'аповед',
         self::ABOUT_DANCES => 'згадванне пра танцы',
-        self::PROVERB => 'прыказка',
+        self::PAREMIA => 'паремія', // малыя жанры
         self::FAIRY_TALE => 'казка',
         self::LULLABY => 'калыханка',
-        self::RIDDLE => 'загадка',
+        self::RIDDLE => 'загадка', // таксама малы жанр
         self::PARABLE => 'прыпавесць',
+        self::SPELL => 'замова',
         self::ABOUT_RECORD => 'звесткі пра запіс',
         self::ABOUT_INFORMANT => 'звесткі пра інфармантаў',
         self::ABOUT_OTHER_INFORMANTS => 'звесткі пра іншых інфармантаў',
@@ -74,11 +76,12 @@ class CategoryType
         self::GAME => 'гульні',
         self::STORY => 'аповеды',
         self::ABOUT_DANCES => null,
-        self::PROVERB => 'прыказкі',
+        self::PAREMIA => 'пареміі', // малыя жанры
         self::FAIRY_TALE => 'казкі',
         self::LULLABY => 'калыханкі',
-        self::RIDDLE => 'загадкі',
+        self::RIDDLE => 'загадкі', // таксама малы жанр
         self::PARABLE => 'прыпавесці',
+        self::SPELL => 'замовы',
         self::ABOUT_RECORD => null,
         self::ABOUT_INFORMANT => null,
         self::ABOUT_OTHER_INFORMANTS => null,
@@ -98,6 +101,11 @@ class CategoryType
         ],
         self::FAIRY_TALE => ['казка пра'],
         self::PARABLE => ['прытча'],
+        self::SPELL => ['загавор', 'нагавор', 'шэпт', 'загаворы', 'нагаворы', 'шэпты'],
+        self::PAREMIA => [
+            'прыкмета', 'прыкметы', 'праклён', 'вітанне', 'вітання', 'афарызм', 'прымаўка', 'прымаўкі',
+            'пажаданне', 'пажаданні', 'каламбур', 'тост', 'лічылка', 'лічылкі', 'прыказка', 'прыказкі',
+        ],
         self::ABOUT_RECORD => [
             'зьвесткі пра запіс',
             'звесткі пра перадачу',
@@ -140,6 +148,39 @@ class CategoryType
         self::ABOUT_INFORMANT,
         self::ABOUT_OTHER_INFORMANTS,
         self::CHANGE_INFORMANTS,
+    ];
+
+    public const TYPES_BY_TAGS = [
+        self::KARAHOD => ['карагоды', 'веснавыя карагоды'],
+        self::DANCE => ['танцы'],
+        self::QUADRILLE =>  ['кадрыля'],
+        self::DANCE_GAME =>  ['танец-гульня'],
+        self::CHORUSES => ['прыпеўкі'],
+        self::MELODY =>  ['найгрыш'],
+        self::DANCE_MOVEMENTS =>  ['рухі танца'],
+        self::SONGS => [
+            'лірычныя песні', 'балады', 'савецкая песня', 'жартоўная песня', 'раманс', 'песні суседзяў',
+            'касецкая песня (сенакосная)', 'восеньская песня', 'талака і талочныя песні', 'аўтарскія песні',
+        ],
+        self::POEMS => ['народныя вершы'],
+        self::CEREMONY =>  ['абрад'],
+        self::GAME => ['гульні'],
+        self::STORY => [
+            'размова', 'звычаі', 'апісанні розныя', 'народная проза', 'рэлігійная паэзія', 'сатырычныя',
+            'каляндарная абраднасць і паэзія', 'сямейная абраднасць і паэзія', 'дзіцячы фальклор',
+            'народная драма',
+        ],
+        self::ABOUT_DANCES =>  ['згадванне пра танцы'],
+        self::PAREMIA => [
+            'прыкметы', 'праклёны', 'вітання', 'афарызмы', 'прымаўкі', 'выслоўі',
+            'пажаданні', 'каламбуры', 'тосты', 'лічылкі', 'прыказкі', 'забаўлянкі',
+        ], // малыя жанры
+        self::FAIRY_TALE => ['казка'],
+        self::LULLABY => ['калыханкі'],
+        self::RIDDLE => ['загадкі'],
+        self::PARABLE => ['прытчы'],
+        self::SPELL => ['замовы', 'загавор', 'нагавор', 'шэпт'],
+        self::OTHER => [],
     ];
 
     public static function getSingleName(int $type): ?string
@@ -277,6 +318,19 @@ class CategoryType
             $char = mb_substr($textNext, 0, 1);
 
             return in_array($char, ['"', '']) ? self::SONGS : self::CEREMONY;
+        }
+
+        return null;
+    }
+
+    public static function getCategoryByTags(string $tag): ?int
+    {
+        $tag = mb_strtolower($tag);
+
+        foreach (self::TYPES_BY_TAGS as $type => $tags) {
+            if (in_array($tag, $tags, true)) {
+                return $type;
+            }
         }
 
         return null;

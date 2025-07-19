@@ -29,7 +29,7 @@ class KoboParserTest extends TestCase
         $this->geoPointRepository = $this->createMock(GeoPointRepository::class);
 
         $textHelper = new TextHelper();
-        $locationService = new LocationService($this->geoPointRepository, $textHelper);
+        $locationService = new LocationService($this->geoPointRepository);
         $userService = new UserService(
             $this->createMock(UserRepository::class),
             $textHelper,

@@ -8,6 +8,8 @@ class EpisodeDto
 {
     private int $category;
     private string $text;
+    /** @var array<string> $tags */
+    public array $tags = [];
 
     public function __construct(int $category, string $text)
     {
@@ -25,9 +27,6 @@ class EpisodeDto
         return $this->text;
     }
 
-    /**
-     * @param string $text
-     */
     public function addText(string $text): void
     {
         $this->text .= "\n" . $text;
@@ -38,6 +37,7 @@ class EpisodeDto
         return [
             'category' => $this->category,
             'text' => $this->text,
+            'tags' => $this->tags,
         ];
     }
 }

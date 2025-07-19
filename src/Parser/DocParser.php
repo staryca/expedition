@@ -87,7 +87,7 @@ class DocParser
                             ? CategoryType::STORY
                             : CategoryType::OTHER
                     );
-                    $reports[$reportKey]->blocks[$blockKey]->episodes = $episodes;
+                    $reports[$reportKey]->blocks[$blockKey]->setEpisodes($episodes);
                     $content = [];
                 }
 

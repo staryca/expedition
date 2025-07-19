@@ -23,7 +23,6 @@ class VideoKozParser
     public function __construct(
         private readonly LocationService $locationService,
         private readonly PersonService $personService,
-        private readonly TextHelper $textHelper,
         private readonly PackRepository $packRepository,
     ) {
     }
@@ -47,7 +46,7 @@ class VideoKozParser
         $header = $csv->getHeader();
         foreach ($csv->getRecords($header) as $record) {
             $filename = $record[VideoKozColumns::FILENAME];
-            [$filename] = $this->textHelper->getNotes($filename);
+            [$filename] = TextHelper::getNotes($filename);
             if ($filename === '') {
                 continue;
             }
@@ -95,14 +94,15 @@ class VideoKozParser
                 $videoDto->organizationName = trim($record[VideoKozColumns::ORGANIZATION]);
             }
             if (isset($record[VideoKozColumns::INFORMANTS])) {
-                $videoDto->informants = $this->personService->getInformants($record[VideoKozColumns::INFORMANTS]);
+                $isMusicians = $videoDto->category === CategoryType::MELODY ? true : null;
+                $videoDto->informants = $this->personService->getInformants($record[VideoKozColumns::INFORMANTS], '', $isMusicians);
             }
             if (isset($record[VideoKozColumns::MUSICIANS])) {
                 $videoDto->informants =
-                    array_merge(
-                        $videoDto->informants,
-                        $this->personService->getInformants($record[VideoKozColumns::MUSICIANS], '', true)
-                    );
+                    [
+                        ...$videoDto->informants,
+                        ...$this->personService->getInformants($record[VideoKozColumns::MUSICIANS], '', true)
+                    ];
             }
 
             $dateAction = $record[VideoKozColumns::DATE_RECORD] ?? null;
@@ -116,7 +116,7 @@ class VideoKozParser
                 } elseif (strlen($dateAction) < 5) {
                     $videoDto->dateAction = Carbon::createFromDate((int) $dateAction, 1, 1);
                 } else {
-                    $videoDto->dateAction = Carbon::createFromFormat('d.m.Y', $dateAction);
+                    $videoDto->dateAction = Carbon::createFromFormat('d.m.Y', (string) $dateAction);
                 }
             }
 

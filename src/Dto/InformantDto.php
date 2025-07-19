@@ -138,6 +138,6 @@ class InformantDto extends StudentDto
 
     public function detectMusician(): void
     {
-        $this->isMusician = (new Musician())->isMusician($this->notes);
+        $this->isMusician = Musician::isMusician($this->notes);
     }
 }

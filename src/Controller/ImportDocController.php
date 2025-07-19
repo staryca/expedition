@@ -77,7 +77,7 @@ class ImportDocController extends AbstractController
                         $data['errors_informant_place'][] = $informant->place;
                     }
                 }
-                foreach ($block->episodes as $episode) {
+                foreach ($block->getEpisodes() as $episode) {
                     $episodes[$reportKey . "_" . $blockKey][] = $episode->toArray();
                 }
             }
@@ -104,7 +104,7 @@ class ImportDocController extends AbstractController
 
         $reportsData = $this->parser->parseDoc($content);
 
-        $this->reportManager->createReports($expedition, $reportsData, [], [], []);
+        $this->reportManager->createReports($expedition, $reportsData, [], []);
         $this->entityManager->flush();
 
         return $this->render('import/show.json.result.html.twig', [
