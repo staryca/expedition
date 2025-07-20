@@ -395,6 +395,9 @@ class ReportManager
             }
             $report->setLat($reportData->lat);
             $report->setLon($reportData->lon);
+            if (!empty($reportData->temp)) {
+                $report->setTemp($reportData->temp);
+            }
 
             $this->entityManager->persist($report);
             $expedition->addReport($report);
@@ -730,6 +733,7 @@ class ReportManager
 
             $this->entityManager->flush();
             $this->entityManager->getConnection()->commit();
+            $this->entityManager->clear();
         } catch (\Exception $e) {
             if ($this->entityManager->isOpen()) {
                 $this->entityManager->getConnection()->rollBack();

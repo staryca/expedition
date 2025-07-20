@@ -33,6 +33,7 @@ class ReportDataDto extends PlaceDto
     public ?string $photo = null;
 
     public ?string $photoUrl = null;
+    public array $temp = [];
 
     public static function fromKobo(array $data): self
     {

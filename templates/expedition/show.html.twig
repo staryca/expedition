@@ -18,7 +18,7 @@
     <div class="container py-5">
         <h1 class="h2">Экспедыцыя {{ expedition.name }}</h1>
         <div class="row">
-            <p class="text-end"><small><a href="{{ path('expedition_list') }}">Усе эскпедыцыі</a></small></p>
+            <p class="text-end"><small><a href="{{ path('expedition_list') }}">Усе экспедыцыі</a></small></p>
             <p>
                 {% if expedition.startDate %}
                     Даты правядзеньня:
@@ -61,7 +61,7 @@
                                 | {{ subject.files|length }} файлаў
 
                                 {% set amountMarkers = subject.getAmountAllMarkersInFiles() %}
-                                | {{ amountMarkers }} меток
+                                | {{ amountMarkers }} метак
                                 {% if amountMarkers > 0 %}
                                     ({{ subject.getAmountDecodingsInFileMarkers() }} расшыфровак)
                                 {% endif %}
@@ -84,7 +84,7 @@
             {% endif %}
 
             <p>
-                <h5>Месцы</h5>
+                <h5>Справаздачы ({{ reports|length }})</h5>
                 {% if is_granted('ROLE_USER') %}
                     <div>
                         <a href="{{ path('report_new_by_expedition', {id: expedition.id}) }}">

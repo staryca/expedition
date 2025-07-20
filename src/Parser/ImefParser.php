@@ -62,6 +62,7 @@ class ImefParser
                 $columns = $node->children();
                 $dto = new ImefDto();
                 $dto->content = $node->outerHtml();
+                $dto->folder = $folder;
 
                 $date = TextHelper::cleanManySpaces($columns->eq(0)->text());
                 if ($date === 'Год') {

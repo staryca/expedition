@@ -17,23 +17,49 @@ use App\Entity\Type\ReportBlockType;
 use App\Entity\Type\UserRoleType;
 use App\Manager\ReportManager;
 use App\Parser\ImefParser;
+use App\Repository\ExpeditionRepository;
 use Carbon\CarbonImmutable;
 use Doctrine\DBAL\Exception;
 
 class ImefHandler
 {
+    private const EXPEDITION_ID = 5; // 10
+
     public function __construct(
         private readonly ImefParser $parser,
+        private readonly ExpeditionRepository $expeditionRepository,
         private readonly ReportManager $reportManager,
+        private readonly string $imefUrl,
     ) {
     }
 
+    public function getExpedition(): Expedition
+    {
+        /** @var Expedition|null $expedition */
+        $expedition = $this->expeditionRepository->find(self::EXPEDITION_ID);
+        if (!$expedition) {
+            throw new Exception('Expedition not found');
+        }
+
+        return $expedition;
+    }
+
     /**
-     * @param string $baseUrl
-     * @param Expedition $expedition
      * @return array<ImefDto>
      */
-    public function check(string $baseUrl, Expedition $expedition): array
+    public function check(): array
+    {
+        $newFolders = $this->getNewFolders();
+        $folderKey = array_rand($newFolders);
+
+        $previousDateDayMonth = true;
+        return $this->parsingOneFolder($previousDateDayMonth, $newFolders[$folderKey]);
+    }
+
+    /**
+     * @return array<string>
+     */
+    public function getNewFolders(): array
     {
         $arrContextOptions = array(
             "ssl" => array(
@@ -43,27 +69,32 @@ class ImefHandler
         );
 
         $content = file_get_contents(
-            $baseUrl,
+            $this->imefUrl,
             false,
             stream_context_create($arrContextOptions)
         );
         $folders = $this->parser->parseCatalog($content);
 
-        $importedFolders = $this->getAllImportedFolders($expedition);
-        $newFolders = array_diff($folders, $importedFolders);
+        $importedFolders = $this->getAllImportedFolders();
+        return array_diff($folders, $importedFolders);
+    }
 
-        $previousDateDayMonth = true;
-        $dtos = [];
-        foreach ($newFolders as $folder) {
-            $content = file_get_contents(
-                $baseUrl . $folder,
-                false,
-                stream_context_create($arrContextOptions)
-            );
-            $dtos = $this->parser->parseItem($previousDateDayMonth, $content, $folder);
-        }
+    public function parsingOneFolder(bool &$previousDateDayMonth, string $folder): array
+    {
+        $arrContextOptions = array(
+            "ssl" => array(
+                "verify_peer" => false,
+                "verify_peer_name" => false,
+            ),
+        );
 
-        return $dtos;
+        $content = file_get_contents(
+            $this->imefUrl . $folder,
+            false,
+            stream_context_create($arrContextOptions)
+        );
+
+        return $this->parser->parseItem($previousDateDayMonth, $content, $folder);
     }
 
     /**
@@ -184,6 +215,7 @@ class ImefHandler
                 $reports[$reportKey]->place = $dto->place;
                 $reports[$reportKey]->dateCreated = CarbonImmutable::now();
                 $reports[$reportKey]->dateAction = $dto->date;
+                $reports[$reportKey]->temp['folder'] = $dto->folder;
 
                 foreach ($dto->users as $user) {
                     $user->roles = [UserRoleType::ROLE_INTERVIEWER];
@@ -232,13 +264,12 @@ class ImefHandler
     }
 
     /**
-     * @param Expedition $expedition
      * @param array<ImefDto> $dtos
      * @return array<Report>
      * @throws Exception
      * @throws \Exception
      */
-    public function saveDtos(Expedition $expedition, array $dtos): array
+    public function saveDtos(array $dtos): array
     {
         foreach ($dtos as $dto) {
             foreach ($dto->informants as $informant) {
@@ -251,18 +282,20 @@ class ImefHandler
 
         $reportsData = $this->createReportsData($dtos);
 
-        return $this->reportManager->saveSubjects($expedition, [], [], $reportsData, []);
+        return $this->reportManager->saveSubjects($this->getExpedition(), [], [], $reportsData, []);
     }
 
-    private function getAllImportedFolders(Expedition $expedition): array
+    private function getAllImportedFolders(): array
     {
+        $expedition = $this->getExpedition();
+
         $folders = [];
         foreach ($expedition->getReports() as $report) {
             $folder = $report->getTempValue('folder');
-            $folders[] = $folder;
+            $folders[$folder] = 1;
         }
 
-        return $folders;
+        return array_keys($folders);
     }
 
     /**

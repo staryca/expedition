@@ -37,7 +37,7 @@ class GeoMapManager
             $latLon = $report->getLatLon();
             if ($latLon) {
                 $popup = 'Справаздача за '
-                    . ($report->getDateAction() ? $report->getDateAction()?->format('d.m.Y') : '?')
+                    . ($report->getDateAction() ? $report->getTextDateAction() : '?')
                     . ' (блокаў: ' . $report->getBlocks()->count() . ')';
                 $geoMapData->addLatLon($latLon, $popup, GeoMapDto::TYPE_REPORT);
             }

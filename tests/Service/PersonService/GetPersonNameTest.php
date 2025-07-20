@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Service\PersonService;
 
+use App\Entity\Type\GenderType;
 use App\Helper\TextHelper;
 use App\Service\PersonService;
 use PHPUnit\Framework\TestCase;
@@ -75,5 +76,81 @@ class GetPersonNameTest extends TestCase
         $this->assertEquals('Бовіч Акуліна Адамаўна', $informant->name);
         $this->assertEquals(1927, $informant->birth);
         $this->assertEquals('працуе ў КБО', $informant->notes);
+    }
+
+    public function testSuccessWithBadBirth(): void
+    {
+        $name = 'Сакаловы Аленай 1920 г. 5 кл.';
+
+        $informant = $this->personService->getPersonByFullName($name, null, true);
+
+        $this->assertNotNull($informant);
+        $this->assertEquals('Сакалова Алена', $informant->name);
+        $this->assertEquals(1920, $informant->birth);
+        $this->assertEquals('5 кл', $informant->notes);
+    }
+
+    public function testSuccessWithLastAsMiddle(): void
+    {
+        $name = 'Гапановіча Генадзя';
+
+        $informant = $this->personService->getPersonByFullName($name, null, true);
+
+        $this->assertNotNull($informant);
+        $this->assertEquals('Гапановіч Генадзь', $informant->name);
+        $this->assertNull($informant->birth);
+        $this->assertEquals(GenderType::MALE, $informant->gender);
+        $this->assertEquals('', $informant->notes);
+    }
+
+    public function testSuccessWithShortBirth(): void
+    {
+        $name = 'Бут Ціхон 12г';
+
+        $informant = $this->personService->getPersonByFullName($name, 2010, true);
+
+        $this->assertNotNull($informant);
+        $this->assertEquals('Бут Ціхон', $informant->name);
+        $this->assertEquals(1998, $informant->birth);
+        $this->assertEquals(GenderType::MALE, $informant->gender);
+        $this->assertEquals('', $informant->notes);
+    }
+
+    public function testSuccessWithMaybeBirth(): void
+    {
+        $name = 'Савасцееў Івана Еўдакімавіча каля 100 гадоў';
+
+        $informant = $this->personService->getPersonByFullName($name, 2008, true);
+
+        $this->assertNotNull($informant);
+        $this->assertEquals('Савасцееў Іван Еўдакімавіч', $informant->name);
+        $this->assertEquals(1908, $informant->birth);
+        $this->assertEquals('', $informant->notes);
+    }
+
+
+    public function testSuccessWithShortNameAndBirth(): void
+    {
+        $name = 'Пяхота А.К.1908 г.н';
+
+        $informant = $this->personService->getPersonByFullName($name, null, true);
+
+        $this->assertNotNull($informant);
+        $this->assertEquals('Пяхота А.К.', $informant->name);
+        $this->assertEquals(1908, $informant->birth);
+        $this->assertEquals(GenderType::UNKNOWN, $informant->gender);
+        $this->assertEquals('', $informant->notes);
+    }
+    public function testSuccessFrom(): void
+    {
+        $name = 'ад Раманоўскай Вольгі Сямёнаўны';
+
+        $informant = $this->personService->getPersonByFullName($name);
+
+        $this->assertNotNull($informant);
+        $this->assertEquals('Раманоўская Вольга Сямёнаўна', $informant->name);
+        $this->assertNull($informant->birth);
+        $this->assertEquals(GenderType::FEMALE, $informant->gender);
+        $this->assertEquals('', $informant->notes);
     }
 }

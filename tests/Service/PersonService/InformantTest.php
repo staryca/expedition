@@ -229,7 +229,7 @@ class InformantTest extends TestCase
         $this->assertCount(0, $informant->locations);
 
         $informant = $informants[1];
-        $this->assertEquals('Галка З. П.', $informant->name);
+        $this->assertEquals('Галка З.П.', $informant->name);
         $this->assertEquals(1892, $informant->birth);
         $this->assertEquals(GenderType::UNKNOWN, $informant->gender);
         $this->assertEquals('', $informant->notes);
@@ -311,6 +311,36 @@ class InformantTest extends TestCase
         $this->assertCount(1, $informants);
         $informant = $informants[0];
         $this->assertEquals('Мацкевіч-Забэла Вольга Ўладзіміраўна', $informant->name);
+        $this->assertNull($informant->birth);
+        $this->assertEquals(GenderType::FEMALE, $informant->gender);
+        $this->assertEquals('', $informant->notes);
+        $this->assertCount(0, $informant->locations);
+    }
+
+    public function testInformantWithBadBirth(): void
+    {
+        $content = 'Сакалова Ксенія, 1920 г., 5 кл.';
+
+        $informants = $this->personService->getInformants($content);
+
+        $this->assertCount(1, $informants);
+        $informant = $informants[0];
+        $this->assertEquals('Сакалова Ксенія', $informant->name);
+        $this->assertEquals(1920, $informant->birth);
+        $this->assertEquals(GenderType::FEMALE, $informant->gender);
+        $this->assertEquals('5 кл.', $informant->notes);
+        $this->assertCount(0, $informant->locations);
+    }
+
+    public function testInformantWithTwoFirst(): void
+    {
+        $content = 'Левай Ніна';
+
+        $informants = $this->personService->getInformants($content);
+
+        $this->assertCount(1, $informants);
+        $informant = $informants[0];
+        $this->assertEquals('Левай Ніна', $informant->name);
         $this->assertNull($informant->birth);
         $this->assertEquals(GenderType::FEMALE, $informant->gender);
         $this->assertEquals('', $informant->notes);

@@ -68,13 +68,13 @@ class StudentTest extends TestCase
     public function testDetectStudentsShort3(): void
     {
         $person = new PersonBsuDto();
-        $person->name = 'Пархімчык Пракаповіч І.П. Паркоц Т.А.';
+        $person->name = 'Пархімчык Пракапов І.П. Паркоц Т.А.';
 
         $students = $this->personService->detectStudents($person);
 
         $this->assertCount(3, $students);
         $this->assertEquals('Пархімчык', $students[0]->name);
-        $this->assertEquals('Пракаповіч І.П.', $students[1]->name);
+        $this->assertEquals('Пракапов І.П.', $students[1]->name);
         $this->assertEquals('Паркоц Т.А.', $students[2]->name);
     }
 
