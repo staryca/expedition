@@ -32,3 +32,7 @@ services:
             $class: App\Entity\User
             $properties:
                 'google': 'google'
+
+    App\Handler\ImefHandler:
+        arguments:
+            $imefUrl : '%imef_url%'

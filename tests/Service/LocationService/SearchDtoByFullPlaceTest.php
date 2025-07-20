@@ -184,6 +184,21 @@ class SearchDtoByFullPlaceTest extends TestCase
         $this->assertEquals('Селец', $dto->names[3]);
     }
 
+    public function testLower(): void
+    {
+        $dto = $this->locationService->getSearchDtoByFullPlace('Капаткевіцкі раён, кашэвічы');
+
+        $this->assertNull($dto->region);
+        $this->assertEquals('Капаткевіцкі раён', $dto->district);
+        $this->assertNull($dto->subDistrict);
+        $this->assertEquals(GeoPointType::BE_VILLAGE_LONGS, $dto->prefixes);
+        $this->assertCount(4, $dto->names);
+        $this->assertEquals('Кашэвічы', $dto->names[0]);
+        $this->assertEquals('Кашэвіча', $dto->names[1]);
+        $this->assertEquals('Катэвічы', $dto->names[2]);
+        $this->assertEquals('Кашэвячы', $dto->names[3]);
+    }
+
     public function testNameWithPoint(): void
     {
         $dto = $this->locationService->getSearchDtoByFullPlace('Глыбоцкі раён, в. Забор.е');

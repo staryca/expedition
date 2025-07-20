@@ -176,6 +176,7 @@ class PersonService
      */
     public function getPersonByFullName(string $name, ?int $yearReport = null, bool $hasOnlyTwoNames = false): ?InformantDto
     {
+        $name = self::templateNameWithoutUpping($name);
         $name = preg_replace('!\s+!', ' ', $name);
         $amount = $hasOnlyTwoNames ? 2 : 3;
         $parts = explode(' ', trim($name));
@@ -189,6 +190,10 @@ class PersonService
         $informant = null;
         $hasShortNames = false;
         foreach ($parts as $part) {
+            if ('ад' === $part || 'Ад' === $part || 'от' === $part || 'От' === $part) {
+                continue;
+            }
+
             $part = TextHelper::fixName($part);
             $isShortNames = TextHelper::isShortNames($part);
             $hasShortNames = $hasShortNames || $isShortNames;
@@ -421,6 +426,11 @@ class PersonService
             $pos = mb_strpos($name, '.', $pos + 1);
         }
 
+        return self::templateNameWithoutUpping($name);
+    }
+
+    private static function templateNameWithoutUpping(string $name): string
+    {
         // A. A. -> A.A.
         $pos = mb_strpos($name, '. ');
         while ($pos > 0 && $pos < mb_strlen($name) - 3 && mb_substr($name, $pos + 3, 1) === '.') {
@@ -439,7 +449,14 @@ class PersonService
             $name .= '.';
         }
 
-        return $name;
+        // 'A.A.text' => 'A.A. text'
+        $pos = mb_strpos($name, '.');
+        while ($pos > 0 && $pos < mb_strlen($name) - 4 && mb_substr($name, $pos + 2, 1) === '.') {
+            $name = mb_substr($name, 0, $pos + 3) . ' ' . mb_substr($name, $pos + 3);
+            $pos = mb_strpos($name, '.', $pos + 2);
+        }
+
+        return preg_replace('!\s+!', ' ', $name);
     }
 
     public function parseInformant(PersonBsuDto $personBsuDto): InformantDto
@@ -751,7 +768,26 @@ class PersonService
 
     private static function getBirthYearFromNotes(array &$notes, ?int $yearReport = null): ?int
     {
+        $borderLetters = ['', ' ', ',', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+
+        $ages = ['min' => 4, 'max' => 120];
+        $years = ['min' => 1800, 'max' => 2020];
+
         foreach ($notes as $key => $note) {
+            //  25г => 25г.
+            $pos = -1;
+            while (false !== $pos) {
+                $pos = mb_strpos($note, 'г', $pos + 1);
+                if (
+                    $pos > 0
+                    && in_array(mb_substr($note, $pos - 1, 1), $borderLetters, true)
+                    && in_array(mb_substr($note, $pos + 1, 1), $borderLetters, true)
+                ) {
+                    $note = mb_substr($note, 0, $pos + 1) . '.' . mb_substr($note, $pos + 1);
+                    $pos = false;
+                }
+            }
+
             if (
                 str_contains($note, 'год')
                 || str_contains($note, 'гадоў')
@@ -759,7 +795,11 @@ class PersonService
                 || (str_contains($note, 'г.') && !str_contains($note, 'г.н'))
             ) {
                 $age = (int) $note;
-                if ($age > 4 && $age < 120) {
+                if ($age > $years['min'] && $age < $years['max']) {
+                    unset($notes[$key]);
+                    return $age;
+                }
+                if ($age > $ages['min'] && $age < $ages['max']) {
                     if ($yearReport) {
                         unset($notes[$key]);
                         return $yearReport - $age;
@@ -770,7 +810,10 @@ class PersonService
                     continue;
                 }
                 $age = (int) $notes[$key - 1];
-                if ($age > 4 && $age < 120 && null !== $yearReport) {
+                if ($age > $ages['min'] && $age < $ages['max'] && null !== $yearReport) {
+                    if ($key >= 2 && $notes[$key - 2] === 'каля') {
+                        unset($notes[$key - 2]);
+                    }
                     unset($notes[$key - 1], $notes[$key]);
                     return $yearReport - $age;
                 }
@@ -782,13 +825,13 @@ class PersonService
 
             if ($key > 0 && str_contains($note, 'г.н')) {
                 $year = (int) $note;
-                if ($year > 1800 && $year < 2020) {
+                if ($year > $years['min'] && $year < $years['max']) {
                     unset($notes[$key]);
                     return $year;
                 }
 
                 $year = (int) $notes[$key - 1];
-                if ($year > 1800 && $year < 2020) {
+                if ($year > $years['min'] && $year < $years['max']) {
                     unset($notes[$key - 1], $notes[$key]);
                     return $year;
                 }
@@ -801,7 +844,7 @@ class PersonService
 
         foreach ($notes as $key => $note) {
             $year = (int) $note;
-            if ($year > 1800 && $year < 2020) {
+            if ($year > $years['min'] && $year < $years['max']) {
                 unset($notes[$key]);
                 return $year;
             }
@@ -901,6 +944,14 @@ class PersonService
                     $onlyName = $correctName;
                 }
             }
+            foreach (GenderType::REPLACE_RIGHT_PARTS as $correctedPart => $rightParts) {
+                foreach ($rightParts as $rightPart) {
+                    $len = mb_strlen($rightPart);
+                    if (mb_substr($onlyName, -$len) === $rightPart) {
+                        $onlyName = mb_substr($onlyName, 0, -$len) . $correctedPart;
+                    }
+                }
+            }
 
             $right3 = mb_substr($onlyName, -3);
             $right4 = mb_substr($onlyName, -4);
@@ -945,8 +996,32 @@ class PersonService
             }
         }
 
-        // Case: last name as secondary first name (ex: Юрый Ягорка)
+        // Case: fix first name only after detect gender
         $counts = array_count_values($detectedTypes);
+        $genderTemp = $this->detectGenderByCounts($detectedGenders);
+        if (!isset($counts[self::NUM_FIRST_MIDDLE])) {
+            if (!isset($counts[self::NUM_FIRST])) {
+                foreach ($detectedFullNames as $key => $fullName) {
+                    $fixedName = GenderType::fixNameByRoot($fullName, $genderTemp);
+                    if ($fullName !== $fixedName) {
+                        $detectedFullNames[$key] = $fixedName;
+                        $detectedTypes[$key] = self::NUM_FIRST;
+                        if ($genderTemp === GenderType::UNKNOWN) {
+                            $detectedGenders[$key] = GenderType::getGender($fixedName);
+                        }
+                        break;
+                    }
+                }
+            } else {
+                foreach ($detectedFullNames as $key => $fullName) {
+                    if ($detectedTypes[$key] === self::NUM_FIRST) {
+                        $detectedFullNames[$key] = GenderType::fixNameByRoot($fullName, $genderTemp);
+                    }
+                }
+            }
+        }
+
+        // Case: last name as secondary first name (ex: Юрый Ягорка)
         if (isset($counts[self::NUM_FIRST]) && $counts[self::NUM_FIRST] >= 2) {
             $baseKey = null;
             $notBaseKeys = [];

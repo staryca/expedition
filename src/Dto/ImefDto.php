@@ -21,4 +21,5 @@ class ImefDto extends PlaceDto
 
     // for debug
     public string $content = '';
+    public string $folder = '';
 }
