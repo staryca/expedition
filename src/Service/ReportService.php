@@ -9,6 +9,8 @@ use App\Entity\Type\CategoryType;
 
 class ReportService
 {
+    public const MAX_REPORTS_FOR_VIEW = 1000;
+
     /**
      * @param array<int, string> $contents
      * @param int $defaultCategory

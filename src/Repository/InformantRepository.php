@@ -66,4 +66,18 @@ class InformantRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * @return array<Informant>
+     */
+    public function findNotDetectedPoints(): array
+    {
+        return $this->createQueryBuilder('r')
+            ->where('r.placeBirth <> :empty')
+            ->orWhere('r.placeCurrent <> :empty')
+            ->setParameter('empty', '')
+            ->orderBy('r.placeCurrent', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
 }

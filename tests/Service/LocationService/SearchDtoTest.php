@@ -29,10 +29,11 @@ class SearchDtoTest extends TestCase
         $this->assertNull($dto->region);
         $this->assertEquals('Бярэзінскі раён', $dto->district);
         $this->assertEquals(GeoPointType::BE_VILLAGE_LONGS, $dto->prefixes);
-        $this->assertCount(3, $dto->names);
+        $this->assertCount(4, $dto->names);
         $this->assertEquals('Млынарова', $dto->names[0]);
         $this->assertEquals('Млынарава', $dto->names[1]);
-        $this->assertEquals('Мланарова', $dto->names[2]);
+        $this->assertEquals('Млынорова', $dto->names[2]);
+        $this->assertEquals('Мланарова', $dto->names[3]);
     }
 
     public function testGetGeoPointSearchVillage(): void
@@ -42,9 +43,10 @@ class SearchDtoTest extends TestCase
         $this->assertNull($dto->region);
         $this->assertEquals('Бярэзінскі раён', $dto->district);
         $this->assertEquals(GeoPointType::BE_VILLAGE_LONGS, $dto->prefixes);
-        $this->assertCount(2, $dto->names);
+        $this->assertCount(3, $dto->names);
         $this->assertEquals('Альшанка', $dto->names[0]);
-        $this->assertEquals('Альтанка', $dto->names[1]);
+        $this->assertEquals('Альшонка', $dto->names[1]);
+        $this->assertEquals('Альтанка', $dto->names[2]);
     }
 
     public function testGetGeoPointSearchCity(): void
@@ -67,13 +69,14 @@ class SearchDtoTest extends TestCase
         $this->assertNull($dto->region);
         $this->assertEquals('Барысаўскі раён', $dto->district);
         $this->assertEquals(GeoPointType::BE_VILLAGE_LONGS, $dto->prefixes);
-        $this->assertCount(6, $dto->names);
+        $this->assertCount(7, $dto->names);
         $this->assertEquals('Новая Метча', $dto->names[0]);
         $this->assertEquals('Новая Мётча', $dto->names[1]);
         $this->assertEquals('Новая Метчча', $dto->names[2]);
         $this->assertEquals('Навая Метча', $dto->names[3]);
-        $this->assertEquals('Новая Мятча', $dto->names[4]);
-        $this->assertEquals('Новае Метча', $dto->names[5]);
+        $this->assertEquals('Новоя Метча', $dto->names[4]);
+        $this->assertEquals('Новая Мятча', $dto->names[5]);
+        $this->assertEquals('Новае Метча', $dto->names[6]);
     }
 
     public function testGetGeoPointSearchLetterJO(): void
@@ -83,10 +86,11 @@ class SearchDtoTest extends TestCase
         $this->assertNull($dto->region);
         $this->assertNull($dto->district);
         $this->assertEquals(GeoPointType::BE_VILLAGE_LONGS, $dto->prefixes);
-        $this->assertCount(3, $dto->names);
+        $this->assertCount(4, $dto->names);
         $this->assertEquals('Заёнкі', $dto->names[0]);
-        $this->assertEquals('Заенкі', $dto->names[1]);
-        $this->assertEquals('Заёнка', $dto->names[2]);
+        $this->assertEquals('Зоёнкі', $dto->names[1]);
+        $this->assertEquals('Заенкі', $dto->names[2]);
+        $this->assertEquals('Заёнка', $dto->names[3]);
     }
 
     public function testGetGeoPointSearchAgro(): void
@@ -110,11 +114,12 @@ class SearchDtoTest extends TestCase
         $this->assertNull($dto->region);
         $this->assertNull($dto->district);
         $this->assertEquals(GeoPointType::BE_VILLAGE_LONGS, $dto->prefixes);
-        $this->assertCount(4, $dto->names);
+        $this->assertCount(5, $dto->names);
         $this->assertEquals('Старыя Елкі', $dto->names[0]);
-        $this->assertEquals('Старые Елкі', $dto->names[1]);
-        $this->assertEquals('Старая Елкі', $dto->names[2]);
-        $this->assertEquals('Старыя Елка', $dto->names[3]);
+        $this->assertEquals('Сторыя Елкі', $dto->names[1]);
+        $this->assertEquals('Старые Елкі', $dto->names[2]);
+        $this->assertEquals('Старая Елкі', $dto->names[3]);
+        $this->assertEquals('Старыя Елка', $dto->names[4]);
     }
 
     public function testGetGeoPointSearchHighLettersWith(): void
@@ -124,9 +129,10 @@ class SearchDtoTest extends TestCase
         $this->assertNull($dto->region);
         $this->assertEquals('Докшыцкі раён', $dto->district);
         $this->assertEquals(GeoPointType::BE_VILLAGE_LONGS, $dto->prefixes);
-        $this->assertCount(2, $dto->names);
+        $this->assertCount(3, $dto->names);
         $this->assertEquals('Параф’янава', $dto->names[0]);
-        $this->assertEquals('Параф’енава', $dto->names[1]);
+        $this->assertEquals('Пораф’янава', $dto->names[1]);
+        $this->assertEquals('Параф’енава', $dto->names[2]);
     }
 
     public function testGetGeoPointSearchLetterLastI(): void
@@ -136,11 +142,12 @@ class SearchDtoTest extends TestCase
         $this->assertNull($dto->region);
         $this->assertNull($dto->district);
         $this->assertEquals(GeoPointType::BE_VILLAGE_LONGS, $dto->prefixes);
-        $this->assertCount(4, $dto->names);
+        $this->assertCount(5, $dto->names);
         $this->assertEquals('Кайшоўкі', $dto->names[0]);
         $this->assertEquals('Кайшаўкі', $dto->names[1]);
-        $this->assertEquals('Кайтоўкі', $dto->names[2]);
-        $this->assertEquals('Кайшоўка', $dto->names[3]);
+        $this->assertEquals('Койшоўкі', $dto->names[2]);
+        $this->assertEquals('Кайтоўкі', $dto->names[3]);
+        $this->assertEquals('Кайшоўка', $dto->names[4]);
     }
 
     public function testGetGeoPointSearchLastLetterE(): void
@@ -150,10 +157,12 @@ class SearchDtoTest extends TestCase
         $this->assertNull($dto->region);
         $this->assertNull($dto->district);
         $this->assertEquals(GeoPointType::BE_VILLAGE_LONGS, $dto->prefixes);
-        $this->assertCount(3, $dto->names);
+        $this->assertCount(5, $dto->names);
         $this->assertEquals('Заброддзе', $dto->names[0]);
-        $this->assertEquals('Забраддзе', $dto->names[1]);
-        $this->assertEquals('Заброддзя', $dto->names[2]);
+        $this->assertEquals('Заброддзё', $dto->names[1]);
+        $this->assertEquals('Забраддзе', $dto->names[2]);
+        $this->assertEquals('Зоброддзе', $dto->names[3]);
+        $this->assertEquals('Заброддзя', $dto->names[4]);
     }
 
     public function testGetGeoPointSearchLetterELIE(): void
@@ -194,10 +203,11 @@ class SearchDtoTest extends TestCase
         $this->assertNull($dto->district);
         $this->assertCount(1, $dto->prefixes);
         $this->assertEquals(GeoPointType::BE_URBAN_SETTLEMENT, $dto->prefixes[0]);
-        $this->assertCount(3, $dto->names);
+        $this->assertCount(4, $dto->names);
         $this->assertEquals('Парычы', $dto->names[0]);
         $this->assertEquals('Парыча', $dto->names[1]);
-        $this->assertEquals('Парачы', $dto->names[2]);
+        $this->assertEquals('Порычы', $dto->names[2]);
+        $this->assertEquals('Парачы', $dto->names[3]);
     }
 
     public function testGetGeoPointSearchSettlement(): void
@@ -209,10 +219,11 @@ class SearchDtoTest extends TestCase
         $this->assertCount(2, $dto->prefixes);
         $this->assertEquals(GeoPointType::BE_SETTLEMENT, $dto->prefixes[0]);
         $this->assertEquals(GeoPointType::BE_URBAN_SETTLEMENT, $dto->prefixes[1]);
-        $this->assertCount(3, $dto->names);
+        $this->assertCount(4, $dto->names);
         $this->assertEquals('Ушачы', $dto->names[0]);
         $this->assertEquals('Ушача', $dto->names[1]);
-        $this->assertEquals('Утачы', $dto->names[2]);
+        $this->assertEquals('Ушочы', $dto->names[2]);
+        $this->assertEquals('Утачы', $dto->names[3]);
     }
 
     public function testGetGeoPointSearchGlusk(): void
@@ -234,10 +245,11 @@ class SearchDtoTest extends TestCase
         $this->assertNull($dto->region);
         $this->assertNull($dto->district);
         $this->assertEquals(GeoPointType::BE_VILLAGE_LONGS, $dto->prefixes);
-        $this->assertCount(3, $dto->names);
+        $this->assertCount(4, $dto->names);
         $this->assertEquals('Навасёлкі', $dto->names[0]);
-        $this->assertEquals('Наваселкі', $dto->names[1]);
-        $this->assertEquals('Навасёлка', $dto->names[2]);
+        $this->assertEquals('Новасёлкі', $dto->names[1]);
+        $this->assertEquals('Наваселкі', $dto->names[2]);
+        $this->assertEquals('Навасёлка', $dto->names[3]);
     }
 
     public function testGetGeoPointSearchLastLetterEE(): void
@@ -262,10 +274,12 @@ class SearchDtoTest extends TestCase
         $this->assertNull($dto->region);
         $this->assertNull($dto->district);
         $this->assertEquals(GeoPointType::BE_VILLAGE_LONGS, $dto->prefixes);
-        $this->assertCount(3, $dto->names);
+        $this->assertCount(5, $dto->names);
         $this->assertEquals('Багатырскае', $dto->names[0]);
-        $this->assertEquals('Багатырская', $dto->names[1]);
-        $this->assertEquals('Багатарскае', $dto->names[2]);
+        $this->assertEquals('Багатырскаё', $dto->names[1]);
+        $this->assertEquals('Багатырская', $dto->names[2]);
+        $this->assertEquals('Богатырскае', $dto->names[3]);
+        $this->assertEquals('Багатарскае', $dto->names[4]);
     }
 
     public function testGetGeoPointSearchLastLetterSH(): void
@@ -275,9 +289,10 @@ class SearchDtoTest extends TestCase
         $this->assertNull($dto->region);
         $this->assertNull($dto->district);
         $this->assertEquals(GeoPointType::BE_VILLAGE_LONGS, $dto->prefixes);
-        $this->assertCount(2, $dto->names);
+        $this->assertCount(3, $dto->names);
         $this->assertEquals('Палаша', $dto->names[0]);
-        $this->assertEquals('Палата', $dto->names[1]);
+        $this->assertEquals('Полаша', $dto->names[1]);
+        $this->assertEquals('Палата', $dto->names[2]);
     }
 
     public function testGetGeoPointSearchLetterEJ(): void
@@ -287,12 +302,13 @@ class SearchDtoTest extends TestCase
         $this->assertNull($dto->region);
         $this->assertNull($dto->district);
         $this->assertEquals(GeoPointType::BE_VILLAGE_LONGS, $dto->prefixes);
-        $this->assertCount(5, $dto->names);
+        $this->assertCount(6, $dto->names);
         $this->assertEquals('Сеймурадцы', $dto->names[0]);
         $this->assertEquals('Сёймурадцы', $dto->names[1]);
         $this->assertEquals('Сямурадцы', $dto->names[2]);
         $this->assertEquals('Сеймурадца', $dto->names[3]);
-        $this->assertEquals('Сяймурадцы', $dto->names[4]);
+        $this->assertEquals('Сеймуродцы', $dto->names[4]);
+        $this->assertEquals('Сяймурадцы', $dto->names[5]);
     }
 
     public function testGetGeoPointSearchGPslash(): void
@@ -316,14 +332,15 @@ class SearchDtoTest extends TestCase
         $this->assertNull($dto->district);
         $this->assertCount(1, $dto->prefixes);
         $this->assertEquals(GeoPointType::BE_URBAN_SETTLEMENT, $dto->prefixes[0]);
-        $this->assertCount(7, $dto->names);
+        $this->assertCount(8, $dto->names);
         $this->assertEquals('Бешанковічы', $dto->names[0]);
         $this->assertEquals('Бёшанковічы', $dto->names[1]);
         $this->assertEquals('Бешанковіча', $dto->names[2]);
         $this->assertEquals('Бешанкавічы', $dto->names[3]);
-        $this->assertEquals('Бяшанковічы', $dto->names[4]);
-        $this->assertEquals('Бетанковічы', $dto->names[5]);
-        $this->assertEquals('Бешанковячы', $dto->names[6]);
+        $this->assertEquals('Бешонковічы', $dto->names[4]);
+        $this->assertEquals('Бяшанковічы', $dto->names[5]);
+        $this->assertEquals('Бетанковічы', $dto->names[6]);
+        $this->assertEquals('Бешанковячы', $dto->names[7]);
     }
 
     public function testGetGeoPointLetterIa(): void
@@ -334,10 +351,11 @@ class SearchDtoTest extends TestCase
         $this->assertNull($dto->district);
         $this->assertCount(1, $dto->prefixes);
         $this->assertEquals(GeoPointType::BE_URBAN_SETTLEMENT, $dto->prefixes[0]);
-        $this->assertCount(3, $dto->names);
+        $this->assertCount(4, $dto->names);
         $this->assertEquals('Падсвілля', $dto->names[0]);
         $this->assertEquals('Падсвілле', $dto->names[1]);
-        $this->assertEquals('Падсвялля', $dto->names[2]);
+        $this->assertEquals('Подсвілля', $dto->names[2]);
+        $this->assertEquals('Падсвялля', $dto->names[3]);
     }
 
     public function testGetGeoPointSearchMinsk(): void
@@ -360,10 +378,11 @@ class SearchDtoTest extends TestCase
         $this->assertNull($dto->region);
         $this->assertNull($dto->district);
         $this->assertEquals(GeoPointType::BE_VILLAGE_LONGS, $dto->prefixes);
-        $this->assertCount(3, $dto->names);
+        $this->assertCount(4, $dto->names);
         $this->assertEquals('Радуцічы', $dto->names[0]);
         $this->assertEquals('Радуціча', $dto->names[1]);
-        $this->assertEquals('Радуцячы', $dto->names[2]);
+        $this->assertEquals('Родуцічы', $dto->names[2]);
+        $this->assertEquals('Радуцячы', $dto->names[3]);
     }
 
     public function testGetGeoPointSearchBabrujsk(): void
@@ -374,8 +393,9 @@ class SearchDtoTest extends TestCase
         $this->assertEquals('Бабруйскі раён', $dto->district);
         $this->assertCount(1, $dto->prefixes);
         $this->assertEquals(GeoPointType::BE_TOWN, $dto->prefixes[0]);
-        $this->assertCount(1, $dto->names);
+        $this->assertCount(2, $dto->names);
         $this->assertEquals('Бабруйск', $dto->names[0]);
+        $this->assertEquals('Бобруйск', $dto->names[1]);
     }
 
     public function testGetGeoPointSearchLetterN(): void
@@ -399,10 +419,11 @@ class SearchDtoTest extends TestCase
         $this->assertNull($dto->region);
         $this->assertNull($dto->district);
         $this->assertEquals(GeoPointType::BE_VILLAGE_LONGS, $dto->prefixes);
-        $this->assertCount(3, $dto->names);
+        $this->assertCount(4, $dto->names);
         $this->assertEquals('Песчанка', $dto->names[0]);
         $this->assertEquals('Пёсчанка', $dto->names[1]);
-        $this->assertEquals('Пясчанка', $dto->names[2]);
+        $this->assertEquals('Песчонка', $dto->names[2]);
+        $this->assertEquals('Пясчанка', $dto->names[3]);
     }
 
     public function testGetGeoPointSearchLetterAccent(): void
@@ -412,7 +433,8 @@ class SearchDtoTest extends TestCase
         $this->assertNull($dto->region);
         $this->assertEquals('Аршанскі раён', $dto->district);
         $this->assertEquals(GeoPointType::BE_VILLAGE_LONGS, $dto->prefixes);
-        $this->assertCount(1, $dto->names);
+        $this->assertCount(2, $dto->names);
         $this->assertEquals('Юрцава', $dto->names[0]);
+        $this->assertEquals('Юрцова', $dto->names[1]);
     }
 }

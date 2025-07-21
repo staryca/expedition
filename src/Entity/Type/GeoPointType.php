@@ -23,6 +23,7 @@ class GeoPointType
 
     public const BE_AGRO_CITY_SHORT = 'аг';
     public const BE_VILLAGE_SHORT = 'в';
+    public const BE_OLD_VILLAGE_SHORT = 'в';
     public const BE_TOWN_SHORT = 'г';
     public const BE_SETTLEMENT_SHORT = 'п';
     public const BE_URBAN_SETTLEMENT_SHORT = 'гп';
@@ -67,6 +68,10 @@ class GeoPointType
 
         $beShort = array_search($longName, self::BE_SHORT_LONG, true);
         if (false === $beShort) {
+            if (self::BE_OLD_VILLAGE === $longName) {
+                return self::BE_OLD_VILLAGE_SHORT . '.';
+            }
+
             return mb_substr($longName, 0, 1) . '.';
         }
 

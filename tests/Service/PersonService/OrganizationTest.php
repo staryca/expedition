@@ -80,6 +80,33 @@ class OrganizationTest extends TestCase
         $this->assertCount(0, $organization->informants[0]->locations);
     }
 
+    public function testParseOrganizationOnlyName(): void
+    {
+        $organization = new OrganizationDto();
+        $organization->name = 'Група дзяўчат - удзельнікі мастацкай самадзейнасці';
+
+        $this->personService->parseOrganization($organization);
+        $this->assertEquals('Група дзяўчат - удзельнікі мастацкай самадзейнасці', $organization->name);
+        $this->assertEquals('', $organization->informantText);
+        $this->assertCount(0, $organization->informants);
+    }
+
+    public function testParseOrganizationOnlyOnePerson(): void
+    {
+        $organization = new OrganizationDto();
+        $organization->name = 'загадчыца Плянтаўскага сельскага клуба Валянціна Кураша Мікалаеўна';
+
+        $this->personService->parseOrganization($organization);
+        $this->assertEquals('', $organization->name);
+        $this->assertEquals('', $organization->informantText);
+
+        $this->assertCount(1, $organization->informants);
+        $this->assertEquals('Кураша Валянціна Мікалаеўна', $organization->informants[0]->name);
+        $this->assertEquals('загадчыца Плянтаўскага сельскага клуба', $organization->informants[0]->notes);
+        $this->assertNull($organization->informants[0]->birth);
+        $this->assertCount(0, $organization->informants[0]->locations);
+    }
+
     public function testParseOrganizationWithEnter(): void
     {
         $organization = new OrganizationDto();

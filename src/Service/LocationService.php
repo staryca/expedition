@@ -66,10 +66,10 @@ class LocationService
         $district = null;
         $subDistrict = null;
         $region = null;
+        $places = [];
         if (1 === count($parts)) {
-            $place = $fullPlace;
+            $places[] = $fullPlace;
         } else {
-            $place = '';
             foreach ($parts as $part) {
                 if ('' === trim($part)) {
                     continue;
@@ -83,11 +83,32 @@ class LocationService
                     $region = str_replace('кай', 'кая', trim($part));
                 } elseif (str_contains($part, 'Беларусь')) {
                     continue;
-                } elseif (empty($place)) {
+                } else {
                     $place = trim($part, " `\t\n\r\0\x0B");
+                    if (!empty($place)) {
+                        $places[] = $place;
+                    }
                 }
             }
         }
+
+        $hasLocation = false;
+        if (count($places) > 1) {
+            foreach ($places as $key => $place) {
+                if (!self::isLocation($place) || ($hasLocation && mb_substr($place, -3) === 'цкі')) {
+                    unset($places[$key]); // skip notes after locations
+                } else {
+                    $hasLocation = true;
+                }
+            }
+        }
+        if (count($places) !== 1) {
+            $dto = new GeoPointSearchDto();
+            $dto->limit = 0;
+
+            return $dto;
+        }
+        $place = current($places);
 
         if (null === $district) {
             $pos = mb_strpos($place, self::DISTRICT);
@@ -141,6 +162,15 @@ class LocationService
             );
             if (isset(GeoPointSearchDto::DISTINCTS[$district])) {
                 $district = GeoPointSearchDto::DISTINCTS[$district];
+            } elseif (str_contains($district, '.')) {
+                $search = str_replace('.', ')[^.]+(', '/(' . $district . ')/');
+                foreach (GeoPointSearchDto::DISTINCTS as $old => $new) {
+                    preg_match($search, $old, $matches);
+                    if (!empty($matches)) {
+                        $district = $new;
+                        break;
+                    }
+                }
             }
             if (str_contains($place, $district)) {
                 $district = null;
@@ -205,7 +235,7 @@ class LocationService
             }
             $dto->names[] = $village;
             $pos = mb_strpos($village, 'е');
-            while ($pos !== false && mb_substr($village, $pos + 1, 1) !== ' ' && $pos < mb_strlen($village) - 1) {
+            while ($pos !== false && mb_substr($village, $pos + 1, 1) !== ' ' && $pos <= mb_strlen($village)) {
                 $dto->names[] = mb_substr($village, 0, $pos) . 'ё' . mb_substr($village, $pos + 1);
                 $pos = mb_stripos($village, 'е', $pos + 1);
             }
@@ -234,6 +264,9 @@ class LocationService
             if (mb_substr($village, -2) === 'жа') {
                 $dto->names[] = mb_substr($village, 0, -2) . 'жы';
             }
+            if (mb_substr($village, -2) === 'ла') {
+                $dto->names[] = mb_substr($village, 0, -2) . 'лы';
+            }
             if (mb_substr($village, -2) === 'чы') {
                 $dto->names[] = mb_substr($village, 0, -2) . 'ча';
             }
@@ -248,6 +281,10 @@ class LocationService
             }
             if (($pos = mb_strpos($village, 'о')) > 0) {
                 $dto->names[] = mb_substr($village, 0, $pos) . 'а' . mb_substr($village, $pos + 1);
+            }
+            $pos = mb_strpos($village, 'а');
+            if ($pos > 0 && $pos < mb_strlen($village) - 1) {
+                $dto->names[] = mb_substr($village, 0, $pos) . 'о' . mb_substr($village, $pos + 1);
             }
             if (($pos = mb_strpos($village, 'е')) > 0) {
                 $_variant = mb_substr($village, 0, $pos) . 'я' . mb_substr($village, $pos + 1);

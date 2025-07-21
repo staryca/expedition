@@ -84,7 +84,12 @@
             {% endif %}
 
             <p>
-                <h5>Справаздачы ({{ reports|length }})</h5>
+                <h5>Справаздачы
+                    (
+                        {% if reports|length == constant('App\\Service\\ReportService::MAX_REPORTS_FOR_VIEW') %} больш за {% endif %}
+                        {{ reports|length }}
+                    )
+                </h5>
                 {% if is_granted('ROLE_USER') %}
                     <div>
                         <a href="{{ path('report_new_by_expedition', {id: expedition.id}) }}">

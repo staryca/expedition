@@ -8,6 +8,7 @@ use App\Entity\Expedition;
 use App\Entity\GeoPoint;
 use App\Entity\Report;
 use App\Service\LocationService;
+use App\Service\ReportService;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -28,10 +29,10 @@ class ReportRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('r')
             ->andWhere('r.expedition = :val')
-            ->andWhere('r.temp IS NULL ')
             ->setParameter('val', $expedition)
             ->orderBy('r.dateAction', 'ASC')
             ->addOrderBy('r.geoPoint', 'ASC')
+            ->setMaxResults(ReportService::MAX_REPORTS_FOR_VIEW)
             ->getQuery()
             ->getResult()
         ;
@@ -78,6 +79,20 @@ class ReportRepository extends ServiceEntityRepository
             ->setParameter('maxLat', $geoPoint->getLat() + LocationService::LAT_RANGE_DOWN)
             ->setParameter('minLon', $geoPoint->getLon() - LocationService::LON_RANGE_UP)
             ->setParameter('maxLon', $geoPoint->getLon() + LocationService::LON_RANGE_DOWN)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @return array<Report>
+     */
+    public function findNotDetectedPoints(): array
+    {
+        return $this->createQueryBuilder('r')
+            ->where('r.geoPoint IS NULL')
+            ->andWhere('r.geoNotes <> :empty')
+            ->setParameter('empty', '')
+            ->orderBy('r.geoNotes', 'ASC')
             ->getQuery()
             ->getResult();
     }
