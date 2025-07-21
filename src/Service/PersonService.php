@@ -241,13 +241,19 @@ class PersonService
             }
         }
 
-        if (count($partsName) >= $amount) {
+        if (!$informant && count($partsName) >= $amount) {
             $dto = new NameGenderDto(implode(' ', $partsName));
             $this->fixNameAndGender($dto);
             if (!$hasOnlyTwoNames || $dto->gender !== GenderType::UNKNOWN || ($hasShortNames && empty($partsNote))) {
                 $informant = new InformantDto();
                 $informant->setNameAndGender($dto);
             }
+        }
+        if (!$informant && $birth && count($partsName) > 0 && count($partsName) <= 2) {
+            $dto = new NameGenderDto(implode(' ', $partsName));
+            $this->fixNameAndGender($dto);
+            $informant = new InformantDto();
+            $informant->setNameAndGender($dto);
         }
         if ($informant) {
             $parts = [];
@@ -792,11 +798,15 @@ class PersonService
                 str_contains($note, 'год')
                 || str_contains($note, 'гадоў')
                 || str_contains($note, 'гады')
+                || str_contains($note, 'лет')
                 || (str_contains($note, 'г.') && !str_contains($note, 'г.н'))
             ) {
                 $age = (int) $note;
                 if ($age > $years['min'] && $age < $years['max']) {
                     unset($notes[$key]);
+                    if (isset($notes[$key + 1]) && $notes[$key + 1] === 'н.') {
+                        unset($notes[$key + 1]);
+                    }
                     return $age;
                 }
                 if ($age > $ages['min'] && $age < $ages['max']) {
@@ -810,6 +820,13 @@ class PersonService
                     continue;
                 }
                 $age = (int) $notes[$key - 1];
+                if ($age > $years['min'] && $age < $years['max']) {
+                    unset($notes[$key - 1], $notes[$key]);
+                    if (isset($notes[$key + 1]) && $notes[$key + 1] === 'н.') {
+                        unset($notes[$key + 1]);
+                    }
+                    return $age;
+                }
                 if ($age > $ages['min'] && $age < $ages['max'] && null !== $yearReport) {
                     if ($key >= 2 && $notes[$key - 2] === 'каля') {
                         unset($notes[$key - 2]);

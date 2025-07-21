@@ -38,18 +38,27 @@
                         <a href="{{ path('app_search_index') }}">Індэксацыя справаздач</a>
                     </li>
                 </ul>
-
             </p>
 
             <p>
-            <h3>Архіў Козенкі</h3>
-            <ul class="list-group">
-                <li class="list-group-item">
-                    <a href="{{ path('app_import_video_koz_list') }}">Сьпіс відэа</a>
-                </li>
-            </ul>
-
+                <h3>Архіў Козенкі</h3>
+                <ul class="list-group">
+                    <li class="list-group-item">
+                        <a href="{{ path('app_import_video_koz_list') }}">Сьпіс відэа</a>
+                    </li>
+                </ul>
             </p>
+
+            <p>
+                <h3>Лакацыі</h3>
+                <ul class="list-group">
+                    <li class="list-group-item">
+                        <a href="{{ path('app_import_tools_detect_report_points') }}">Знайсьці пункты для нявызначаных месц справаздач</a>
+                        <a href="{{ path('app_import_tools_detect_informant_points') }}">Знайсьці пункты для нявызначаных месц у інфармантаў</a>
+                    </li>
+                </ul>
+            </p>
+
         </div>
     </div>
 {% endblock %}

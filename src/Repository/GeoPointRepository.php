@@ -40,9 +40,18 @@ class GeoPointRepository extends ServiceEntityRepository
         }
 
         if (null !== $geoPointSearchDto->district) {
-            $exReg = $qb->expr()->orX('gp.district = :district', 'LENGTH(gp.district) = 0');
+            if (str_contains($geoPointSearchDto->district, '.')) {
+                $district = str_replace('.', '%', $geoPointSearchDto->district);
+                $exReg = $qb->expr()->orX(
+                    $qb->expr()->like('gp.district', ':district'),
+                    'LENGTH(gp.district) = 0'
+                );
+            } else {
+                $district = $geoPointSearchDto->district;
+                $exReg = $qb->expr()->orX('gp.district = :district', 'LENGTH(gp.district) = 0');
+            }
             $qb->andWhere($exReg)
-                ->setParameter('district', $geoPointSearchDto->district);
+                ->setParameter('district', $district);
         }
 
         if (null !== $geoPointSearchDto->subDistrict) {

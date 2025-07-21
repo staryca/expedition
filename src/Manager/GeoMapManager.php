@@ -12,6 +12,7 @@ use App\Repository\GeoPointRepository;
 use App\Repository\InformantRepository;
 use App\Repository\ReportRepository;
 use App\Repository\TaskRepository;
+use App\Service\LocationService;
 
 class GeoMapManager
 {
@@ -20,6 +21,7 @@ class GeoMapManager
         private readonly GeoPointRepository $geoPointRepository,
         private readonly ReportRepository $reportRepository,
         private readonly InformantRepository $informantRepository,
+        private readonly LocationService $locationService,
     ) {
     }
     public function getGeoMapDataForExpedition(Expedition $expedition): GeoMapDto
@@ -111,13 +113,18 @@ class GeoMapManager
     {
         $geoMapData = new GeoMapDto();
 
-        $latLonReport = $report->getGeoPoint()?->getLatLonDto();
+        $reportPoint = $report->getGeoPoint();
+        if (!$reportPoint && !empty($report->getGeoPlace())) {
+            $reportPoint = $this->locationService->detectLocationByFullPlace($report->getGeoPlace());
+        }
+
+        $latLonReport = $reportPoint?->getLatLonDto();
         if ($latLonReport) {
             $popup = 'Гэта справаздача за '
                 . ($report->getDateAction() ? $report->getDateAction()?->format('d.m.Y') : '?')
                 . ' (блокаў: ' . $report->getBlocks()->count() . ')';
 
-            $geoMapData->addLatLon($latLonReport, $popup, GeoMapDto::TYPE_REPORT);
+            $geoMapData->addLatLon($latLonReport, $popup, GeoMapDto::TYPE_BASE);
         }
 
         $informantsInTips = [];
@@ -134,8 +141,8 @@ class GeoMapManager
             }
         }
 
-        if ($report->getGeoPoint()) {
-            $tips = $this->taskRepository->findTipsByInformantGeoPoint($report->getGeoPoint());
+        if ($reportPoint) {
+            $tips = $this->taskRepository->findTipsByInformantGeoPoint($reportPoint);
             foreach ($tips as $tip) {
                 if (!$report->getTasks()->contains($tip)) {
                     $latLon = $tip->getInformant()?->getGeoPointCurrent()?->getLatLonDto();
@@ -149,7 +156,7 @@ class GeoMapManager
                 }
             }
 
-            $informants = $this->informantRepository->findNearCurrentGeoPoint($report->getGeoPoint());
+            $informants = $this->informantRepository->findNearCurrentGeoPoint($reportPoint);
             $groupedInformants = [];
             foreach ($informants as $informant) {
                 if (!in_array($informant->getId(), $informantsInTips, true)) {
@@ -169,7 +176,7 @@ class GeoMapManager
                 $geoMapData->addLatLon($latLon, $popup, GeoMapDto::TYPE_COMMENT);
             }
 
-            foreach ($this->reportRepository->findNearGeoPoint($report->getGeoPoint()) as $otherReport) {
+            foreach ($this->reportRepository->findNearGeoPoint($reportPoint) as $otherReport) {
                 $latLon = $otherReport->getLatLon();
                 if ($latLon && $report->getId() !== $otherReport->getId()) {
                     $popup = (

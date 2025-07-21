@@ -8,6 +8,8 @@ use App\Entity\Additional\Musician;
 use App\Entity\Type\GenderType;
 use App\Handler\GeoPointHandler;
 use App\Repository\InformantRepository;
+use App\Repository\ReportRepository;
+use App\Service\LocationService;
 use App\Service\PersonService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -18,8 +20,10 @@ class ToolsController extends AbstractController
 {
     public function __construct(
         private readonly InformantRepository $informantRepository,
+        private readonly ReportRepository $reportRepository,
         private readonly GeoPointHandler $geoPointHandler,
         private readonly PersonService $personService,
+        private readonly LocationService $locationService,
         private readonly EntityManagerInterface $entityManager,
     ) {
     }
@@ -196,12 +200,100 @@ class ToolsController extends AbstractController
     }
 
     #[Route('/import/tools/update_geo', name: 'app_import_tools_update_geo')]
-    public function updateGeoPoints(): Response
+    public function updateGeoTablePoints(): Response
     {
         $data = $this->geoPointHandler->setRegionsAndDistricts();
 
         return $this->render('import/show.table.result.html.twig', [
             'headers' => ['Id', 'Месца', 'Тып', 'К.', 'Рэгіёны', 'Раёны', 'Тыпы', 'Новае', '!'],
+            'data' => $data,
+        ]);
+    }
+
+    #[Route('/import/tools/detect_report_points', name: 'app_import_tools_detect_report_points')]
+    public function detectReportPoints(): Response
+    {
+        $data = [];
+        $reports = $this->reportRepository->findNotDetectedPoints();
+        foreach ($reports as $report) {
+            $reportPlace = $report->getGeoPlace();
+            $dto = $this->locationService->getSearchDtoByFullPlace($reportPlace);
+            if (null === $dto->district) {
+                continue;
+            }
+            $reportPoint = $this->locationService->detectLocationByFullPlace($report->getGeoPlace());
+
+            $item = [
+                'id' => $report->getId(),
+                'was' => $reportPlace,
+                'now' => $reportPoint?->getFullBeName(true),
+            ];
+
+            if ($reportPoint !== null) {
+                $report->setGeoPoint($reportPoint);
+                array_unshift($data, $item);
+            } else {
+                $data[] = $item;
+            }
+        }
+
+        $this->entityManager->flush();
+
+        return $this->render('import/show.table.result.html.twig', [
+            'headers' => ['Справаздача', 'Лакацыя', 'Знойдзена'],
+            'data' => $data,
+        ]);
+    }
+
+    #[Route('/import/tools/detect_informant_points', name: 'app_import_tools_detect_informant_points')]
+    public function detectInformantPoints(): Response
+    {
+        $data = [];
+        $informants = $this->informantRepository->findNotDetectedPoints();
+        foreach ($informants as $informant) {
+            $place = $informant->getPlaceBirth();
+            $dto = $this->locationService->getSearchDtoByFullPlace((string) $place);
+            if (!empty($place) && $dto->district !== null && !$informant->getGeoPointBirth()) {
+                $point = $this->locationService->detectLocationByFullPlace($place);
+
+                $item = [
+                    'id' => $informant->getFirstName(),
+                    'was' => $place,
+                    'now' => $point?->getFullBeName(true),
+                ];
+
+                if ($point !== null) {
+                    $informant->setGeoPointBirth($point);
+                    array_unshift($data, $item);
+                } else {
+                    $data[] = $item;
+                }
+            }
+
+            $place = $informant->getPlaceCurrent();
+            $dto = $this->locationService->getSearchDtoByFullPlace((string) $place);
+            if (!empty($place) && $dto->district !== null && !$informant->getGeoPointCurrent()) {
+                $point = $this->locationService->detectLocationByFullPlace($place);
+
+                $item = [
+                    'id' => $informant->getFirstName(),
+                    'was' => $place,
+                    'now' => $point?->getFullBeName(true),
+                ];
+
+                if ($point !== null) {
+                    $informant->setGeoPointCurrent($point);
+                    array_unshift($data, $item);
+                } else {
+                    $data[] = $item;
+                }
+            }
+        }
+
+        $this->entityManager->flush();
+
+        return $this->render('import/show.table.result.html.twig', [
+            'headers' => ['Інфармант', 'Лакацыя', 'Знойдзена'],
             'data' => $data,
         ]);
     }
