@@ -16,7 +16,7 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class ImportKoboController extends AbstractController
 {
-    private const EXPEDITION_ID = 350;
+    private const EXPEDITION_ID = 355;
 
     public function __construct(
         private readonly KoboParser $parser,
@@ -51,28 +51,25 @@ class ImportKoboController extends AbstractController
         $data['no_users'] = [];
         $data['report_users_errors'] = [];
         $data['report_block_no_additional'] = [];
-        $data['report_block_no_type'] = [];
-        $data['users_not_found'] = [];
+        $data['warn_report_block_no_type'] = [];
+        $data['error_users_not_found'] = [];
         foreach ($reports as $report) {
             if ($report->place !== null) {
                 $data['not_detected_locations'][] = $report->place;
             }
             if (!empty($report->users)) {
                 foreach ($report->users as $user) {
-                    $data['users_not_found'][] = $user->name;
+                    $data['error_users_not_found'][] = $user->name;
                 }
             }
             if ([] === $report->userRoles) {
                 $data['no_users'][] = $report->geoPoint?->getName() . ': ' . $report->dateAction->format('d.m.Y');
             }
-            if ([] !== $report->users) {
-                $data['report_users_errors'][] = $report;
-            }
             if ([] === $report->blocks[0]->additional) {
                 $data['report_block_no_additional'][] = $report->geoPoint?->getName() . ': ' . $report->dateAction->format('d.m.Y');
             }
             if (ReportBlockType::TYPE_UNDEFINED === $report->blocks[0]->type) {
-                $data['report_block_no_type'][] =
+                $data['warn_report_block_no_type'][] =
                     $report->geoPoint?->getName() . ': ' . $report->dateAction->format('d.m.Y')
                     . ', code: ' . $report->blocks[0]->code;
             }
