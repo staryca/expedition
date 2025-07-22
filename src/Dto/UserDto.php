@@ -9,6 +9,7 @@ class UserDto
     public string $name = '';
     /** @var array<string> $roles */
     public array $roles = [];
+    public ?bool $found = null;
 
     public function __construct(string $name)
     {

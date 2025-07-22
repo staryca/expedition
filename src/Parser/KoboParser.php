@@ -9,6 +9,7 @@ use App\Dto\InformantDto;
 use App\Dto\OrganizationDto;
 use App\Dto\ReportBlockDataDto;
 use App\Dto\ReportDataDto;
+use App\Dto\UserDto;
 use App\Dto\UserRolesDto;
 use App\Parser\Columns\KoboInformantColumns;
 use App\Parser\Columns\KoboOrganizationColumns;
@@ -100,17 +101,17 @@ class KoboParser
                 $reportDto->place = null;
             }
 
-            foreach ($reportDto->users as $userDto) {
+            foreach ($reportDto->users as $key => $userDto) {
                 $user = $this->userService->findByFullName($userDto->name);
                 if (null !== $user) {
                     $userRole = new UserRolesDto();
                     $userRole->user = $user;
                     $userRole->roles = $userDto->roles;
                     $reportDto->userRoles[] = $userRole;
+                    unset($reportDto->users[$key]);
+                } else {
+                    $userDto->found = false;
                 }
-            }
-            if (count($reportDto->userRoles) === count($reportDto->users)) {
-                $reportDto->users = [];
             }
 
             $reportBlockDto = ReportBlockDataDto::fromKobo($record);
