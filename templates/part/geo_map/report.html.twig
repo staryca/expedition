@@ -1,0 +1,20 @@
+{% if isThis is defined and isThis %}
+    Гэта справаздача
+{% else %}
+    <a href="{{ path('report_show', {id: report.id}) }}">
+        {% if expedition is defined and expedition.id == report.expedition.id %}
+            Справаздача
+        {% else %}
+            Іншая справаздача
+        {% endif %}
+        за {% if report.getDateAction() %}{{ report.getTextDateAction() }}{% else %} ? {% endif %}
+    </a>
+{% endif %}
+
+(блокаў: {{ report.blocks|length }}
+
+{% set folder = report.getTempValue('folder') %}
+{% if folder is not empty %}
+    <a href="{{ imef_url }}{{ folder }}">Крыніца</a>
+{% endif %}
+)

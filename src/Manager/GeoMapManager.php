@@ -13,6 +13,7 @@ use App\Repository\InformantRepository;
 use App\Repository\ReportRepository;
 use App\Repository\TaskRepository;
 use App\Service\LocationService;
+use Twig\Environment;
 
 class GeoMapManager
 {
@@ -22,8 +23,10 @@ class GeoMapManager
         private readonly ReportRepository $reportRepository,
         private readonly InformantRepository $informantRepository,
         private readonly LocationService $locationService,
+        private readonly Environment $twig,
     ) {
     }
+
     public function getGeoMapDataForExpedition(Expedition $expedition): GeoMapDto
     {
         $geoMapData = new GeoMapDto();
@@ -38,9 +41,10 @@ class GeoMapManager
         foreach ($expedition->getReports() as $report) {
             $latLon = $report->getLatLon();
             if ($latLon) {
-                $popup = 'Справаздача за '
-                    . ($report->getDateAction() ? $report->getTextDateAction() : '?')
-                    . ' (блокаў: ' . $report->getBlocks()->count() . ')';
+                $popup = $this->twig->render(
+                    'part/geo_map/report.html.twig',
+                    ['report' => $report, 'expedition' => $expedition]
+                );
                 $geoMapData->addLatLon($latLon, $popup, GeoMapDto::TYPE_REPORT);
             }
         }
@@ -50,7 +54,7 @@ class GeoMapManager
             $tips = $this->taskRepository->findTipsByInformantGeoPoint($expedition->getGeoPoint());
             foreach ($tips as $tip) {
                 $latLon = $tip->getInformant()?->getGeoPointCurrent()?->getLatLonDto();
-                $popup = 'Наводка: ' . $tip->getInformant()?->getFirstName() . ' (' . $tip->getContent() . ')';
+                $popup = $this->twig->render('part/geo_map/tip.html.twig', ['tip' => $tip]);
 
                 $geoMapData->addLatLon($latLon, $popup, GeoMapDto::TYPE_TIP);
 
@@ -95,9 +99,10 @@ class GeoMapManager
             foreach ($this->reportRepository->findNearGeoPoint($expedition->getGeoPoint()) as $otherReport) {
                 $latLon = $otherReport->getLatLon();
                 if ($latLon && $expedition->getId() !== $otherReport->getExpedition()?->getId()) {
-                    $popup = 'Іншая справаздача за '
-                        . ($otherReport->getDateAction() ? $otherReport->getDateAction()?->format('d.m.Y') : '?')
-                        . ' (блокаў: ' . $otherReport->getBlocks()->count() . ')';
+                    $popup = $this->twig->render(
+                        'part/geo_map/report.html.twig',
+                        ['report' => $otherReport, 'expedition' => $expedition]
+                    );
                     $geoMapData->addLatLon($latLon, $popup, $isPreview ? GeoMapDto::TYPE_COMPLEX : GeoMapDto::TYPE_COMMENT);
                 }
             }
@@ -120,10 +125,10 @@ class GeoMapManager
 
         $latLonReport = $reportPoint?->getLatLonDto();
         if ($latLonReport) {
-            $popup = 'Гэта справаздача за '
-                . ($report->getDateAction() ? $report->getDateAction()?->format('d.m.Y') : '?')
-                . ' (блокаў: ' . $report->getBlocks()->count() . ')';
-
+            $popup = $this->twig->render(
+                'part/geo_map/report.html.twig',
+                ['report' => $report, 'expedition' => $report->getExpedition(), 'isThis' => true]
+            );
             $geoMapData->addLatLon($latLonReport, $popup, GeoMapDto::TYPE_BASE);
         }
 
@@ -146,7 +151,7 @@ class GeoMapManager
             foreach ($tips as $tip) {
                 if (!$report->getTasks()->contains($tip)) {
                     $latLon = $tip->getInformant()?->getGeoPointCurrent()?->getLatLonDto();
-                    $popup = 'Наводка: ' . $tip->getInformant()?->getFirstName() . ' (' . $tip->getContent() . ')';
+                    $popup = $this->twig->render('part/geo_map/tip.html.twig', ['tip' => $tip]);
 
                     $geoMapData->addLatLon($latLon, $popup, GeoMapDto::TYPE_TIP);
 
@@ -179,13 +184,10 @@ class GeoMapManager
             foreach ($this->reportRepository->findNearGeoPoint($reportPoint) as $otherReport) {
                 $latLon = $otherReport->getLatLon();
                 if ($latLon && $report->getId() !== $otherReport->getId()) {
-                    $popup = (
-                            $report->getExpedition()?->getId() === $otherReport->getExpedition()?->getId()
-                            ? 'Справаздача'
-                            : 'Іншая справаздача'
-                        ) . ' за '
-                        . ($otherReport->getDateAction() ? $otherReport->getDateAction()?->format('d.m.Y') : '?')
-                        . ' (блокаў: ' . $otherReport->getBlocks()->count() . ')';
+                    $popup = $this->twig->render(
+                        'part/geo_map/report.html.twig',
+                        ['report' => $otherReport, 'expedition' => $report->getExpedition()]
+                    );
                     $type = $report->getExpedition()?->getId() === $otherReport->getExpedition()?->getId()
                         ? GeoMapDto::TYPE_REPORT
                         : GeoMapDto::TYPE_COMMENT;
