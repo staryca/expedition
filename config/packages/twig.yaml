@@ -1,5 +1,7 @@
 twig:
     file_name_pattern: '*.twig'
+    globals:
+        imef_url: '%imef_url%'
 
 when@test:
     twig:

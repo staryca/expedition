@@ -119,12 +119,12 @@ class Report
         return $this;
     }
 
-    public function getExpedition(): ?Expedition
+    public function getExpedition(): Expedition
     {
         return $this->expedition;
     }
 
-    public function setExpedition(?Expedition $expedition): static
+    public function setExpedition(Expedition $expedition): static
     {
         $this->expedition = $expedition;
 

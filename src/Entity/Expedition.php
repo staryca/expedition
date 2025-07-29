@@ -142,12 +142,7 @@ class Expedition
 
     public function removeReport(Report $report): static
     {
-        if ($this->reports->removeElement($report)) {
-            // set the owning side to null (unless already changed)
-            if ($report->getExpedition() === $this) {
-                $report->setExpedition(null);
-            }
-        }
+        $this->reports->removeElement($report);
 
         return $this;
     }
