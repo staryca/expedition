@@ -108,7 +108,16 @@ class VopisDetailedParser
                     if (strlen($date) === 4) {
                         $marker->dateAction = Carbon::createFromDate($date, 1, 1); // 01/01 as unknown
                     } else {
-                        $marker->dateAction = Carbon::createFromFormat('d.m.Y', $date);
+                        try {
+                            $marker->dateAction = Carbon::createFromFormat('d.m.Y', $date);
+                        } catch (\Exception $e) {
+                            throw new \Exception(sprintf(
+                                'Bad date "%s", row #%d: %s',
+                                $date,
+                                $key,
+                                $content
+                            ));
+                        }
                     }
                 }
 

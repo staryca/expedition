@@ -6,6 +6,7 @@ namespace App\Controller;
 
 use App\Entity\Expedition;
 use App\Entity\Type\CategoryType;
+use App\Handler\ExpeditionHandler;
 use App\Manager\GeoMapManager;
 use App\Repository\ExpeditionRepository;
 use App\Repository\FileMarkerRepository;
@@ -19,6 +20,7 @@ class ExpeditionController extends AbstractController
     public function __construct(
         private readonly ExpeditionRepository $expeditionRepository,
         private readonly ReportRepository $reportRepository,
+        private readonly ExpeditionHandler $expeditionHandler,
         private readonly GeoMapManager $geoMapManager,
         private readonly FileMarkerRepository $fileMarkerRepository,
     ) {
@@ -55,6 +57,26 @@ class ExpeditionController extends AbstractController
             'geoMapData' => $geoMapData,
             'statistics' => $statistics,
             'categories' => CategoryType::TYPES,
+        ]);
+    }
+
+    #[Route('/expedition/{id}/tips', name: 'expedition_all_tips', methods: ['GET'])]
+    public function tips(int $id): Response
+    {
+        /** @var Expedition|null $expedition */
+        $expedition = $this->expeditionRepository->find($id);
+        if (!$expedition) {
+            throw $this->createNotFoundException('The expedition does not exist');
+        }
+
+        $tips = $this->expeditionHandler->getTips($expedition);
+
+        $geoMapData = $this->geoMapManager->getGeoMapDataForExpedition($expedition);
+
+        return $this->render('expedition/tips.html.twig', [
+            'expedition' => $expedition,
+            'geoMapData' => $geoMapData,
+            'tips' => $tips,
         ]);
     }
 }

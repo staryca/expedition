@@ -1,4 +1,9 @@
-<a href="{{ path('report_show', {id: tip.report.id}) }}">
+{% if tip.report %}
+    {% set report_id = tip.report.id %}
+{% else %}
+    {% set report_id = tip.reportBlock.report.id %}
+{% endif %}
+<a href="{{ path('report_show', {id: report_id}) }}">
     Наводка: {% if tip.getInformant() %}{{ tip.getInformant().getFirstName() }}{% endif %}
 </a>
 ({{ tip.getContent() }})

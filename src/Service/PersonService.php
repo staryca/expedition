@@ -22,16 +22,19 @@ class PersonService
     private const NUM_MIDDLE = 3;
     private const NUM_FIRST_MIDDLE = 4;
 
-    public function __construct(
-        private readonly TextHelper $textHelper,
-    ) {
-    }
-
     public function parseOrganization(OrganizationDto $dto): void
     {
         $name = trim($dto->name, " ;,\t\n\r\0\x0B");
         $name = TextHelper::replaceLetters($name);
         $name = TextHelper::cleanManySpaces($name);
+
+        $name2 = 'працяг ';
+        while (str_contains($name2, 'працяг ')) {
+            [$name1, $name2] = TextHelper::getNames($name);
+            $name = str_contains($name2, 'працяг ') ? $name1 : $name;
+        }
+        [$name1, $name2] = TextHelper::getNames($name);
+        $name = trim($name1) === '' ? $name2 : $name;
 
         $pos = mb_strpos($name, ':');
         $posBlock = mb_strpos($name, ';');
@@ -46,7 +49,7 @@ class PersonService
                 $textFirst = trim(mb_substr($text, 0, $posSpace));
                 $word = mb_substr($text, $posSpace + 1);
 
-                $informantsFirst = $this->getInformants($textFirst);
+                $informantsFirst = $this->getInformants($textFirst, '', null, $dto->dateAdded?->year);
                 if (count($informantsFirst) > 1) {
                     $dto->informants = array_merge(
                         $informantsFirst,
@@ -68,17 +71,30 @@ class PersonService
                 );
                 $dto->informants[] = $informant;
             } else {
-                $dto->informants = $this->getInformants($persons);
+                $dto->informants = $this->getInformants($persons, '', null, $dto->dateAdded?->year);
             }
-        } elseif (str_contains($name, 'г.н.')) {
-            $dto->informants = $this->getInformants($name);
-            $text = '';
         } else {
-            $text = $name;
+            $informants = $this->getInformants($name, '', null, $dto->dateAdded?->year);
+            if (
+                count($informants) > 1
+                || (
+                    isset($informants[0])
+                    && (
+                        null !== $informants[0]->birth
+                        || $informants[0]->birthDay
+                        || str_contains($informants[0]->name, 'невядомы')
+                    )
+                )
+            ) {
+                $dto->informants = $informants;
+                $text = '';
+            } else {
+                $text = $name;
+            }
         }
 
         // Parse the name
-        $informant = $this->getPersonByFullName($text);
+        $informant = $this->getPersonByFullName($text, $dto->dateAdded?->year, true);
         if (null !== $informant) {
             $parts = explode(',', $text);
             $name = '';

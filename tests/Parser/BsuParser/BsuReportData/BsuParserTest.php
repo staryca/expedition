@@ -6,7 +6,6 @@ namespace App\Tests\Parser\BsuParser\BsuReportData;
 
 use App\Dto\InformantDto;
 use App\Entity\GeoPoint;
-use App\Helper\TextHelper;
 use App\Parser\BsuParser;
 use App\Repository\GeoPointRepository;
 use App\Service\LocationService;
@@ -25,9 +24,8 @@ class BsuParserTest extends TestCase
 
         $this->geoPointRepository = $this->createMock(GeoPointRepository::class);
 
-        $textHelper = new TextHelper();
         $locationService = new LocationService($this->geoPointRepository);
-        $personService = new PersonService($textHelper);
+        $personService = new PersonService();
         $this->bsuParser = new BsuParser($locationService, $personService);
     }
 

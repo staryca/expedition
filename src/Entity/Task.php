@@ -108,4 +108,9 @@ class Task
 
         return $this;
     }
+
+    public function getFollowReport(): ?Report
+    {
+        return $this->report ?? $this->reportBlock->getReport();
+    }
 }

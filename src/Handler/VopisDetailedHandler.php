@@ -27,7 +27,7 @@ use League\Csv\InvalidArgument;
 
 class VopisDetailedHandler
 {
-    private const USER_LEADER_ID = 6; // Kozienka
+    private const USER_LEADER_ID = 6; // 6 - Kozienka
 
     public function __construct(
         private readonly VopisDetailedParser $parser,
@@ -169,6 +169,7 @@ class VopisDetailedHandler
                             $organization->name = $marker->informantsText;
                             $organization->geoPoint = $marker->geoPoint;
                             $organization->place = $marker->place;
+                            $organization->dateAdded = $marker->dateAction;
                             $organizations[$keyNames] = $organization;
 
                             $markersForOrgs[$keyNames] = $marker;

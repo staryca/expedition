@@ -8,7 +8,6 @@ use App\Dto\FileMarkerDto;
 use App\Dto\InformantDto;
 use App\Dto\OrganizationDto;
 use App\Handler\VopisDetailedHandler;
-use App\Helper\TextHelper;
 use App\Manager\ReportManager;
 use App\Parser\VopisDetailedParser;
 use App\Repository\ExpeditionRepository;
@@ -31,11 +30,10 @@ class VopisDetailedHandlerTest extends TestCase
 
         $this->geoPointRepository = $this->createMock(GeoPointRepository::class);
 
-        $textHelper = new TextHelper();
         $locationService = new LocationService($this->geoPointRepository);
         /** @var ExpeditionRepository|MockObject $expeditionRepository */
         $expeditionRepository = $this->createMock(ExpeditionRepository::class);
-        $personService = new PersonService($textHelper);
+        $personService = new PersonService();
         /** @var UserRepository|MockObject $userRepository */
         $userRepository = $this->createMock(UserRepository::class);
         /** @var ReportManager|MockObject $reportManager */
