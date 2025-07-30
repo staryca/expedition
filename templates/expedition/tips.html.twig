@@ -1,0 +1,92 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+    {{ expedition.name }}
+{% endblock %}
+
+{% block stylesheets %}
+<style>
+    #map { height: 300px; }
+</style>
+{% endblock %}
+
+{% block styles_finish %}
+    {{ include('part/finish.for.geomapdata.html.twig') }}
+{% endblock %}
+
+{% block body %}
+    <div class="container py-5">
+        <h1 class="h2">Экспедыцыя {{ expedition.name }}</h1>
+        <div class="row">
+            <p class="text-end"><small><a href="{{ path('expedition_show', {id: expedition.id}) }}">Справаздачы</a></small></p>
+            <p>
+                {% if expedition.startDate %}
+                    Даты правядзеньня:
+                        {{ expedition.startDate|format_datetime(pattern: 'dd.MM.Y') }}
+                        - {{ expedition.endDate|format_datetime(pattern: 'dd.MM.Y') }}.
+                {% endif %}
+                {% if expedition.geoPoint %}
+                    База: <b>{{ expedition.geoPoint.getLongBeName() }}</b>
+                    {% if expedition.geoPoint.district %}
+                        ({{ expedition.geoPoint.district }} )
+                    {% endif %}
+                {% endif %}
+            </p>
+
+            {% if geoMapData.center %}
+                <div id="map"></div>
+            {% endif %}
+
+            <p>
+                <h5>Усе задачы/наводкі гэтай экспедыцыі</h5>
+
+                <ul class="list-group">
+                    {% for report in expedition.reports %}
+                        {% for task in report.tasks %}
+                            <li class="list-group-item">
+                                {% if task.getStatusIcon() %}
+                                    <i class="bi {{ task.getStatusIcon() }}"></i>
+                                {% endif %}
+                                {% if task.status == constant('App\\Entity\\Type\\TaskStatus::TIP') %}
+                                    Наводка:
+                                {% endif %}
+
+                                {{ task.content }}
+                                {% if task.informant %}
+                                    Інфармант:
+                                    {% include 'part/informant.full.html.twig'
+                                        with {'informant': task.informant, 'geoPoint': expedition.geoPoint, 'isLink' : false} %}
+                                {% endif %}
+                            </li>
+                        {% endfor %}
+                    {% endfor %}
+                </ul>
+            </p>
+
+            <p>
+                <h5>Іншыя задачы/наводкі</h5>
+
+                <ul class="list-group">
+                    {% for task in tips %}
+                        <li class="list-group-item">
+                            {% if task.getStatusIcon() %}
+                                <i class="bi {{ task.getStatusIcon() }}"></i>
+                            {% endif %}
+                            {% if task.status == constant('App\\Entity\\Type\\TaskStatus::TIP') %}
+                                Наводка:
+                            {% endif %}
+
+                            {{ task.content }}
+                            {% if task.informant %}
+                                Інфармант:
+                                {% include 'part/informant.full.html.twig'
+                                    with {'informant': task.informant, 'geoPoint': expedition.geoPoint, 'isLink' : false} %}
+                            {% endif %}
+                        </li>
+                    {% endfor %}
+                </ul>
+            </p>
+
+        </div>
+    </div>
+{% endblock %}

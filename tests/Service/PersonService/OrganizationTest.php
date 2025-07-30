@@ -6,8 +6,8 @@ namespace App\Tests\Service\PersonService;
 
 use App\Dto\OrganizationDto;
 use App\Entity\Type\GenderType;
-use App\Helper\TextHelper;
 use App\Service\PersonService;
+use Carbon\Carbon;
 use PHPUnit\Framework\TestCase;
 
 class OrganizationTest extends TestCase
@@ -18,19 +18,18 @@ class OrganizationTest extends TestCase
     {
         parent::setUp();
 
-        $textHelper = new TextHelper();
-        $this->personService = new PersonService($textHelper);
+        $this->personService = new PersonService();
     }
 
     public function testParseOrganizationSimple(): void
     {
         $organization = new OrganizationDto();
-        $organization->name = 'сям. Ансабль Гусковы.';
+        $organization->name = 'сямейны ансамбль Гусковы.';
 
         $this->personService->parseOrganization($organization);
         $this->assertCount(0, $organization->informants);
 
-        $this->assertEquals('сям. Ансабль Гусковы', $organization->name);
+        $this->assertEquals('сямейны ансамбль Гусковы', $organization->name);
         $this->assertNull($organization->informantText);
     }
 
@@ -52,6 +51,7 @@ class OrganizationTest extends TestCase
     {
         $organization = new OrganizationDto();
         $organization->name = 'Наташа Башкірава (13 гадоў)';
+        $organization->dateAdded = Carbon::create(2000); // Year of report
 
         $this->personService->parseOrganization($organization);
 
@@ -60,8 +60,9 @@ class OrganizationTest extends TestCase
 
         $this->assertCount(1, $organization->informants);
         $this->assertEquals('Башкірава Наташа', $organization->informants[0]->name);
-        $this->assertEquals('13 гадоў', $organization->informants[0]->notes);
+        $this->assertEquals('', $organization->informants[0]->notes);
         $this->assertEquals(GenderType::FEMALE, $organization->informants[0]->gender);
+        $this->assertEquals(1987, $organization->informants[0]->birth);
     }
 
     public function testParseOrganizationAsPerson(): void
@@ -145,6 +146,82 @@ class OrganizationTest extends TestCase
         $this->assertEquals('кір.', $organization->informants[0]->notes);
 
         $this->assertEquals('фальклорны калектыў', $organization->name);
+        $this->assertNull($organization->informantText);
+    }
+
+    public function testParseOrganizationManyPeoplePointComma(): void
+    {
+        $organization = new OrganizationDto();
+        $organization->name = 'Параска Хведараўна Казак;Яўгіння Радзівонаўна Фясько;М.П.Дрэнь';
+
+        $this->personService->parseOrganization($organization);
+        $this->assertCount(3, $organization->informants);
+        $this->assertEquals('Казак Параска Хведараўна', $organization->informants[0]->name);
+        $this->assertEquals('Фясько Яўгіння Радзівонаўна', $organization->informants[1]->name);
+        $this->assertEquals('Дрэнь М.П.', $organization->informants[2]->name);
+
+        $this->assertEquals('', $organization->name);
+        $this->assertNull($organization->informantText);
+    }
+
+    public function testParseOrganizationManyPeopleComma(): void
+    {
+        $organization = new OrganizationDto();
+        $organization->name = 'Ярашэнка Я.А., Максіменка А.А., Бугач Г.А., Жалязко Т.І., Ярашэнка Я.А., Ярашэнка Е.С., Крыжалінская Н.М., Атаманская Я.А.';
+
+        $this->personService->parseOrganization($organization);
+        $this->assertCount(7, $organization->informants);
+        $this->assertEquals('Ярашэнка Я.А.', $organization->informants[0]->name);
+        $this->assertEquals('Максіменка А.А.', $organization->informants[1]->name);
+        $this->assertEquals('Бугач Г.А.', $organization->informants[2]->name);
+        $this->assertEquals('Жалязко Т.І.', $organization->informants[3]->name);
+        $this->assertEquals('Ярашэнка Е.С.', $organization->informants[4]->name);
+        $this->assertEquals('Крыжалінская Н.М.', $organization->informants[5]->name);
+        $this->assertEquals('Атаманская Я.А.', $organization->informants[6]->name);
+
+        $this->assertEquals('', $organization->name);
+        $this->assertNull($organization->informantText);
+    }
+
+    public function testParseOrganizationOneName(): void
+    {
+        $organization = new OrganizationDto();
+        $organization->name = 'Клімовіч Г.О';
+
+        $this->personService->parseOrganization($organization);
+        $this->assertCount(1, $organization->informants);
+        $this->assertEquals('Клімовіч Г.О.', $organization->informants[0]->name);
+
+        $this->assertEquals('', $organization->name);
+        $this->assertNull($organization->informantText);
+    }
+
+    public function testParseOrganizationOneFullName(): void
+    {
+        $organization = new OrganizationDto();
+        $organization->name = 'Мурач Надзея Аляксандраўна';
+
+        $this->personService->parseOrganization($organization);
+        $this->assertCount(1, $organization->informants);
+        $this->assertEquals('Мурач Надзея Аляксандраўна', $organization->informants[0]->name);
+        $this->assertEquals(GenderType::FEMALE, $organization->informants[0]->gender);
+
+        $this->assertEquals('', $organization->name);
+        $this->assertNull($organization->informantText);
+    }
+
+    public function testParseOrganizationInBrackets(): void
+    {
+        $organization = new OrganizationDto();
+        $organization->name = '[працяг на 20-82-12] [Е. Ясько, М. Гунько,  К. Пачуйка] ';
+
+        $this->personService->parseOrganization($organization);
+        $this->assertCount(3, $organization->informants);
+        $this->assertEquals('Ясько Е.', $organization->informants[0]->name);
+        $this->assertEquals('Гунько М.', $organization->informants[1]->name);
+        $this->assertEquals('Пачуйка К.', $organization->informants[2]->name);
+
+        $this->assertEquals('', $organization->name);
         $this->assertNull($organization->informantText);
     }
 
@@ -322,7 +399,7 @@ class OrganizationTest extends TestCase
         $this->assertTrue($informant->isMusician);
 
         $informant = $organization->informants[1];
-        $this->assertEquals('Мялец Станіслаў Пятровіч [Мелец]', $informant->name);
+        $this->assertEquals('Мялец [Мелец] Станіслаў Пятровіч', $informant->name);
         $this->assertEquals('скрыпка', $informant->notes);
         $this->assertNull($informant->birth);
         $this->assertTrue($informant->isMusician);
