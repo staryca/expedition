@@ -96,7 +96,7 @@ class CategoryType
         self::QUADRILLE => ['кадрыль'],
         self::CHORUSES => ['прыпеўка'],
         self::SONGS => ['песень', 'песьня', 'песьні'],
-        self::STORY => ['аповеды пра', 'аповед пра', 'аповед'],
+        self::STORY => ['аповеды пра', 'аповед пра', 'аповед', 'размова', 'расказ'],
         self::ABOUT_DANCES => [
             'згадваньне пра танцы', 'як танцавалі', 'пра танец', 'каманда ў танцах', 'каманды ў танцах'
         ],
@@ -134,7 +134,7 @@ class CategoryType
             'вялікодная', 'піліпаўская', 'калядная', 'раманс', 'масьленыя', 'вясельныя', 'турэмная', 'рамансы',
             'веснавыя', 'лірычныя', 'на сене', 'провады ў армію', 'лірыка', 'хрэсьбінная',
             'у любы час', 'партызанская', 'карагодная', 'рэкруцкая', 'хрэсьбінская', 'летняя', 'касарская',
-            'траецкая', 'сенакосная',
+            'траецкая', 'сенакосная', 'пазаабрадавая', 'веснавая', 'свадзьбальная', 'жытняя', 'маёвая',
         ],
     ];
 
@@ -210,9 +210,29 @@ class CategoryType
         return $types;
     }
 
+    public static function getManyNames(bool $withSystem = true): array
+    {
+        $types = [];
+        foreach (self::TYPES as $key => $type) {
+            if (!$withSystem && self::isSystemType($key)) {
+                continue;
+            }
+            $types[$key] = self::getManyOrSingleName($key);
+        }
+
+        return $types;
+    }
+
     public static function isTypeNextBlock(int $type): bool
     {
         return in_array($type, [self::ABOUT_RECORD, self::CHANGE_INFORMANTS], true);
+    }
+
+    public static function isSystemType(int $type): bool
+    {
+        return in_array($type, [
+            self::ABOUT_RECORD, self::CHANGE_INFORMANTS, self::ABOUT_INFORMANT, self::ABOUT_OTHER_INFORMANTS
+        ], true);
     }
 
     public static function findId(string $text, string $textNext, bool $isAll = true): ?int

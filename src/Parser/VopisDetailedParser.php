@@ -127,15 +127,13 @@ class VopisDetailedParser
                     $content = trim(mb_substr($content, $pos + 1));
                 }
                 $category = CategoryType::findId($content, '', false);
-                if ($category !== null) {
-                    $marker->category = $category;
-                } else {
-                    $marker->category = CategoryType::findId($notes, '') ?? CategoryType::OTHER;
+                if ($category === null) {
+                    $category = CategoryType::findId($notes, '') ?? CategoryType::OTHER;
+                }
+                $marker->category = $category !== CategoryType::OTHER ? $category : CategoryType::STORY;
+                if (!CategoryType::isSystemType($category)) {
                     $marker->name = $content;
                     $marker->notes = $notes;
-                    if ($marker->category === CategoryType::OTHER) {
-                        $marker->category = CategoryType::STORY;
-                    }
                 }
 
                 $locationText = '';

@@ -60,6 +60,8 @@ class VopisDetailedHandlerTest extends TestCase
         $this->assertCount(1, $subject->files);
         $this->assertEquals('Бок ІІ', $subject->files[0]->name);
         $this->assertCount(8, $subject->files[0]->markers);
+        $this->assertEquals('Хрэсьбінная', $subject->files[0]->markers[6]->name);
+        $this->assertEquals('хрэсьбінная песня', $subject->files[0]->markers[6]->notes);
 
         $subject = $subjects[1];
         $this->assertEquals('Стужка 1971-02', $subject->name);

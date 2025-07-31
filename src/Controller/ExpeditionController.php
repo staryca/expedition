@@ -11,6 +11,7 @@ use App\Manager\GeoMapManager;
 use App\Repository\ExpeditionRepository;
 use App\Repository\FileMarkerRepository;
 use App\Repository\ReportRepository;
+use App\Service\MarkerService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -21,6 +22,7 @@ class ExpeditionController extends AbstractController
         private readonly ExpeditionRepository $expeditionRepository,
         private readonly ReportRepository $reportRepository,
         private readonly ExpeditionHandler $expeditionHandler,
+        private readonly MarkerService $markerService,
         private readonly GeoMapManager $geoMapManager,
         private readonly FileMarkerRepository $fileMarkerRepository,
     ) {
@@ -77,6 +79,29 @@ class ExpeditionController extends AbstractController
             'expedition' => $expedition,
             'geoMapData' => $geoMapData,
             'tips' => $tips,
+        ]);
+    }
+
+    #[Route('/expedition/{id}/report', name: 'expedition_report', methods: ['GET'])]
+    public function report(int $id): Response
+    {
+        ini_set("memory_limit", "2G");
+
+        /** @var Expedition|null $expedition */
+        $expedition = $this->expeditionRepository->find($id);
+        if (!$expedition) {
+            throw $this->createNotFoundException('The expedition does not exist');
+        }
+
+        $markerGroups = $this->markerService->getGroupedMarkersByExpedition($expedition);
+
+        $geoMapData = $this->geoMapManager->getGeoMapDataForExpedition($expedition);
+
+        return $this->render('expedition/report.html.twig', [
+            'expedition' => $expedition,
+            'geoMapData' => $geoMapData,
+            'markerGroups' => $markerGroups,
+            'categories' => CategoryType::getManyNames(false),
         ]);
     }
 }

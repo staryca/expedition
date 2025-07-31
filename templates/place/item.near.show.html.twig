@@ -1,0 +1,35 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+    Інфармацыя вакол {{ geoPoint.getLongBeName() }}
+{% endblock %}
+
+{% block stylesheets %}
+    <style>
+        #map { height: 300px; }
+    </style>
+{% endblock %}
+
+{% block styles_finish %}
+    {{ include('part/finish.for.geomapdata.html.twig') }}
+{% endblock %}
+
+{% block body %}
+    <div class="container-fluid">
+        <h1 class="h2">
+            Інфармацыя вакол
+            {{ geoPoint.getLongBeName() }}{% if geoPoint.district %}, {{ geoPoint.district }}{% endif %}
+        </h1>
+        <p class="text-end d-print-none"><small><a href="{{ path('place_list') }}">Усе лакацыі</a></small></p>
+
+        {% if geoMapData.center %}
+            <div id="map" class="d-print-none"></div>
+        {% endif %}
+
+        <div class="row mb-3">
+            <h5 class="text-success">Уся інфармацыя вакол гэтага населенага пункта</h5>
+            {% include 'part/marker.grouped.html.twig' with {'markerGroups': markerGroups, 'categories': categories} %}
+        </div>
+
+    </div>
+{% endblock %}
