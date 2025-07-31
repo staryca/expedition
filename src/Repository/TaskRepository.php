@@ -39,20 +39,26 @@ class TaskRepository extends ServiceEntityRepository
 
     /**
      * @param GeoPoint $geoPoint
+     * @param float|null $radius
      * @return array<Task>
      */
-    public function findTipsByInformantGeoPoint(GeoPoint $geoPoint): array
+    public function findTipsByInformantGeoPoint(GeoPoint $geoPoint, ?float $radius = null): array
     {
+        $latUp = $radius ?? LocationService::LAT_RANGE_UP;
+        $latDown = $radius ?? LocationService::LAT_RANGE_DOWN;
+        $lonUp = $radius ?? LocationService::LON_RANGE_UP;
+        $lonDown = $radius ?? LocationService::LON_RANGE_DOWN;
+
         return $this->createQueryBuilder('t')
             ->leftJoin('t.informant', 'i')
             ->leftJoin('i.geoPointCurrent', 'gpCurrent')
             ->where('gpCurrent.lat between :minLat and :maxLat')
             ->andWhere('gpCurrent.lon between :minLon and :maxLon')
             ->andWhere('t.status = :status')
-            ->setParameter('minLat', $geoPoint->getLat() - LocationService::LAT_RANGE_UP)
-            ->setParameter('maxLat', $geoPoint->getLat() + LocationService::LAT_RANGE_DOWN)
-            ->setParameter('minLon', $geoPoint->getLon() - LocationService::LON_RANGE_UP)
-            ->setParameter('maxLon', $geoPoint->getLon() + LocationService::LON_RANGE_DOWN)
+            ->setParameter('minLat', $geoPoint->getLat() - $latUp)
+            ->setParameter('maxLat', $geoPoint->getLat() + $latDown)
+            ->setParameter('minLon', $geoPoint->getLon() - $lonUp)
+            ->setParameter('maxLon', $geoPoint->getLon() + $lonDown)
             ->setParameter('status', TaskStatus::TIP)
             ->getQuery()
             ->getResult();

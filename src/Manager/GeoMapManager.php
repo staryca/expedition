@@ -6,6 +6,7 @@ namespace App\Manager;
 
 use App\Dto\GeoMapDto;
 use App\Entity\Expedition;
+use App\Entity\GeoPoint;
 use App\Entity\Informant;
 use App\Entity\Report;
 use App\Repository\GeoPointRepository;
@@ -201,6 +202,82 @@ class GeoMapManager
 
         if ($latLonReport) {
             $geoMapData->setCenter($latLonReport);
+        }
+
+        return $geoMapData;
+    }
+
+    public function getGeoMapDataForGeoPoint(GeoPoint $geoPoint): GeoMapDto
+    {
+        $geoMapData = new GeoMapDto();
+
+        $latLonPoint = $geoPoint->getLatLonDto();
+        if ($latLonPoint) {
+            $popup = $geoPoint->getLongBeName();
+            $geoMapData->addLatLon($latLonPoint, $popup, GeoMapDto::TYPE_BASE);
+        }
+
+        foreach ($this->reportRepository->findNearGeoPoint($geoPoint, LocationService::POINT_NEAR) as $report) {
+            $latLon = $report->getLatLon();
+            if ($latLon) {
+                $popup = $this->twig->render(
+                    'part/geo_map/report.html.twig',
+                    ['report' => $report]
+                );
+                $geoMapData->addLatLon($latLon, $popup, GeoMapDto::TYPE_REPORT);
+            }
+        }
+
+        $informantsInTips = [];
+        $tips = $this->taskRepository->findTipsByInformantGeoPoint($geoPoint, LocationService::POINT_NEAR);
+        foreach ($tips as $tip) {
+            $latLon = $tip->getInformant()?->getGeoPointCurrent()?->getLatLonDto();
+            $popup = $this->twig->render('part/geo_map/tip.html.twig', ['tip' => $tip]);
+
+            $geoMapData->addLatLon($latLon, $popup, GeoMapDto::TYPE_TIP);
+
+            if ($tip->getInformant()) {
+                $informantsInTips[] = $tip->getInformant()->getId();
+            }
+        }
+
+        $isPreview = count($geoMapData->points) === 1;
+        if ($isPreview) {
+            $places = $this->geoPointRepository->findNotFarFromPoint($geoPoint, LocationService::POINT_NEAR);
+            foreach ($places as $place) {
+                $latLon = $place->getLatLonDto();
+                $popup = $place->getLongBeName();
+
+                $geoMapData->addLatLon($latLon, $popup, GeoMapDto::TYPE_COMMENT);
+            }
+        }
+
+        $informants = $this->informantRepository->findNearCurrentGeoPoint($geoPoint, LocationService::POINT_NEAR);
+        $groupedInformants = [];
+        foreach ($informants as $informant) {
+            if (!in_array($informant->getId(), $informantsInTips, true)) {
+                $key = $informant->getGeoPointCurrent()?->getId();
+                $groupedInformants[$key][] = $informant;
+            }
+        }
+        /** @var array<int, array<Informant>> $groupedInformants */
+        foreach ($groupedInformants as $informants) {
+            $names = [];
+            foreach ($informants as $informant) {
+                $names[] = $informant->getFirstName();
+            }
+            $latLon = $informants[0]->getGeoPointCurrent()?->getLatLonDto();
+            if ($latLon) {
+                $popup = 'Інфарманты: ' . implode(', ', $names);
+                $geoMapData->addLatLon($latLon, $popup, $isPreview ? GeoMapDto::TYPE_COMPLEX : GeoMapDto::TYPE_COMMENT);
+            }
+        }
+
+        // Group by location
+        $geoMapData->groupByLocation();
+
+        if ($latLonPoint) {
+            $geoMapData->setCenter($latLonPoint);
         }
 
         return $geoMapData;

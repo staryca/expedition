@@ -19,10 +19,11 @@ class LocationService
 
     public const LAT_RANGE_UP = 0.35; // lat - // N
     public const LAT_RANGE_DOWN = 0.35; // lat + // S
-    public const LON_RANGE_UP = 0.7; // lon - // E
-    public const LON_RANGE_DOWN = 0.7; // lon + // W
+    public const LON_RANGE_UP = 0.5; // lon - // E
+    public const LON_RANGE_DOWN = 0.5; // lon + // W
 
     public const POINT_NEIGHBOR = 0.1;
+    public const POINT_NEAR = 0.17;
 
     public function __construct(
         private readonly GeoPointRepository $geoPointRepository,

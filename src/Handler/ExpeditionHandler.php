@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Handler;
 
 use App\Entity\Expedition;
-use App\Entity\Informant;
 use App\Entity\Task;
 use App\Repository\TaskRepository;
 

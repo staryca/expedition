@@ -6,7 +6,6 @@ namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
 use App\Dto\EpisodeDto;
-use App\Entity\Additional\FileMarkerAdditional;
 use App\Entity\Type\CategoryType;
 use App\Repository\FileMarkerRepository;
 use Doctrine\Common\Collections\ArrayCollection;

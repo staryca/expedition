@@ -51,18 +51,24 @@ class InformantRepository extends ServiceEntityRepository
 
     /**
      * @param GeoPoint $geoPoint
+     * @param float|null $radius
      * @return array<Informant>
      */
-    public function findNearCurrentGeoPoint(GeoPoint $geoPoint): array
+    public function findNearCurrentGeoPoint(GeoPoint $geoPoint, ?float $radius = null): array
     {
+        $latUp = $radius ?? LocationService::LAT_RANGE_UP;
+        $latDown = $radius ?? LocationService::LAT_RANGE_DOWN;
+        $lonUp = $radius ?? LocationService::LON_RANGE_UP;
+        $lonDown = $radius ?? LocationService::LON_RANGE_DOWN;
+
         return $this->createQueryBuilder('i')
             ->leftJoin('i.geoPointCurrent', 'gpCurrent')
             ->where('gpCurrent.lat between :minLat and :maxLat')
             ->andWhere('gpCurrent.lon between :minLon and :maxLon')
-            ->setParameter('minLat', $geoPoint->getLat() - LocationService::LAT_RANGE_UP)
-            ->setParameter('maxLat', $geoPoint->getLat() + LocationService::LAT_RANGE_DOWN)
-            ->setParameter('minLon', $geoPoint->getLon() - LocationService::LON_RANGE_UP)
-            ->setParameter('maxLon', $geoPoint->getLon() + LocationService::LON_RANGE_DOWN)
+            ->setParameter('minLat', $geoPoint->getLat() - $latUp)
+            ->setParameter('maxLat', $geoPoint->getLat() + $latDown)
+            ->setParameter('minLon', $geoPoint->getLon() - $lonUp)
+            ->setParameter('maxLon', $geoPoint->getLon() + $lonDown)
             ->getQuery()
             ->getResult();
     }

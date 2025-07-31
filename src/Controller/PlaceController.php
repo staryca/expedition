@@ -6,12 +6,15 @@ namespace App\Controller;
 
 use App\Dto\LocationGroupDto;
 use App\Entity\GeoPoint;
+use App\Entity\Type\CategoryType;
+use App\Manager\GeoMapManager;
 use App\Repository\GeoPointRepository;
 use App\Repository\InformantRepository;
 use App\Repository\OrganizationRepository;
 use App\Repository\ReportRepository;
 use App\Repository\SubjectRepository;
 use App\Repository\TaskRepository;
+use App\Service\MarkerService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -25,6 +28,8 @@ class PlaceController extends AbstractController
         private readonly OrganizationRepository $organizationRepository,
         private readonly SubjectRepository $subjectRepository,
         private readonly TaskRepository $taskRepository,
+        private readonly MarkerService $markerService,
+        private readonly GeoMapManager $geoMapManager,
     ) {
     }
 
@@ -86,6 +91,8 @@ class PlaceController extends AbstractController
 
         $tasks = $this->taskRepository->findByReportGeoPoint($geoPoint);
 
+        $markerGroups = $this->markerService->getGroupedMarkersByGeoPoint($geoPoint);
+
         return $this->render('place/item.show.html.twig', [
             'geoPoint' => $geoPoint,
             'reports' => $reports,
@@ -93,6 +100,30 @@ class PlaceController extends AbstractController
             'organizations' => $organizations,
             'subjects' => $subjects,
             'tasks' => $tasks,
+            'markerGroups' => $markerGroups,
+            'categories' => CategoryType::getManyNames(false),
+        ]);
+    }
+
+
+    #[Route('/place/item/{id}/near', name: 'place_item_near')]
+    public function itemNear(int $id): Response
+    {
+        /** @var GeoPoint|null $geoPoint */
+        $geoPoint = $this->geoPointRepository->find($id);
+        if (!$geoPoint) {
+            throw $this->createNotFoundException('The GeoPoint does not exist');
+        }
+
+        $markerGroups = $this->markerService->getGroupedMarkersNearGeoPoint($geoPoint);
+
+        $geoMapData = $this->geoMapManager->getGeoMapDataForGeoPoint($geoPoint);
+
+        return $this->render('place/item.near.show.html.twig', [
+            'geoPoint' => $geoPoint,
+            'markerGroups' => $markerGroups,
+            'categories' => CategoryType::getManyNames(false),
+            'geoMapData' => $geoMapData,
         ]);
     }
 }

@@ -10,6 +10,7 @@
             Інфармацыя па
             {{ geoPoint.getLongBeName() }}{% if geoPoint.district %}, {{ geoPoint.district }}{% endif %}
         </h1>
+        <p class="text-start"><small><a href="{{ path('place_item_near', {id: geoPoint.id}) }}">Вакол гэтага населенага пункта</a></small></p>
         <p class="text-end"><small><a href="{{ path('place_list') }}">Усе лакацыі</a></small></p>
 
         <div class="row mb-3">
@@ -92,5 +93,11 @@
                 </ul>
             </div>
         {% endif %}
+
+        <div class="row mb-3">
+            <h5 class="text-success">Уся інфармацыя з гэтага населенага пункта</h5>
+            {% include 'part/marker.grouped.html.twig' with {'markerGroups': markerGroups, 'categories': categories} %}
+        </div>
+
     </div>
 {% endblock %}
