@@ -4,18 +4,6 @@
     Інфармацыя вакол {{ geoPoint.getLongBeName() }}
 {% endblock %}
 
-{% block stylesheets %}
-    <style>
-        #map { height: 300px; }
-    </style>
-{% endblock %}
-
-{% block styles_finish %}
-    {% if geoMapData.center is defined %}
-        {{ include('part/finish.for.geomapdata.html.twig') }}
-    {% endif %}
-{% endblock %}
-
 {% block body %}
     <div class="container-fluid">
         <h1 class="h2">
@@ -24,13 +12,9 @@
         </h1>
         <p class="text-end d-print-none"><small><a href="{{ path('place_list') }}">Усе лакацыі</a></small></p>
 
-        {% if geoMapData.center is defined %}
-            <div id="map" class="d-print-none"></div>
-        {% endif %}
-
         <div class="row mb-3">
             <h5 class="text-success">{{ title }}</h5>
-            {% include 'part/marker.grouped.html.twig' with {'markerGroups': markerGroups, 'categories': categories} %}
+            {% include 'part/marker.grouped.print.html.twig' with {'markerGroups': markerGroups, 'categories': categories} %}
         </div>
 
     </div>

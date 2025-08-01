@@ -48,11 +48,12 @@ class FileMarkerRepository extends ServiceEntityRepository
 
     /**
      * @param Expedition $expedition
+     * @param int|null $category
      * @return array<FileMarker>
      */
-    public function getMarkersByExpedition(Expedition $expedition): array
+    public function getMarkersByExpedition(Expedition $expedition, ?int $category = null): array
     {
-        return $this->createQueryBuilder('fm')
+        $qb = $this->createQueryBuilder('fm')
             ->leftJoin('fm.reportBlock', 'rb')
             ->leftJoin('fm.file', 'f')
             ->leftJoin('f.reportBlock', 'rb2')
@@ -60,7 +61,14 @@ class FileMarkerRepository extends ServiceEntityRepository
             ->leftJoin('rb2.report', 'r2')
             ->where('r.expedition = :expedition')
             ->orWhere('r2.expedition = :expedition')
-            ->setParameter('expedition', $expedition)
+            ->setParameter('expedition', $expedition);
+
+        if ($category) {
+            $qb->andWhere('fm.category = :category')
+                ->setParameter('category', $category);
+        }
+
+        return $qb
             ->getQuery()
             ->getResult();
     }
@@ -85,11 +93,16 @@ class FileMarkerRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-    public function getMarkersNearGeoPoint(LatLonDto $dto): array
+    /**
+     * @param LatLonDto $dto
+     * @param int|null $category
+     * @return array<FileMarker>
+     */
+    public function getMarkersNearGeoPoint(LatLonDto $dto, ?int $category = null): array
     {
         $qb = $this->createQueryBuilder('fm');
 
-        return $qb
+        $qb
             ->leftJoin('fm.reportBlock', 'rb')
             ->leftJoin('fm.file', 'f')
             ->leftJoin('f.reportBlock', 'rb2')
@@ -114,6 +127,14 @@ class FileMarkerRepository extends ServiceEntityRepository
             ->setParameter('minLon', $dto->lon - LocationService::POINT_NEAR)
             ->setParameter('maxLon', $dto->lon + LocationService::POINT_NEAR)
             ->orderBy('fm.category', 'ASC')
+            ->addOrderBy('fm.name', 'ASC');
+
+        if ($category) {
+            $qb->andWhere('fm.category = :category')
+                ->setParameter('category', $category);
+        }
+
+        return $qb
             ->getQuery()
             ->getResult();
     }
