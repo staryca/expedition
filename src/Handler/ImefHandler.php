@@ -23,7 +23,7 @@ use Doctrine\DBAL\Exception;
 
 class ImefHandler
 {
-    private const EXPEDITION_ID = 5; // 10
+    private const EXPEDITION_ID = 10; // 10
 
     public function __construct(
         private readonly ImefParser $parser,

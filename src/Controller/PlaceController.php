@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Dto\LocationGroupDto;
+use App\Entity\FileMarker;
 use App\Entity\GeoPoint;
 use App\Entity\Type\CategoryType;
 use App\Manager\GeoMapManager;
+use App\Repository\FileMarkerRepository;
 use App\Repository\GeoPointRepository;
 use App\Repository\InformantRepository;
 use App\Repository\OrganizationRepository;
@@ -26,6 +28,7 @@ class PlaceController extends AbstractController
         private readonly GeoPointRepository $geoPointRepository,
         private readonly InformantRepository $informantRepository,
         private readonly OrganizationRepository $organizationRepository,
+        private readonly FileMarkerRepository $fileMarkerRepository,
         private readonly SubjectRepository $subjectRepository,
         private readonly TaskRepository $taskRepository,
         private readonly MarkerService $markerService,
@@ -105,7 +108,6 @@ class PlaceController extends AbstractController
         ]);
     }
 
-
     #[Route('/place/item/{id}/near', name: 'place_item_near')]
     public function itemNear(int $id): Response
     {
@@ -120,9 +122,52 @@ class PlaceController extends AbstractController
         $geoMapData = $this->geoMapManager->getGeoMapDataForGeoPoint($geoPoint);
 
         return $this->render('place/item.near.show.html.twig', [
+            'title' => 'Уся інфармацыя вакол гэтага населенага пункта',
             'geoPoint' => $geoPoint,
             'markerGroups' => $markerGroups,
             'categories' => CategoryType::getManyNames(false),
+            'geoMapData' => $geoMapData,
+        ]);
+    }
+
+    #[Route('/place/item/{id}/near/songs', name: 'place_item_near_songs')]
+    public function itemNearSongs(int $id): Response
+    {
+        return $this->itemNearSongsByType($id, 'show');
+    }
+
+    #[Route('/place/item/{id}/near/songs/print', name: 'place_item_near_songs_print')]
+    public function itemNearSongsPrint(int $id): Response
+    {
+        return $this->itemNearSongsByType($id, 'print');
+    }
+
+    private function itemNearSongsByType(int $id, string $type): Response
+    {
+        /** @var GeoPoint|null $geoPoint */
+        $geoPoint = $this->geoPointRepository->find($id);
+        if (!$geoPoint) {
+            throw $this->createNotFoundException('The GeoPoint does not exist');
+        }
+
+        $markersByCategory = $this->markerService->getSongsNearGeoPoint($geoPoint);
+
+        $markerGroups = [];
+        $categories = [];
+        $key = 1000;
+        foreach ($markersByCategory as $category => $markers) {
+            $categories[$key] = $category;
+            $markerGroups[$key] = $markers;
+            $key++;
+        }
+
+        $geoMapData = [];
+
+        return $this->render('place/item.near.' . $type . '.html.twig', [
+            'title' => 'Усе песьні вакол гэтага населенага пункта',
+            'geoPoint' => $geoPoint,
+            'markerGroups' => $markerGroups,
+            'categories' => $categories,
             'geoMapData' => $geoMapData,
         ]);
     }
