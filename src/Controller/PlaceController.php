@@ -9,7 +9,6 @@ use App\Entity\FileMarker;
 use App\Entity\GeoPoint;
 use App\Entity\Type\CategoryType;
 use App\Manager\GeoMapManager;
-use App\Repository\FileMarkerRepository;
 use App\Repository\GeoPointRepository;
 use App\Repository\InformantRepository;
 use App\Repository\OrganizationRepository;
@@ -18,6 +17,7 @@ use App\Repository\SubjectRepository;
 use App\Repository\TaskRepository;
 use App\Service\MarkerService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\HeaderUtils;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
@@ -28,7 +28,6 @@ class PlaceController extends AbstractController
         private readonly GeoPointRepository $geoPointRepository,
         private readonly InformantRepository $informantRepository,
         private readonly OrganizationRepository $organizationRepository,
-        private readonly FileMarkerRepository $fileMarkerRepository,
         private readonly SubjectRepository $subjectRepository,
         private readonly TaskRepository $taskRepository,
         private readonly MarkerService $markerService,
@@ -75,14 +74,21 @@ class PlaceController extends AbstractController
         ]);
     }
 
-    #[Route('/place/item/{id}', name: 'place_item')]
-    public function item(int $id): Response
+    private function getGeoPoint(int $id): GeoPoint
     {
         /** @var GeoPoint|null $geoPoint */
         $geoPoint = $this->geoPointRepository->find($id);
         if (!$geoPoint) {
             throw $this->createNotFoundException('The GeoPoint does not exist');
         }
+
+        return $geoPoint;
+    }
+
+    #[Route('/place/item/{id}', name: 'place_item')]
+    public function item(int $id): Response
+    {
+        $geoPoint = $this->getGeoPoint($id);
 
         $reports = $this->reportRepository->findByGeoPoint($geoPoint);
 
@@ -111,11 +117,7 @@ class PlaceController extends AbstractController
     #[Route('/place/item/{id}/near', name: 'place_item_near')]
     public function itemNear(int $id): Response
     {
-        /** @var GeoPoint|null $geoPoint */
-        $geoPoint = $this->geoPointRepository->find($id);
-        if (!$geoPoint) {
-            throw $this->createNotFoundException('The GeoPoint does not exist');
-        }
+        $geoPoint = $this->getGeoPoint($id);
 
         $markerGroups = $this->markerService->getGroupedMarkersNearGeoPoint($geoPoint);
 
@@ -144,11 +146,7 @@ class PlaceController extends AbstractController
 
     private function itemNearSongsByType(int $id, string $type): Response
     {
-        /** @var GeoPoint|null $geoPoint */
-        $geoPoint = $this->geoPointRepository->find($id);
-        if (!$geoPoint) {
-            throw $this->createNotFoundException('The GeoPoint does not exist');
-        }
+        $geoPoint = $this->getGeoPoint($id);
 
         $markersByCategory = $this->markerService->getSongsNearGeoPoint($geoPoint);
 
@@ -170,5 +168,56 @@ class PlaceController extends AbstractController
             'categories' => $categories,
             'geoMapData' => $geoMapData,
         ]);
+    }
+
+
+    #[Route('/place/item/{id}/near/songs/export', name: 'place_item_near_songs_export')]
+    public function itemNearSongsExport(int $id): Response
+    {
+        $geoPoint = $this->getGeoPoint($id);
+
+        $markersByCategory = $this->markerService->getSongsNearGeoPoint($geoPoint);
+
+        $csv = $this->markerService->generateCsvFromMarkers($markersByCategory);
+        $content = $csv->toString();
+
+        $response = new Response($content);
+
+        $disposition = HeaderUtils::makeDisposition(
+            HeaderUtils::DISPOSITION_ATTACHMENT,
+            $geoPoint->getId() . '_songs.csv'
+        );
+        $response->headers->set('Content-Disposition', $disposition);
+
+        return $response;
+    }
+
+    #[Route('/place/item/{id}/near/other/export', name: 'place_item_near_other_export')]
+    public function itemNearOtherExport(int $id): Response
+    {
+        $geoPoint = $this->getGeoPoint($id);
+
+        $markersByCategory = [];
+        $markerGroups = $this->markerService->getGroupedMarkersNearGeoPoint($geoPoint);
+        foreach ($markerGroups as $category => $markers) {
+            if ($category === CategoryType::SONGS || CategoryType::isSystemType($category)) {
+                continue;
+            }
+
+            $markersByCategory[CategoryType::getManyOrSingleName($category)] = $markers;
+        }
+
+        $csv = $this->markerService->generateCsvFromMarkers($markersByCategory);
+        $content = $csv->toString();
+
+        $response = new Response($content);
+
+        $disposition = HeaderUtils::makeDisposition(
+            HeaderUtils::DISPOSITION_ATTACHMENT,
+            $geoPoint->getId() . '_other.csv'
+        );
+        $response->headers->set('Content-Disposition', $disposition);
+
+        return $response;
     }
 }

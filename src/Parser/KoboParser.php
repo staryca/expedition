@@ -9,7 +9,6 @@ use App\Dto\InformantDto;
 use App\Dto\OrganizationDto;
 use App\Dto\ReportBlockDataDto;
 use App\Dto\ReportDataDto;
-use App\Dto\UserDto;
 use App\Dto\UserRolesDto;
 use App\Parser\Columns\KoboInformantColumns;
 use App\Parser\Columns\KoboOrganizationColumns;

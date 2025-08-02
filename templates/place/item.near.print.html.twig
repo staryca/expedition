@@ -10,7 +10,12 @@
             Інфармацыя вакол
             {{ geoPoint.getLongBeName() }}{% if geoPoint.district %}, {{ geoPoint.district }}{% endif %}
         </h1>
-        <p class="text-end d-print-none"><small><a href="{{ path('place_list') }}">Усе лакацыі</a></small></p>
+        <p class="text-end d-print-none">
+            <small>
+                <a href="{{ path('place_item', {id: geoPoint.id}) }}">Гэты гэтую лакацыю</a>,
+                <a href="{{ path('place_list') }}">Усе лакацыі</a>
+            </small>
+        </p>
 
         <div class="row mb-3">
             <h5 class="text-success">{{ title }}</h5>
