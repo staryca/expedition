@@ -4,6 +4,7 @@
         <th scope="col">Назва</th>
         <th scope="col">Месца</th>
         <th scope="col">Дадаткова</th>
+        <th scope="col">Крыніца</th>
     </tr>
     </thead>
 
@@ -11,7 +12,7 @@
     {% for category, markers in markerGroups %}
         {% if categories[category] is defined %}
             <tr>
-                <td colspan="3">
+                <td colspan="4">
                     <h4>{{ categories[category] }} <span class="d-print-none">({{ markers|length }})</span></h4>
                 </td>
             </tr>
@@ -60,6 +61,12 @@
                         {% for tag in marker.tags %}
                             <span class="badge text-bg-secondary d-print-none">{{ tag.name }}</span>
                         {% endfor %}
+                    </td>
+                    <td>
+                        {% if report.getDateActionYear() is not empty %}
+                            {{ report.getDateActionYear() }},
+                        {% endif %}
+                        {{ report.expedition.getShortName() }}
                     </td>
                 </tr>
             {% endfor %}
