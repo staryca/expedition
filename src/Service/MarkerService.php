@@ -10,6 +10,9 @@ use App\Entity\GeoPoint;
 use App\Entity\Type\CategoryType;
 use App\Helper\TextHelper;
 use App\Repository\FileMarkerRepository;
+use League\Csv\CannotInsertRecord;
+use League\Csv\Exception;
+use League\Csv\Writer;
 
 class MarkerService
 {
@@ -95,5 +98,32 @@ class MarkerService
         $markers = $this->fileMarkerRepository->getMarkersNearGeoPoint($geoPoint->getLatLonDto(), $category);
 
         return self::groupMarkersByNotes($markers, $category);
+    }
+
+    /**
+     * @param array<string, array<FileMarker>> $markerGroups
+     * @return Writer
+     * @throws CannotInsertRecord
+     * @throws Exception
+     */
+    public function generateCsvFromMarkers(array $markerGroups): Writer
+    {
+        $csv = Writer::createFromString();
+
+        $csv->insertOne(['Назва', 'Месца', 'Дадаткова']);
+
+        foreach ($markerGroups as $groupName => $markers) {
+            $csv->insertOne([$groupName, '', '']);
+
+            foreach ($markers as $marker) {
+                $csv->insertOne([
+                    (string) $marker->getName(),
+                    (string) $marker->getReport()?->getGeoPoint()?->getName(),
+                    (string) $marker->getNotes()
+                ]);
+            }
+        }
+
+        return $csv;
     }
 }

@@ -237,4 +237,13 @@ class FileMarker
 
         return $this;
     }
+
+    public function getReport(): ?Report
+    {
+        if ($this->reportBlock) {
+            return $this->reportBlock->getReport();
+        }
+
+        return $this->file?->getReportBlock()?->getReport();
+    }
 }

@@ -21,13 +21,7 @@
 
                             <tbody>
                             {% for marker in markers %}
-                                {% if marker.reportBlock %}
-                                    {% set reportBlock = marker.reportBlock %}
-                                {% else %}
-                                    {% set reportBlock = marker.file.reportBlock %}
-                                {% endif %}
-
-                                {% set report = reportBlock.report %}
+                                {% set report = marker.getReport() %}
 
                                 <tr>
                                     <td>
