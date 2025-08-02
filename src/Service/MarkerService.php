@@ -110,16 +110,19 @@ class MarkerService
     {
         $csv = Writer::createFromString();
 
-        $csv->insertOne(['Назва', 'Месца', 'Дадаткова']);
+        $csv->insertOne(['Назва', 'Месца', 'Дадаткова', 'Крыніца']);
 
         foreach ($markerGroups as $groupName => $markers) {
             $csv->insertOne([$groupName, '', '']);
 
             foreach ($markers as $marker) {
+                $year = $marker->getReport()?->getDateActionYear();
+
                 $csv->insertOne([
                     (string) $marker->getName(),
                     (string) $marker->getReport()?->getGeoPoint()?->getName(),
-                    (string) $marker->getNotes()
+                    (string) $marker->getNotes(),
+                    ((!empty($year)) ? $year . ', ' : '') . $marker->getReport()?->getExpedition()->getShortName()
                 ]);
             }
         }

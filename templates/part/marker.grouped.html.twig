@@ -16,6 +16,7 @@
                                 <th scope="col">Назва</th>
                                 <th scope="col">Месца</th>
                                 <th scope="col">Дадаткова</th>
+                                <th scope="col">Крыніца</th>
                             </tr>
                             </thead>
 
@@ -58,6 +59,12 @@
                                         {% for tag in marker.tags %}
                                             <span class="badge text-bg-secondary">{{ tag.name }}</span>
                                         {% endfor %}
+                                    </td>
+                                    <td>
+                                        {% if report.getDateActionYear() is not empty %}
+                                            {{ report.getDateActionYear() }},
+                                        {% endif %}
+                                        {{ report.expedition.getShortName() }}
                                     </td>
                                 </tr>
                             {% endfor %}

@@ -18,7 +18,7 @@ use Symfony\Component\Routing\Attribute\Route;
 class ImportVideoKozController extends AbstractController
 {
     private const EXPEDITION_ID = 9; // 9
-    private const FILENAME = '../var/data/video_koz/br-1.csv';
+    private const FILENAME = '../var/data/video_koz/vit-video.csv';
 
     public function __construct(
         private readonly VideoKozHandler $videoKozHandler,

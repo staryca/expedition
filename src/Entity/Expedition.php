@@ -79,6 +79,13 @@ class Expedition
         return $this->name;
     }
 
+    public function getShortName(): ?string
+    {
+        $parts = explode(' ', $this->name);
+
+        return current($parts);
+    }
+
     public function setName(string $name): static
     {
         $this->name = $name;

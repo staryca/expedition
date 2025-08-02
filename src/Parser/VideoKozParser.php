@@ -74,10 +74,11 @@ class VideoKozParser
             $videoDto->texts = $record[VideoKozColumns::TEXTS] ?? null;
             $videoDto->tmkb = $record[VideoKozColumns::TMKB] ?? null;
 
+            $subDistrict = trim($record[VideoKozColumns::SOVIET]);
             $location = $this->locationService->detectLocation(
                 $record[VideoKozColumns::VILLAGE],
-                $record[VideoKozColumns::DISTINCT] . ' ' . LocationService::DISTRICT,
-                $record[VideoKozColumns::SOVIET] . ' ' . LocationService::SUBDISTRICT
+                trim($record[VideoKozColumns::DISTINCT]) . ' ' . LocationService::DISTRICT,
+                empty($subDistrict) ? null : $subDistrict . ' ' . LocationService::SUBDISTRICT
             );
             $geoPointId = $record[VideoKozColumns::MAP_INDEX] ?? null;
             if ($location && (!$geoPointId || $location->getId() === $geoPointId)) {
@@ -85,8 +86,8 @@ class VideoKozParser
             } else {
                 $videoDto->place =
                     $record[VideoKozColumns::VILLAGE] . ', '
-                    . $record[VideoKozColumns::DISTINCT] . ' ' . LocationService::DISTRICT . ', '
-                    . $record[VideoKozColumns::SOVIET] . ' ' . LocationService::SUBDISTRICT
+                    . trim($record[VideoKozColumns::DISTINCT]) . ' ' . LocationService::DISTRICT . ', '
+                    . empty($subDistrict) ? null : $subDistrict . ' ' . LocationService::SUBDISTRICT
                 ;
             }
 
