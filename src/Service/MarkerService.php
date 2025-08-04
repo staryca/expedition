@@ -109,11 +109,12 @@ class MarkerService
     public function generateCsvFromMarkers(array $markerGroups): Writer
     {
         $csv = Writer::createFromString();
+        $csv->setDelimiter(';');
 
         $csv->insertOne(['Назва', 'Месца', 'Дадаткова', 'Крыніца']);
 
         foreach ($markerGroups as $groupName => $markers) {
-            $csv->insertOne([$groupName, '', '']);
+            $csv->insertOne([$groupName, '', '', '']);
 
             foreach ($markers as $marker) {
                 $year = $marker->getReport()?->getDateActionYear();

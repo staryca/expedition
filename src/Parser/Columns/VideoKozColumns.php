@@ -20,7 +20,7 @@ class VideoKozColumns
     public const MAP_INDEX = 'Мапа';
     public const SOVIET = 'Сельсавет';
     public const DATE_RECORD = 'Дата запісу';
-    public const DESCRIPTION = 'Апісаньне';
+    public const DESCRIPTION = 'Асаблівасьці відэа';
     public const ORGANIZATION = 'Калектыў';
     public const INFORMANTS = 'Выканаўцы на відэа';
     public const MUSICIANS = 'Музыкі';

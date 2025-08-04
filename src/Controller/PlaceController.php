@@ -15,6 +15,8 @@ use App\Repository\OrganizationRepository;
 use App\Repository\ReportRepository;
 use App\Repository\SubjectRepository;
 use App\Repository\TaskRepository;
+use App\Service\InformantService;
+use App\Service\LocationService;
 use App\Service\MarkerService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\HeaderUtils;
@@ -31,6 +33,7 @@ class PlaceController extends AbstractController
         private readonly SubjectRepository $subjectRepository,
         private readonly TaskRepository $taskRepository,
         private readonly MarkerService $markerService,
+        private readonly InformantService $informantService,
         private readonly GeoMapManager $geoMapManager,
     ) {
     }
@@ -124,7 +127,8 @@ class PlaceController extends AbstractController
         $geoMapData = $this->geoMapManager->getGeoMapDataForGeoPoint($geoPoint);
 
         return $this->render('place/item.near.show.html.twig', [
-            'title' => 'Уся інфармацыя вакол гэтага населенага пункта',
+            'title' => 'Уся інфармацыя вакол гэтага населенага пункта (каля '
+                . LocationService::getDistance(LocationService::POINT_NEAR) . ' км)',
             'geoPoint' => $geoPoint,
             'markerGroups' => $markerGroups,
             'categories' => CategoryType::getManyNames(false),
@@ -215,6 +219,57 @@ class PlaceController extends AbstractController
         $disposition = HeaderUtils::makeDisposition(
             HeaderUtils::DISPOSITION_ATTACHMENT,
             $geoPoint->getId() . '_other.csv'
+        );
+        $response->headers->set('Content-Disposition', $disposition);
+
+        return $response;
+    }
+
+    #[Route('/place/item/{id}/near/informants', name: 'place_item_near_informants')]
+    public function itemNearInformants(int $id): Response
+    {
+        $geoPoint = $this->getGeoPoint($id);
+        $radius = LocationService::POINT_NEAR;
+
+        $informantsByLocation = $this->informantService->getInformantsNearGeoPoint($geoPoint, $radius);
+
+        $informantGroups = [];
+        $groups = [];
+        $key = 1000;
+        foreach ($informantsByLocation as $location => $informants) {
+            $groups[$key] = $location;
+            $informantGroups[$key] = $informants;
+            $key++;
+        }
+
+        $geoMapData = [];
+
+        return $this->render('place/informants.near.show.html.twig', [
+            'title' => 'Усе інфарманты вакол гэтага населенага пункта (каля '
+                . LocationService::getDistance($radius) . ' км)',
+            'geoPoint' => $geoPoint,
+            'informantGroups' => $informantGroups,
+            'groups' => $groups,
+            'geoMapData' => $geoMapData,
+        ]);
+    }
+
+    #[Route('/place/item/{id}/near/informants/export', name: 'place_item_near_informants_export')]
+    public function itemNearInformantsExport(int $id): Response
+    {
+        $geoPoint = $this->getGeoPoint($id);
+        $radius = LocationService::POINT_NEAR;
+
+        $informantsByLocation = $this->informantService->getInformantsNearGeoPoint($geoPoint, $radius);
+
+        $csv = $this->informantService->generateCsvFromInformants($informantsByLocation);
+        $content = $csv->toString();
+
+        $response = new Response($content);
+
+        $disposition = HeaderUtils::makeDisposition(
+            HeaderUtils::DISPOSITION_ATTACHMENT,
+            $geoPoint->getId() . '_informants.csv'
         );
         $response->headers->set('Content-Disposition', $disposition);
 

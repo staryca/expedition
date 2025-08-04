@@ -214,14 +214,15 @@ class ToolsController extends AbstractController
     public function detectReportPoints(): Response
     {
         $data = [];
+
         $reports = $this->reportRepository->findNotDetectedPoints();
         foreach ($reports as $report) {
-            $reportPlace = $report->getGeoPlace();
+            $reportPlace = $report->getGeoNotes();
             $dto = $this->locationService->getSearchDtoByFullPlace($reportPlace);
             if (null === $dto->district) {
                 continue;
             }
-            $reportPoint = $this->locationService->detectLocationByFullPlace($report->getGeoPlace());
+            $reportPoint = $this->locationService->detectLocationByFullPlace($report->getGeoNotes());
 
             $item = [
                 'id' => $report->getId(),
@@ -231,6 +232,8 @@ class ToolsController extends AbstractController
 
             if ($reportPoint !== null) {
                 $report->setGeoPoint($reportPoint);
+                $report->setGeoNotes(null);
+
                 array_unshift($data, $item);
             } else {
                 $data[] = $item;
@@ -264,6 +267,8 @@ class ToolsController extends AbstractController
 
                 if ($point !== null) {
                     $informant->setGeoPointBirth($point);
+                    $informant->setPlaceBirth(null);
+
                     array_unshift($data, $item);
                 } else {
                     $data[] = $item;
@@ -283,6 +288,8 @@ class ToolsController extends AbstractController
 
                 if ($point !== null) {
                     $informant->setGeoPointCurrent($point);
+                    $informant->setPlaceCurrent(null);
+
                     array_unshift($data, $item);
                 } else {
                     $data[] = $item;
