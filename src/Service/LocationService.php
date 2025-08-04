@@ -17,13 +17,10 @@ class LocationService
     public const SUBDISTRICT_SHORT = 'с/с';
     public const REGION = 'вобласць';
 
-    public const LAT_RANGE_UP = 0.35; // lat - // N
-    public const LAT_RANGE_DOWN = 0.35; // lat + // S
-    public const LON_RANGE_UP = 0.5; // lon - // E
-    public const LON_RANGE_DOWN = 0.5; // lon + // W
-
-    public const POINT_NEIGHBOR = 0.1;
-    public const POINT_NEAR = 0.17;
+    public const POINT_RADIUS = 0.35; // 0.1 = 22km
+    public const POINT_NEIGHBOR = 0.1; // 0.1 = 22km
+    public const POINT_NEAR = 0.18; // 0.1 = 22km
+    public const LAT_LON_RATE = 1.65;
 
     public function __construct(
         private readonly GeoPointRepository $geoPointRepository,
@@ -452,5 +449,10 @@ class LocationService
         }
 
         return null;
+    }
+
+    public static function getDistance(float $radius): float
+    {
+        return round(22 * $radius / 0.1);
     }
 }

@@ -124,8 +124,8 @@ class FileMarkerRepository extends ServiceEntityRepository
             )
             ->setParameter('minLat', $dto->lat - LocationService::POINT_NEAR)
             ->setParameter('maxLat', $dto->lat + LocationService::POINT_NEAR)
-            ->setParameter('minLon', $dto->lon - LocationService::POINT_NEAR)
-            ->setParameter('maxLon', $dto->lon + LocationService::POINT_NEAR)
+            ->setParameter('minLon', $dto->lon - LocationService::POINT_NEAR * LocationService::LAT_LON_RATE)
+            ->setParameter('maxLon', $dto->lon + LocationService::POINT_NEAR * LocationService::LAT_LON_RATE)
             ->orderBy('fm.category', 'ASC')
             ->addOrderBy('fm.name', 'ASC');
 

@@ -1,0 +1,48 @@
+<div class="accordion" id="accordionCategory">
+    {% for key, informants in informantGroups %}
+        {% if groups[key] is defined %}
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ key }}" aria-expanded="false" aria-controls="collapseTwo">
+                        {{ groups[key] }} ({{ informants|length }})
+                    </button>
+                </h2>
+                <div id="collapse{{ key }}" class="accordion-collapse collapse" data-bs-parent="#accordionCategory">
+                    <div class="accordion-body">
+
+                        <table class="table table-striped table-hover">
+                            <thead>
+                            <tr>
+                                <th scope="col">Інфармант</th>
+                                <th scope="col">Месца</th>
+                                <th scope="col">Дадаткова</th>
+                                <th scope="col">Крыніца</th>
+                            </tr>
+                            </thead>
+
+                            <tbody>
+                            {% for informant in informants %}
+                                <tr>
+                                    <td>
+                                        {% include 'part/informant.full.html.twig' with {'geoPoint': null, 'isLink' : true} %}
+                                    </td>
+                                    <td>
+
+                                    </td>
+                                    <td>
+
+                                    </td>
+                                    <td>
+
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    {% endfor %}
+</div>

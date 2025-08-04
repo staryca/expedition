@@ -72,10 +72,10 @@ class ReportRepository extends ServiceEntityRepository
      */
     public function findNearGeoPoint(GeoPoint $geoPoint, ?float $radius = null): array
     {
-        $latUp = $radius ?? LocationService::LAT_RANGE_UP;
-        $latDown = $radius ?? LocationService::LAT_RANGE_DOWN;
-        $lonUp = $radius ?? LocationService::LON_RANGE_UP;
-        $lonDown = $radius ?? LocationService::LON_RANGE_DOWN;
+        $latUp = $radius ?? LocationService::POINT_RADIUS;
+        $latDown = $radius ?? LocationService::POINT_RADIUS;
+        $lonUp = $radius ?? LocationService::POINT_RADIUS * LocationService::LAT_LON_RATE;
+        $lonDown = $radius ?? LocationService::POINT_RADIUS * LocationService::LAT_LON_RATE;
 
         return $this->createQueryBuilder('r')
             ->leftJoin('r.geoPoint', 'gp')

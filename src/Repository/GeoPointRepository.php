@@ -84,10 +84,10 @@ class GeoPointRepository extends ServiceEntityRepository
      */
     public function findNotFarFromPoint(GeoPoint $geoPoint, ?float $radius = null, bool $withTract = false): array
     {
-        $latUp = $radius ?? LocationService::LAT_RANGE_UP;
-        $latDown = $radius ?? LocationService::LAT_RANGE_DOWN;
-        $lonUp = $radius ?? LocationService::LON_RANGE_UP;
-        $lonDown = $radius ?? LocationService::LON_RANGE_DOWN;
+        $latUp = $radius ?? LocationService::POINT_RADIUS;
+        $latDown = $radius ?? LocationService::POINT_RADIUS;
+        $lonUp = $radius ?? LocationService::POINT_RADIUS * LocationService::LAT_LON_RATE;
+        $lonDown = $radius ?? LocationService::POINT_RADIUS * LocationService::LAT_LON_RATE;
 
         $qb = $this->createQueryBuilder('gp')
             ->where('gp.lat between :minLat and :maxLat')
@@ -136,8 +136,8 @@ class GeoPointRepository extends ServiceEntityRepository
             ->andWhere('gp.lon between :minLon and :maxLon')
             ->setParameter('minLat', $dto->lat - LocationService::POINT_NEIGHBOR)
             ->setParameter('maxLat', $dto->lat + LocationService::POINT_NEIGHBOR)
-            ->setParameter('minLon', $dto->lon - LocationService::POINT_NEIGHBOR)
-            ->setParameter('maxLon', $dto->lon + LocationService::POINT_NEIGHBOR);
+            ->setParameter('minLon', $dto->lon - LocationService::POINT_NEIGHBOR * LocationService::LAT_LON_RATE)
+            ->setParameter('maxLon', $dto->lon + LocationService::POINT_NEIGHBOR * LocationService::LAT_LON_RATE);
 
         return $qb
             ->getQuery()
