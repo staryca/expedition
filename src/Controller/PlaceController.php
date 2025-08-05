@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Dto\LocationGroupDto;
-use App\Entity\FileMarker;
 use App\Entity\GeoPoint;
 use App\Entity\Type\CategoryType;
 use App\Manager\GeoMapManager;
@@ -122,7 +121,7 @@ class PlaceController extends AbstractController
     {
         $geoPoint = $this->getGeoPoint($id);
 
-        $markerGroups = $this->markerService->getGroupedMarkersNearGeoPoint($geoPoint);
+        $markerGroups = $this->markerService->getGroupedMarkersInLocation($geoPoint);
 
         $geoMapData = $this->geoMapManager->getGeoMapDataForGeoPoint($geoPoint);
 
@@ -152,7 +151,7 @@ class PlaceController extends AbstractController
     {
         $geoPoint = $this->getGeoPoint($id);
 
-        $markersByCategory = $this->markerService->getSongsNearGeoPoint($geoPoint);
+        $markersByCategory = $this->markerService->getSongsInLocation($geoPoint);
 
         $markerGroups = [];
         $categories = [];
@@ -174,13 +173,12 @@ class PlaceController extends AbstractController
         ]);
     }
 
-
     #[Route('/place/item/{id}/near/songs/export', name: 'place_item_near_songs_export')]
     public function itemNearSongsExport(int $id): Response
     {
         $geoPoint = $this->getGeoPoint($id);
 
-        $markersByCategory = $this->markerService->getSongsNearGeoPoint($geoPoint);
+        $markersByCategory = $this->markerService->getSongsInLocation($geoPoint);
 
         $csv = $this->markerService->generateCsvFromMarkers($markersByCategory);
         $content = $csv->toString();
@@ -202,7 +200,7 @@ class PlaceController extends AbstractController
         $geoPoint = $this->getGeoPoint($id);
 
         $markersByCategory = [];
-        $markerGroups = $this->markerService->getGroupedMarkersNearGeoPoint($geoPoint);
+        $markerGroups = $this->markerService->getGroupedMarkersInLocation($geoPoint);
         foreach ($markerGroups as $category => $markers) {
             if ($category === CategoryType::SONGS || CategoryType::isSystemType($category)) {
                 continue;
@@ -231,7 +229,7 @@ class PlaceController extends AbstractController
         $geoPoint = $this->getGeoPoint($id);
         $radius = LocationService::POINT_NEAR;
 
-        $informantsByLocation = $this->informantService->getInformantsNearGeoPoint($geoPoint, $radius);
+        $informantsByLocation = $this->informantService->getInformantsInLocation($geoPoint, $radius);
 
         $informantGroups = [];
         $groups = [];
@@ -260,7 +258,7 @@ class PlaceController extends AbstractController
         $geoPoint = $this->getGeoPoint($id);
         $radius = LocationService::POINT_NEAR;
 
-        $informantsByLocation = $this->informantService->getInformantsNearGeoPoint($geoPoint, $radius);
+        $informantsByLocation = $this->informantService->getInformantsInLocation($geoPoint, $radius);
 
         $csv = $this->informantService->generateCsvFromInformants($informantsByLocation);
         $content = $csv->toString();
@@ -270,6 +268,71 @@ class PlaceController extends AbstractController
         $disposition = HeaderUtils::makeDisposition(
             HeaderUtils::DISPOSITION_ATTACHMENT,
             $geoPoint->getId() . '_informants.csv'
+        );
+        $response->headers->set('Content-Disposition', $disposition);
+
+        return $response;
+    }
+
+    #[Route('/place/district/{district}/songs/export', name: 'place_district_songs_export')]
+    public function districtSongsExport(string $district): Response
+    {
+        $markersByCategory = $this->markerService->getSongsInLocation(null, $district);
+
+        $csv = $this->markerService->generateCsvFromMarkers($markersByCategory);
+        $content = $csv->toString();
+
+        $response = new Response($content);
+
+        $disposition = HeaderUtils::makeDisposition(
+            HeaderUtils::DISPOSITION_ATTACHMENT,
+            '_songs.csv'
+        );
+        $response->headers->set('Content-Disposition', $disposition);
+
+        return $response;
+    }
+
+    #[Route('/place/district/{district}/other/export', name: 'place_district_other_export')]
+    public function districtOtherExport(string $district): Response
+    {
+        $markersByCategory = [];
+        $markerGroups = $this->markerService->getGroupedMarkersInLocation(null, $district);
+        foreach ($markerGroups as $category => $markers) {
+            if ($category === CategoryType::SONGS || CategoryType::isSystemType($category)) {
+                continue;
+            }
+
+            $markersByCategory[CategoryType::getManyOrSingleName($category)] = $markers;
+        }
+
+        $csv = $this->markerService->generateCsvFromMarkers($markersByCategory);
+        $content = $csv->toString();
+
+        $response = new Response($content);
+
+        $disposition = HeaderUtils::makeDisposition(
+            HeaderUtils::DISPOSITION_ATTACHMENT,
+            '_other.csv'
+        );
+        $response->headers->set('Content-Disposition', $disposition);
+
+        return $response;
+    }
+
+    #[Route('/place/district/{district}/informants/export', name: 'place_district_informants_export')]
+    public function districtInformantsExport(string $district): Response
+    {
+        $informantsByLocation = $this->informantService->getInformantsInLocation(null, null, $district);
+
+        $csv = $this->informantService->generateCsvFromInformants($informantsByLocation);
+        $content = $csv->toString();
+
+        $response = new Response($content);
+
+        $disposition = HeaderUtils::makeDisposition(
+            HeaderUtils::DISPOSITION_ATTACHMENT,
+            '_informants.csv'
         );
         $response->headers->set('Content-Disposition', $disposition);
 

@@ -77,7 +77,7 @@ class GeoMapManager
         }
 
         if ($expedition->getGeoPoint()) {
-            $informants = $this->informantRepository->findNearCurrentGeoPoint($expedition->getGeoPoint());
+            $informants = $this->informantRepository->findCurrentInLocation($expedition->getGeoPoint());
             $groupedInformants = [];
             foreach ($informants as $informant) {
                 if (!in_array($informant->getId(), $informantsInTips, true)) {
@@ -162,7 +162,7 @@ class GeoMapManager
                 }
             }
 
-            $informants = $this->informantRepository->findNearCurrentGeoPoint($reportPoint);
+            $informants = $this->informantRepository->findCurrentInLocation($reportPoint);
             $groupedInformants = [];
             foreach ($informants as $informant) {
                 if (!in_array($informant->getId(), $informantsInTips, true)) {
@@ -252,7 +252,7 @@ class GeoMapManager
             }
         }
 
-        $informants = $this->informantRepository->findNearCurrentGeoPoint($geoPoint, LocationService::POINT_NEAR);
+        $informants = $this->informantRepository->findCurrentInLocation($geoPoint, LocationService::POINT_NEAR);
         $groupedInformants = [];
         foreach ($informants as $informant) {
             if (!in_array($informant->getId(), $informantsInTips, true)) {

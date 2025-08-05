@@ -17,7 +17,7 @@ use League\Csv\Writer;
 class MarkerService
 {
     public function __construct(
-        private FileMarkerRepository $fileMarkerRepository,
+        private readonly FileMarkerRepository $fileMarkerRepository,
     ) {
     }
 
@@ -35,9 +35,9 @@ class MarkerService
         return self::groupMarkersByCategory($markers);
     }
 
-    public function getGroupedMarkersNearGeoPoint(GeoPoint $geoPoint): array
+    public function getGroupedMarkersInLocation(?GeoPoint $geoPoint = null, ?string $district = null): array
     {
-        $markers = $this->fileMarkerRepository->getMarkersNearGeoPoint($geoPoint->getLatLonDto());
+        $markers = $this->fileMarkerRepository->getMarkersInLocation($geoPoint?->getLatLonDto(), $district);
 
         return self::groupMarkersByCategory($markers);
     }
@@ -92,10 +92,10 @@ class MarkerService
         return $result;
     }
 
-    public function getSongsNearGeoPoint(GeoPoint $geoPoint): array
+    public function getSongsInLocation(?GeoPoint $geoPoint = null, ?string $district = null): array
     {
         $category = CategoryType::SONGS;
-        $markers = $this->fileMarkerRepository->getMarkersNearGeoPoint($geoPoint->getLatLonDto(), $category);
+        $markers = $this->fileMarkerRepository->getMarkersInLocation($geoPoint?->getLatLonDto(), $district, $category);
 
         return self::groupMarkersByNotes($markers, $category);
     }
@@ -118,11 +118,12 @@ class MarkerService
 
             foreach ($markers as $marker) {
                 $year = $marker->getReport()?->getDateActionYear();
+                $place = $marker->getReport()?->getGeoPoint()?->getName();
 
                 $csv->insertOne([
-                    (string) $marker->getName(),
-                    (string) $marker->getReport()?->getGeoPoint()?->getName(),
-                    (string) $marker->getNotes(),
+                    empty($marker->getName()) ? ' ' : $marker->getName(),
+                    empty($place) ? ' ' : $place,
+                    empty($marker->getNotes()) ? ' ' : $marker->getNotes(),
                     ((!empty($year)) ? $year . ', ' : '') . $marker->getReport()?->getExpedition()->getShortName()
                 ]);
             }

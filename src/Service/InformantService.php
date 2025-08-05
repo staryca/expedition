@@ -19,15 +19,16 @@ class InformantService
     }
 
     /**
-     * @param GeoPoint $geoPoint
+     * @param GeoPoint|null $geoPoint
      * @param float|null $radius
+     * @param string|null $district
      * @return array<string, array<Informant>
      */
-    public function getInformantsNearGeoPoint(GeoPoint $geoPoint, ?float $radius = null): array
+    public function getInformantsInLocation(?GeoPoint $geoPoint = null, ?float $radius = null, ?string $district = null): array
     {
         $result = [];
 
-        $informants = $this->informantRepository->findNearCurrentGeoPoint($geoPoint, $radius);
+        $informants = $this->informantRepository->findCurrentInLocation($geoPoint, $radius, $district);
         foreach ($informants as $informant) {
             $location = $informant->getGeoPointCurrent()?->getFullBeName();
             if (empty($location)) {

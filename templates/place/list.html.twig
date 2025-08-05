@@ -22,16 +22,21 @@
                         <div class="accordion-body">
 
                             <div class="accordion" id="accordionLocations{{ key }}">
-                                {% for locationDistinct in locationRegion.groups %}
+                                {% for locationDistrict in locationRegion.groups %}
                                     <div class="accordion-item">
                                         <h2 class="accordion-header">
                                             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ keyA }}" aria-expanded="false" aria-controls="collapseTwo">
-                                                {{ locationDistinct.name }}
+                                                {{ locationDistrict.name }}
                                             </button>
                                         </h2>
                                         <div id="collapse{{ keyA }}" class="accordion-collapse collapse" data-bs-parent="#accordionLocations{{ key }}">
                                             <div class="accordion-body">
-                                                {% for locationOther in locationDistinct.items %}
+                                                <a href="{{ path('place_district_informants_export', {district: locationDistrict.name}) }}"><i class="bi bi-cloud-arrow-down"></i> Экспарт інфармантаў</a>,
+                                                <a href="{{ path('place_district_songs_export', {district: locationDistrict.name}) }}"><i class="bi bi-cloud-arrow-down"></i> Экспарт песень</a>,
+                                                <a href="{{ path('place_district_other_export', {district: locationDistrict.name}) }}"><i class="bi bi-cloud-arrow-down"></i> Экспарт іншага</a>
+                                                <br /><br />
+
+                                                {% for locationOther in locationDistrict.items %}
                                                 - <a href="{{ path('place_item', {id: locationOther.id}) }}">{{ locationOther.name }}</a><br />
                                                 {% endfor %}
                                             </div>

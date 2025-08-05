@@ -94,11 +94,12 @@ class FileMarkerRepository extends ServiceEntityRepository
     }
 
     /**
-     * @param LatLonDto $dto
+     * @param LatLonDto|null $dto
+     * @param string|null $district
      * @param int|null $category
      * @return array<FileMarker>
      */
-    public function getMarkersNearGeoPoint(LatLonDto $dto, ?int $category = null): array
+    public function getMarkersInLocation(?LatLonDto $dto = null, ?string $district = null, ?int $category = null): array
     {
         $qb = $this->createQueryBuilder('fm');
 
@@ -110,7 +111,11 @@ class FileMarkerRepository extends ServiceEntityRepository
             ->leftJoin('rb2.report', 'r2')
             ->leftJoin('r.geoPoint', 'gp')
             ->leftJoin('r2.geoPoint', 'gp2')
-            ->where(
+            ->orderBy('fm.category', 'ASC')
+            ->addOrderBy('fm.name', 'ASC');
+
+        if ($dto) {
+            $qb->where(
                 $qb->expr()->orX(
                     $qb->expr()->andX(
                         'gp.lat between :minLat and :maxLat',
@@ -122,12 +127,16 @@ class FileMarkerRepository extends ServiceEntityRepository
                     )
                 )
             )
-            ->setParameter('minLat', $dto->lat - LocationService::POINT_NEAR)
-            ->setParameter('maxLat', $dto->lat + LocationService::POINT_NEAR)
-            ->setParameter('minLon', $dto->lon - LocationService::POINT_NEAR * LocationService::LAT_LON_RATE)
-            ->setParameter('maxLon', $dto->lon + LocationService::POINT_NEAR * LocationService::LAT_LON_RATE)
-            ->orderBy('fm.category', 'ASC')
-            ->addOrderBy('fm.name', 'ASC');
+                ->setParameter('minLat', $dto->lat - LocationService::POINT_NEAR)
+                ->setParameter('maxLat', $dto->lat + LocationService::POINT_NEAR)
+                ->setParameter('minLon', $dto->lon - LocationService::POINT_NEAR * LocationService::LAT_LON_RATE)
+                ->setParameter('maxLon', $dto->lon + LocationService::POINT_NEAR * LocationService::LAT_LON_RATE);
+        }
+
+        if ($district) {
+            $qb->andWhere($qb->expr()->orX('gp.district = :district', 'gp2.district = :district'))
+                ->setParameter('district', $district);
+        }
 
         if ($category) {
             $qb->andWhere('fm.category = :category')
