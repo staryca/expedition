@@ -89,6 +89,7 @@ class FileMarkerRepository extends ServiceEntityRepository
             ->orWhere('r2.geoPoint = :geoPoint')
             ->setParameter('geoPoint', $geoPoint)
             ->orderBy('fm.category', 'ASC')
+            ->addOrderBy('fm.name', 'ASC')
             ->getQuery()
             ->getResult();
     }

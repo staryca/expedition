@@ -176,8 +176,12 @@ class GeoMapManager
                 foreach ($informants as $informant) {
                     $names[] = $informant->getFirstName();
                 }
-                $latLon = $informants[0]->getGeoPointCurrent()?->getLatLonDto();
-                $popup = 'Інфарманты: ' . implode(', ', $names);
+                $geoCurrent = $informants[0]->getGeoPointCurrent();
+                $latLon = $geoCurrent?->getLatLonDto();
+                $popup = $this->twig->render(
+                    'part/geo_map/informants.html.twig',
+                    ['names' => $names, 'location' => $geoCurrent?->getShortBeName(), 'geoPointId' => $geoCurrent?->getId()]
+                );
 
                 $geoMapData->addLatLon($latLon, $popup, GeoMapDto::TYPE_COMMENT);
             }
@@ -266,9 +270,13 @@ class GeoMapManager
             foreach ($informants as $informant) {
                 $names[] = $informant->getFirstName();
             }
-            $latLon = $informants[0]->getGeoPointCurrent()?->getLatLonDto();
+            $geoCurrent = $informants[0]->getGeoPointCurrent();
+            $latLon = $geoCurrent?->getLatLonDto();
             if ($latLon) {
-                $popup = 'Інфарманты: ' . implode(', ', $names);
+                $popup = $this->twig->render(
+                    'part/geo_map/informants.html.twig',
+                    ['names' => $names, 'location' => $geoCurrent?->getShortBeName(), 'geoPointId' => $geoCurrent?->getId()]
+                );
                 $geoMapData->addLatLon($latLon, $popup, $isPreview ? GeoMapDto::TYPE_COMPLEX : GeoMapDto::TYPE_COMMENT);
             }
         }

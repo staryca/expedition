@@ -13,7 +13,7 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class ImportVopisDetailedController extends AbstractController
 {
-    private const EXPEDITION_ID = 996; // 3
+    private const EXPEDITION_ID = 3; // 3
     private const FILENAME = '../var/data/vopis_detailed/vit_koz.csv';
 
     public function __construct(
