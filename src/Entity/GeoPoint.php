@@ -210,6 +210,13 @@ class GeoPoint
         return GeoPointType::getShortName($this->prefixBe);
     }
 
+    public function getShortBeName(): string
+    {
+        $prefix = $this->getShortPrefixBe();
+
+        return (!empty($prefix) ? $prefix . ' ' : '') . ($this->name ? (' ' . $this->name) : '');
+    }
+
     public function getLongBeName(): string
     {
         return ($this->prefixBe ? $this->prefixBe . ' ' : '') . ($this->name ? (' ' . $this->name) : '');

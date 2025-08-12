@@ -1,0 +1,13 @@
+{% if geoPointId %}
+    <a href="{{ path('place_item', {id: geoPointId}) }}">Інфарманты з {{ location }}</a>:
+{% else %}
+    Інфарманты з {{ location }}:
+{% endif %}
+
+{% for name in names %}
+    {% if loop.last %}
+        {{ name }}
+    {% else %}
+        {{ name }},
+    {% endif %}
+{% endfor %}
