@@ -261,6 +261,9 @@ class VideoKozHandler
                 if (!empty($videoItem->baseName)) {
                     $marker->additional[FileMarkerAdditional::BASE_NAME] = $videoItem->baseName;
                 }
+                if (!empty($videoItem->localName)) {
+                    $marker->additional[FileMarkerAdditional::YOUTUBE] = $videoItem->youTube;
+                }
                 if (!empty($videoItem->pack)) {
                     $marker->additional[FileMarkerAdditional::DANCE_TYPE] = $videoItem->pack->getName();
                 }

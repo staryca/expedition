@@ -96,7 +96,9 @@ class ReportController extends AbstractController
         if (!$baseGeoPoint) {
             $baseGeoPoint = $expedition->getGeoPoint();
         }
-        $geoPoints = $baseGeoPoint ? $this->geoPointRepository->findNotFarFromPoint($baseGeoPoint) : [];
+        $geoPoints = $baseGeoPoint
+            ? $this->geoPointRepository->findNotFarFromPoint($baseGeoPoint)
+            : $this->geoPointRepository->findBy([], ['name' => 'ASC']);
 
         $tags = $this->tagRepository->getAllNames();
 

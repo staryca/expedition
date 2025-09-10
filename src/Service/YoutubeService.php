@@ -17,6 +17,7 @@ class YoutubeService
         private readonly TextHelper $textHelper,
     ) {
     }
+
     public function getTitle(Report $report, FileMarker $fileMarker): string
     {
         $localName = $fileMarker->getAdditionalValue(FileMarkerAdditional::LOCAL_NAME);
@@ -31,33 +32,38 @@ class YoutubeService
         $part = $localName;
         $localNameText = str_replace(' ', '', mb_strtolower($localName));
         $baseNameText = str_replace(' ', '', mb_strtolower($baseName));
-        $part .= empty($baseName) || str_contains($localNameText, $baseNameText) || $improvisation === FileMarkerAdditional::IMPROVISATION_MIKITA
+        $part .= empty($baseName) || str_contains($localNameText, $baseNameText)
+                || $improvisation === FileMarkerAdditional::IMPROVISATION_MIKITA || mb_strlen($localName) > 20
             ? ''
             : ' (' . $baseName . ') ';
         if (!empty($part)) {
             $parts[] = $part;
         }
 
-        $part = $improvisation === FileMarkerAdditional::IMPROVISATION_VALUE ? $improvisation . ' ' : '';
-        $part .= mb_substr($danceType, 1, 1) !== ' ' && mb_substr($danceType, 2, 1) !== ' ' && $improvisation === FileMarkerAdditional::IMPROVISATION_VALUE
-            ? ($fileMarker->getCategory() === CategoryType::QUADRILLE ? mb_substr($improvisation, 0, -1) . 'ая' : $improvisation)
-            : '';
-        $part .= $danceType === '' || mb_substr($danceType, 1, 1) === ' ' || mb_substr($danceType, 2, 1) === ' '
-            ? ''
-            : ' ' . $danceType . ' ';
-        $part .= empty($localName) && empty($baseName) && empty($danceType)
-            ? $fileMarker->getCategoryName()
-            : mb_strtolower($fileMarker->getCategoryName());
-        $part .= mb_substr($danceType, 1, 1) === ' ' || mb_substr($danceType, 2, 1) === ' '
-            ? ' ' . $danceType
-            : '';
-        $part .= $improvisation === FileMarkerAdditional::IMPROVISATION_MIKITA && $localName !== 'Мікіта'
-            ? ' тыпу Мікіта'
-            : '';
-        $part .= $improvisation !== FileMarkerAdditional::IMPROVISATION_MIKITA && $improvisation !== FileMarkerAdditional::IMPROVISATION_VALUE && !empty($improvisation)
-            ? ' ' . $improvisation
-            : '';
-        $parts[] = $part;
+        if ($fileMarker->isCategoryDance() || $fileMarker->isCategoryQuadrille()) {
+            $danceTypeOneWord = mb_substr($danceType, 1, 1) !== ' ' && mb_substr($danceType, 2, 1) !== ' ';
+            $texts = [];
+            if ($improvisation === FileMarkerAdditional::IMPROVISATION_VALUE) {
+                $texts[] = $fileMarker->getCategory() === CategoryType::QUADRILLE ? mb_substr($improvisation, 0, -1) . 'ая' : $improvisation;
+            }
+            if ($danceType !== '' && $danceTypeOneWord) {
+                $texts[] = $danceType;
+            }
+            $texts[] = mb_strtolower($fileMarker->getCategoryName());
+            if (!$danceTypeOneWord) {
+                $texts[] = $danceType;
+            }
+            if ($improvisation === FileMarkerAdditional::IMPROVISATION_MIKITA && $localName !== 'Мікіта') {
+                $texts[] = 'тыпу Мікіта';
+            }
+            if ($improvisation !== FileMarkerAdditional::IMPROVISATION_MIKITA && $improvisation !== FileMarkerAdditional::IMPROVISATION_VALUE && !empty($improvisation)) {
+                $texts[] = $improvisation;
+            }
+            $text = implode(' ', $texts);
+            $parts[] = mb_strtoupper(mb_substr($text, 0, 1)) . mb_substr($text, 1);
+        } else {
+            $parts[] = $fileMarker->getCategoryName();
+        }
 
         if (!empty($ritual)) {
             $parts[] = $ritual;
@@ -91,22 +97,26 @@ class YoutubeService
 
         $parts = [];
 
-        if ($fileMarker->getCategory() === CategoryType::DANCE) {
+        if ($fileMarker->isCategoryDance() || $fileMarker->isCategoryQuadrille()) {
+            $danceTypeOneWord = mb_substr($danceType, 1, 1) !== ' ' && mb_substr($danceType, 2, 1) !== ' ';
             $texts = [];
-            if ($tradition === FileMarkerAdditional::TRADITION_LATE) {
-                $texts[] = FileMarkerAdditional::TRADITION_LATE;
+            $tradition_text = FileMarkerAdditional::getTradition($tradition);
+            if (!empty($tradition_text)) {
+                $texts[] = $tradition_text;
             }
-            if (empty($ritual)) {
+            if (empty($ritual) && !$fileMarker->isCategoryQuadrille()) {
                 $texts[] = 'пазаабрадавы';
             }
-            if (mb_substr($danceType, 1, 1) !== ' ' && mb_substr($danceType, 2, 1) !== ' ' && $improvisation === FileMarkerAdditional::IMPROVISATION_VALUE) {
+            if ($danceTypeOneWord && $improvisation === FileMarkerAdditional::IMPROVISATION_VALUE) {
                 $texts[] = FileMarkerAdditional::IMPROVISATION_VALUE;
             }
-            if ($danceType !== '' && mb_substr($danceType, 1, 1) !== ' ' && mb_substr($danceType, 2, 1) !== ' ') {
+            if ($danceType !== '' && $danceTypeOneWord) {
                 $texts[] = $danceType;
             }
-            $texts[] = mb_strtolower($fileMarker->getCategoryName());
-            if (mb_substr($danceType, 1, 1) === ' ' || mb_substr($danceType, 2, 1) === ' ') {
+            $texts[] = $fileMarker->isCategoryDance()
+                ? mb_strtolower($fileMarker->getCategoryName())
+                : mb_strtolower(CategoryType::getSingleName(CategoryType::DANCE)) .  ' тыпу кадрылі';
+            if (!$danceTypeOneWord) {
                 $texts[] = $danceType;
             }
             if ($improvisation === FileMarkerAdditional::IMPROVISATION_MIKITA && $localName !== 'Мікіта') {
@@ -183,7 +193,10 @@ class YoutubeService
         $categoryName = CategoryType::getSingleName($category);
         $categoryNameMany = CategoryType::getManyOrSingleName($category);
 
-        $tags = ['#' . $this->textHelper->getTagFormat($categoryNameMany . ' беларусаў')];
+        $tags = [];
+        if ($fileMarker->getCategory() !== CategoryType::DANCE_MOVEMENTS) {
+            $tags[] = '#' . $this->textHelper->getTagFormat($categoryNameMany . ' беларусаў');
+        }
         if (!empty($localName)) {
             $tag = false !== mb_stripos($localName, $categoryName) ? $localName : $categoryName . ' ' . $localName;
             $tags[] = '#' . $this->textHelper->getTagFormat($tag);
@@ -203,7 +216,10 @@ class YoutubeService
             $parts[] = $tmkb;
         }
 
-        $parts[] = 'Падрыхтоўку відэа рабіла валантэрская група М.А. Козенкі ў 2023-2025 гг. Калі ласка, будзьце тактычныя і ўважлівыя пры напісанні вашых допісаў да відэа. Не дасылайце паведамленні, якія парушаюць закон, змяшчаюць пагрозы, абразы ці непрыстойнасці. Архіў мае за сабой права не публікаваць вашы каментары. Калі вы з гэтым не пагаджаецеся, калі ласка, не дасылайце іх.';
+        $notes = 'Апрацоўку відэа рабіла валантэрская група М.А. Козенкі ў 2023-2025 гг.';
+        $notes .= ' Калі ласка, будзьце тактычныя і ўважлівыя пры напісанні вашых допісаў да відэа. Не дасылайце паведамленні, якія парушаюць закон, змяшчаюць пагрозы, абразы ці непрыстойнасці. Архіў мае за сабой права не публікаваць вашы каментары. Калі вы з гэтым не пагаджаецеся, калі ласка, не дасылайце іх.';
+        $notes .= ' Калі вы кагосьці пазналі ці людзі, якіх вы дакладна ведаеце, не пазначаныя, то напішыце ў каментары.';
+        $parts[] = $notes;
 
         return implode('<br><br>', $parts);
     }

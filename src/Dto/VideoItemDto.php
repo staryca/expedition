@@ -23,6 +23,7 @@ class VideoItemDto extends PlaceDto
     public ?int $category = null;
     public ?string $baseName = null;
     public ?string $localName = null;
+    public ?string $youTube = null;
     public ?Pack $pack = null;
     public ?string $improvisation = null;
     public ?string $ritual = null;

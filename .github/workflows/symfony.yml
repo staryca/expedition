@@ -10,13 +10,17 @@ permissions:
 jobs:
   symfony-tests:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php-version: ['8.3', '8.4', '8.5']
+    continue-on-error: ${{ matrix.php-version == '8.5' }}
     steps:
     - name: Checkout
       uses: actions/checkout@v4
 
     - uses: shivammathur/setup-php@v2
       with:
-        php-version: '8.3'
+        php-version: ${{ matrix.php-version }}
         tools: phpunit-bridge
         extensions: mbstring, xml, ctype, iconv, pdo_sqlite, sqlite3
         coverage: xdebug
@@ -57,3 +61,8 @@ jobs:
 
     - name: Execute Style Check
       run: vendor/bin/phpcs src tests --standard=PSR12 -nps
+
+    - name: Twig test
+      env:
+        DATABASE_URL: sqlite:///%kernel.project_dir%/data/database.sqlite
+      run: bin/console lint:twig
