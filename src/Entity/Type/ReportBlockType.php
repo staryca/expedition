@@ -21,7 +21,7 @@ class ReportBlockType
     public const TYPE_PHOTO_OF_OBJECTS = 11;
 
     public const DETECT = [
-        self::TYPE_UNDEFINED => ['іншае'],
+        self::TYPE_UNDEFINED => ['іншае', 'перадача матэрыяла'],
         self::TYPE_CONVERSATION => ['гутарка', 'вечарына'],
         self::TYPE_VILLAGE_TOUR => ['агляд вёскі', 'здымкі вёскі'],
         self::TYPE_CEMETERY_TOUR => ['агляд могілак', 'здымкі могілак', 'здымка могілак', 'агляд магілак',],

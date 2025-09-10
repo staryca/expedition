@@ -64,6 +64,7 @@ class VideoKozParser
             $videoDto->category = CategoryType::findId($record[VideoKozColumns::TYPE_RECORD], '');
             $videoDto->baseName = $record[VideoKozColumns::BASE_NAME] ?? null;
             $videoDto->localName = $record[VideoKozColumns::LOCAL_NAME] ?? null;
+            $videoDto->youTube = $record[VideoKozColumns::YOUTUBE] ?? null;
             $videoDto->pack = $this->packRepository->getPackByName(
                 $record[VideoKozColumns::TYPE_DANCE] ?? null
             );
@@ -117,7 +118,16 @@ class VideoKozParser
                 } elseif (strlen($dateAction) < 5) {
                     $videoDto->dateAction = Carbon::createFromDate((int) $dateAction, 1, 1);
                 } else {
-                    $videoDto->dateAction = Carbon::createFromFormat('d.m.Y', (string) $dateAction);
+                    try {
+                        $videoDto->dateAction = Carbon::createFromFormat('d.m.Y', (string) $dateAction);
+                    } catch (\Exception $e) {
+                        throw new \Exception(sprintf(
+                            'Bad date "%s", row #%d: %s',
+                            $dateAction,
+                            $key,
+                            $content
+                        ));
+                    }
                 }
             }
 

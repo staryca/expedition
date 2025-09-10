@@ -106,7 +106,7 @@
 
                     let dataInformant = {
                         dateCreated: (new Date()).toISOString(),
-                        firstName: formDataObj.firstName,
+                        firstName: formDataObj.firstName.trim(),
                         yearBirth: parseInt(formDataObj.yearBirth),
                         nameAndGender: {name: formDataObj.firstName, gender: parseInt('{{ constant('App\\Entity\\Type\\GenderType::UNKNOWN') }}')},
                         geoPointCurrent: formDataObj.geoPointCurrent === '' ? null : formDataObj.geoPointCurrent,
@@ -122,7 +122,7 @@
                     delete formDataObj.placeCurrent
                     delete formDataObj.notes
 
-                    if (dataInformant.name !== '') {
+                    if (dataInformant.firstName !== '') {
                         saveInformant(dataInformant, true, null, index,
                             function (obj) {
                                 formDataObj.informant = '/api/informants/' + obj.id

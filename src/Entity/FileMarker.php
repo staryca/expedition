@@ -120,6 +120,16 @@ class FileMarker
         $this->category = $category;
     }
 
+    public function isCategoryDance(): bool
+    {
+        return $this->category === CategoryType::DANCE;
+    }
+
+    public function isCategoryQuadrille(): bool
+    {
+        return $this->category === CategoryType::QUADRILLE;
+    }
+
     public function isCategoryNotOther(): bool
     {
         return $this->category !== CategoryType::OTHER;

@@ -11,6 +11,7 @@ class VideoKozColumns
     public const TYPE_RECORD = 'Тып запісу';
     public const BASE_NAME = 'Танец';
     public const LOCAL_NAME = 'Назва мясцовая';
+    public const YOUTUBE = 'YouTube';
     public const TYPE_DANCE = 'Тып танцу';
     public const IMPROVISATION = 'Імп';
     public const RITUAL = 'Абрад';

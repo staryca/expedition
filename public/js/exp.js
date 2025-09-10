@@ -164,7 +164,7 @@ function addActionBlock(index, savedBlock) {
             let location = choiceObjects[choiceIndex].getValue().label
             const i = location.indexOf(',')
             if (i > 0) {
-                location = location.substring(0, i - 1)
+                location = location.substring(0, i)
             }
             const types = ['аг.', 'в.', 'г.', 'п.', 'гп.', 'кп.', 'рп.', 'ур.', 'ф.', 'х.']
             for (let i = 0; i < types.length; i++) {
