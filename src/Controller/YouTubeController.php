@@ -4,34 +4,36 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use App\Entity\Expedition;
-use App\Parser\Columns\VideoKozColumns;
-use App\Repository\ExpeditionRepository;
-use App\Repository\ReportRepository;
-use Google_Client;
-use Google_Service_YouTube;
+use App\Service\YoutubeService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
 class YouTubeController extends AbstractController
 {
-    private const EXPEDITION_ID = 9; // 9
-
     public function __construct(
-        private readonly ExpeditionRepository $expeditionRepository,
-        private readonly ReportRepository $reportRepository,
+        private readonly YoutubeService $youtubeService
     ) {
     }
 
     #[Route('/videos/list', name: 'app_videos_list')]
     public function list(): Response
     {
-        $client = new Google_Client();
-        $client->setApplicationName("YouTube");
-        $client->setAuthConfig($this->getParameter('google_credentials'));
+        $youtube = $this->youtubeService->getYoutubeService();
 
-        $youtube = new Google_Service_YouTube($client);
+        // by playlist (with api_key)
+        //$list = $youtube->playlistItems->listPlaylistItems('snippet', ['playlistId' => 'PLcZbXijhBgIoxkJvHt_lbm9fp72mCjcvX']);
+
+/*
+        $service = new Google_Service_YouTube($client);
+
+        $queryParams = [
+            'id' => 'UCF-ObqklvVQ1mo4OoCTVbFA'
+        ];
+
+        $response = $youtube->channels->listChannels('snippet,contentDetails,statistics', $queryParams);
+*/
         $queryParams = [
             'forMine' => true,
             'maxResults' => 25,
@@ -41,11 +43,11 @@ class YouTubeController extends AbstractController
 
         $data = [];
         foreach ($list->getItems() as $item) {
-            $data[] = [$item->getId()->getVideoId()];
+            $data[] = [$item->getSnippet()->getTitle()];
         }
 
         return $this->render('import/show.table.result.html.twig', [
-            'headers' => ['id'],
+            'headers' => ['title'],
             'data' => $data,
         ]);
     }

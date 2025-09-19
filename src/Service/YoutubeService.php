@@ -10,11 +10,18 @@ use App\Entity\Report;
 use App\Entity\ReportBlock;
 use App\Entity\Type\CategoryType;
 use App\Helper\TextHelper;
+use Google\Client;
+use Google\Service\YouTube;
+use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class YoutubeService
 {
     public function __construct(
+        private string $googleCredentials,
         private readonly TextHelper $textHelper,
+        private readonly UrlGeneratorInterface $urlGenerator,
+        private readonly RequestStack $requestStack,
     ) {
     }
 
@@ -81,7 +88,9 @@ class YoutubeService
             $parts[] = $geoPoint->getName() . ', ' . $geoPoint->getDistrict();
         }
 
-        return implode(' / ', $parts);
+        $title = implode(' / ', $parts);
+
+        return trim(preg_replace('!\s+!', ' ', $title));
     }
 
     public function getDescription(Report $report, ReportBlock $reportBlock, FileMarker $fileMarker): string
@@ -222,5 +231,65 @@ class YoutubeService
         $parts[] = $notes;
 
         return implode('<br><br>', $parts);
+    }
+
+    public function fixDescription(string $description): string
+    {
+        $description = str_replace(['<br>', '<', '>'], ["\n", '{', '}'], $description);
+
+        return mb_substr($description, 0, 5000);
+    }
+
+    public function getGoogleClient(): Client
+    {
+        $client = new Client();
+        $client->setApplicationName("Ethno-app");
+
+        $client->setScopes([
+            'https://www.googleapis.com/auth/youtube.readonly',
+            'https://www.googleapis.com/auth/youtube.force-ssl',
+        ]);
+        $client->setAuthConfig($this->googleCredentials);
+
+        $redirect_uri = $this->urlGenerator->generate('user_profile', [], UrlGeneratorInterface::ABSOLUTE_URL);
+        $client->setRedirectUri($redirect_uri);
+
+        return $client;
+    }
+
+    public function getYoutubeService(): YouTube
+    {
+        $client = $this->getGoogleClient();
+
+        $token = $this->requestStack->getSession()->get('access_token');
+        $client->setAccessToken($token);
+
+        return new YouTube($client);
+    }
+
+    public function updateInYouTube(FileMarker $fileMarker): mixed
+    {
+        $youtube = $this->getYoutubeService();
+
+        $response = null;
+        $additional = $fileMarker->getAdditional();
+        $videoId = $additional['youtube'];
+        $listResponse = $youtube->videos->listVideos("snippet", ['id' => $videoId]);
+        if ($listResponse !== null) {
+            $video = $listResponse->getItems()[0];
+            $snippet = $video->getSnippet();
+            $snippet->setTitle($this->getTitle($fileMarker->getReport(), $fileMarker));
+
+            $description = $this->getDescription(
+                $fileMarker->getReport(),
+                $fileMarker->getReportBlock(),
+                $fileMarker
+            );
+            $snippet->setDescription($this->fixDescription($description));
+
+            $response = $youtube->videos->update('snippet', $video);
+        }
+
+        return $response;
     }
 }
