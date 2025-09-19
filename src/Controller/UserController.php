@@ -43,8 +43,8 @@ class UserController extends AbstractController
             $authUrl = $client->createAuthUrl();
         }
 
-        return $this->render('user/profile.html.twig',
-            ['authUrl' => $authUrl]
-        );
+        return $this->render('user/profile.html.twig', [
+            'authUrl' => $authUrl,
+        ]);
     }
 }

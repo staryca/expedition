@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use App\Entity\Additional\UserRoles;
 use App\Repository\UserRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -50,6 +51,9 @@ class User implements OAuthAwareUserProviderInterface, UserInterface
 
     #[ORM\Column(length: 200, nullable: true)]
     private ?string $email = null;
+
+    #[ORM\Column(length: 200)]
+    private ?string $roles = null;
 
     public function __construct()
     {
@@ -175,11 +179,6 @@ class User implements OAuthAwareUserProviderInterface, UserInterface
         return $this;
     }
 
-    public function getRoles(): array
-    {
-        return ['ROLE_USER'];
-    }
-
     public function eraseCredentials(): void
     {
         // TODO: Implement eraseCredentials() method.
@@ -188,5 +187,32 @@ class User implements OAuthAwareUserProviderInterface, UserInterface
     public function getUserIdentifier(): string
     {
         return $this->email;
+    }
+
+    public function getRoles(): array
+    {
+        if (empty($this->roles)) {
+            return [UserRoles::ROLE_USER];
+        }
+
+        $roles = explode(',', $this->roles);
+
+        if (!in_array(UserRoles::ROLE_USER, $this->getRoles(), true)) {
+            $roles[] = UserRoles::ROLE_USER;
+        }
+
+        return $roles;
+    }
+
+    public function setRoles(string $roles): static
+    {
+        $this->roles = $roles;
+
+        return $this;
+    }
+
+    public function isAdmin(): bool
+    {
+        return in_array(UserRoles::ROLE_ADMIN, $this->getRoles(), true);
     }
 }
