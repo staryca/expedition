@@ -18,6 +18,13 @@
                     <p>
                         <a href="/logout" class="btn btn-primary my-2">Выйсці</a>
                     </p>
+                    <p>
+                        {% if authUrl %}
+                            <a class='btn btn-success' href='{{ authUrl }}'>Get token</a>
+                        {% else %}
+                            <a class='btn btn-danger' href='{{ path('user_profile', {cleanToken: 1}) }}'>Clean token</a>
+                        {% endif %}
+                    </p>
                 </div>
             </div>
         </section>

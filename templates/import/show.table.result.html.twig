@@ -20,8 +20,16 @@
             <tbody>
                 {% for row in data %}
                 <tr>
-                    {% for item in row %}
-                        <td>{{ item|raw }}</td>
+                    {% for key, item in row %}
+                        <td>
+                            {{ item|raw }}
+                            {% if key == 'id' and actions is defined %}
+                                <br />
+                                {% for action, icon in actions %}
+                                    <a class="btn btn-primary" href="{{ path(action, {id: item}) }}" role="button"><i class="bi {{ icon }}"></i></a>
+                                {% endfor %}
+                            {% endif %}
+                        </td>
                     {% endfor %}
                 </tr>
                 {% endfor %}

@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Entity\Expedition;
+use App\Entity\FileMarker;
 use App\Entity\Type\GenderType;
 use App\Handler\VideoKozHandler;
 use App\Parser\Columns\VideoKozColumns;
 use App\Repository\ExpeditionRepository;
+use App\Repository\FileMarkerRepository;
 use App\Repository\ReportRepository;
 use App\Service\YoutubeService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -17,13 +19,14 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class ImportVideoKozController extends AbstractController
 {
-    private const EXPEDITION_ID = 992; // 9
+    private const EXPEDITION_ID = 9; // 9
     private const FILENAME = '../var/data/video_koz/bro7.csv';
 
     public function __construct(
         private readonly VideoKozHandler $videoKozHandler,
         private readonly ExpeditionRepository $expeditionRepository,
         private readonly ReportRepository $reportRepository,
+        private readonly FileMarkerRepository $fileMarkerRepository,
         private readonly YoutubeService $youtubeService,
     ) {
     }
@@ -114,13 +117,26 @@ class ImportVideoKozController extends AbstractController
         $reports = $this->reportRepository->findByExpedition($expedition);
 
         $data = [];
+        $keyWarningDesc = $keyWarningTitle = $keyOk = 1;
         foreach ($reports as $report) {
             foreach ($report->getBlocks() as $block) {
                 foreach ($block->getFileMarkers() as $fileMarker) {
+                    $title = $this->youtubeService->getTitle($report, $fileMarker);
+                    $titleNotes = mb_strlen($title) > 100 ? '<i class="bi bi-exclamation-diamond-fill text-danger"></i> ' : '';
+                    $description = $this->youtubeService->getDescription($report, $block, $fileMarker);
+                    $descriptionNotes = mb_strlen($description) > 5000 ? '<i class="bi bi-exclamation-diamond-fill text-danger"></i> ' : '';
+
+                    $key = match (true) {
+                        !empty($descriptionNotes) => $keyWarningDesc++,
+                        !empty($titleNotes) => 100 + $keyWarningTitle++,
+                        default => 1000 + $keyOk++,
+                    };
+
                     $item = [];
+                    $item['id'] = $fileMarker->getId();
                     $item['file'] = $fileMarker->getFile()?->getFullFileName();
-                    $item['youtube_title'] = $this->youtubeService->getTitle($report, $fileMarker);
-                    $item['youtube_description'] = $this->youtubeService->getDescription($report, $block, $fileMarker);
+                    $item['youtube_title'] = $titleNotes . $title;
+                    $item['youtube_description'] = $descriptionNotes . $description;
 //                    $item['category'] = $fileMarker->getCategoryName();
 //                    $item['name'] = $fileMarker->getAdditionalValue('baseName');
 //                    $item['name_local'] = $fileMarker->getAdditionalValue('localName');
@@ -139,13 +155,15 @@ class ImportVideoKozController extends AbstractController
 //                    $item['tmkb'] = $fileMarker->getAdditionalValue('tmkb');
 //                    $item['additional'] = var_export($fileMarker->getAdditional(), true);
 
-                    $data[] = $item;
+                    $data[$key] = $item;
                 }
             }
         }
+        ksort($data);
 
         return $this->render('import/show.table.result.html.twig', [
             'headers' => [
+                'Actions',
                 VideoKozColumns::FILENAME,
                 'Youtube title',
                 'Youtube description',
@@ -166,6 +184,25 @@ class ImportVideoKozController extends AbstractController
 //                'Additional',
             ],
             'data' => $data,
+            'actions' => [
+                'app_import_video_koz_update_item' => 'bi-arrow-clockwise',
+            ],
+        ]);
+    }
+
+    #[Route('/import/video_koz/update/{id}', name: 'app_import_video_koz_update_item')]
+    public function updateItem(int $id): Response
+    {
+        /** @var FileMarker|null $fileMarker */
+        $fileMarker = $this->fileMarkerRepository->find($id);
+        if (!$fileMarker) {
+            throw $this->createNotFoundException('The fileMarker does not exist');
+        }
+
+        $response = $this->youtubeService->updateInYouTube($fileMarker);
+
+        return $this->render('import/show.json.result.html.twig', [
+            'data' => json_encode($response, JSON_FORCE_OBJECT | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR),
         ]);
     }
 }
