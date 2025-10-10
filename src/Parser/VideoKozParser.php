@@ -64,7 +64,7 @@ class VideoKozParser
             $videoDto->category = CategoryType::findId($record[VideoKozColumns::TYPE_RECORD], '');
             $videoDto->baseName = $record[VideoKozColumns::BASE_NAME] ?? null;
             $videoDto->localName = $record[VideoKozColumns::LOCAL_NAME] ?? null;
-            $videoDto->youTube = $record[VideoKozColumns::YOUTUBE] ?? null;
+            $videoDto->youTube = $this->getYoutube($record[VideoKozColumns::YOUTUBE] ?? null);
             $videoDto->pack = $this->packRepository->getPackByName(
                 $record[VideoKozColumns::TYPE_DANCE] ?? null
             );
@@ -135,5 +135,30 @@ class VideoKozParser
         }
 
         return $files;
+    }
+
+    private function getYoutube(?string $text): ?string
+    {
+        if (empty($text)) {
+            return null;
+        }
+
+        $parts = parse_url($text);
+
+        if (!isset($parts['host'])) {
+            return $parts['path'] ?? null;
+        }
+
+        if ($parts['host'] === 'www.youtube.com') {
+            parse_str($parts['query'], $params);
+
+            return $params['v'] ?? null;
+        }
+
+        if ($parts['host'] === 'youtu.be') {
+            return mb_substr($parts['path'], 1);
+        }
+
+        return null;
     }
 }

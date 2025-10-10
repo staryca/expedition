@@ -271,25 +271,27 @@ class YoutubeService
     {
         $youtube = $this->getYoutubeService();
 
-        $response = null;
         $additional = $fileMarker->getAdditional();
         $videoId = $additional['youtube'];
         $listResponse = $youtube->videos->listVideos("snippet", ['id' => $videoId]);
-        if ($listResponse !== null) {
-            $video = $listResponse->getItems()[0];
-            $snippet = $video->getSnippet();
-            $snippet->setTitle($this->getTitle($fileMarker->getReport(), $fileMarker));
-
-            $description = $this->getDescription(
-                $fileMarker->getReport(),
-                $fileMarker->getReportBlock(),
-                $fileMarker
-            );
-            $snippet->setDescription($this->fixDescription($description));
-
-            $response = $youtube->videos->update('snippet', $video);
+        if ($listResponse === null) {
+            return null;
+        }
+        if (0 === count($listResponse->getItems())) {
+            return 'No videos found. Check out the list of available videos.';
         }
 
-        return $response;
+        $video = $listResponse->getItems()[0];
+        $snippet = $video->getSnippet();
+        $snippet->setTitle($this->getTitle($fileMarker->getReport(), $fileMarker));
+
+        $description = $this->getDescription(
+            $fileMarker->getReport(),
+            $fileMarker->getReportBlock(),
+            $fileMarker
+        );
+        $snippet->setDescription($this->fixDescription($description));
+
+        return $youtube->videos->update('snippet', $video);
     }
 }

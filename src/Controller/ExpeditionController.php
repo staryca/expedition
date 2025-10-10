@@ -104,4 +104,21 @@ class ExpeditionController extends AbstractController
             'categories' => CategoryType::getManyNames(false),
         ]);
     }
+
+    #[Route('/expedition/{id}/dances', name: 'expedition_dances', methods: ['GET'])]
+    public function dances(int $id): Response
+    {
+        /** @var Expedition|null $expedition */
+        $expedition = $this->expeditionRepository->find($id);
+        if (!$expedition) {
+            throw $this->createNotFoundException('The expedition does not exist');
+        }
+
+        $markers = $this->fileMarkerRepository->getMarkersByExpedition($expedition, CategoryType::DANCE);
+
+        return $this->render('expedition/dances.html.twig', [
+            'expedition' => $expedition,
+            'markers' => $markers,
+        ]);
+    }
 }

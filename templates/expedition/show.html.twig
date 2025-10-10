@@ -38,7 +38,11 @@
             <p>
                 {% set all = 0 %}
                 {% for category, count in statistics %}
-                    <a href="#">{{ categories[category] }} ({{ count }})</a>{% if not loop.last %},{% else %}.{% endif %}
+                    {% set link = '#' %}
+                    {% if category == constant('App\\Entity\\Type\\CategoryType::DANCE') %}
+                        {% set link = path('expedition_dances', {id: expedition.id}) %}
+                    {% endif %}
+                    <a href="{{ link }}">{{ categories[category] }} ({{ count }})</a>{% if not loop.last %},{% else %}.{% endif %}
                     {% set all = all + count %}
                 {% endfor %}
                 {% if all > 0 %}
