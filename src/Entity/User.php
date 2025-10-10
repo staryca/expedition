@@ -197,7 +197,7 @@ class User implements OAuthAwareUserProviderInterface, UserInterface
 
         $roles = explode(',', $this->roles);
 
-        if (!in_array(UserRoles::ROLE_USER, $this->getRoles(), true)) {
+        if (!in_array(UserRoles::ROLE_USER, $roles, true)) {
             $roles[] = UserRoles::ROLE_USER;
         }
 

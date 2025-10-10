@@ -19,8 +19,8 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class ImportVideoKozController extends AbstractController
 {
-    private const EXPEDITION_ID = 9; // 9
-    private const FILENAME = '../var/data/video_koz/bro7.csv';
+    private const EXPEDITION_ID = 991; // 9
+    private const FILENAME = '../var/data/video_koz/bre-1.csv';
 
     public function __construct(
         private readonly VideoKozHandler $videoKozHandler,
@@ -187,6 +187,38 @@ class ImportVideoKozController extends AbstractController
             'actions' => [
                 'app_import_video_koz_update_item' => 'bi-arrow-clockwise',
             ],
+        ]);
+    }
+
+    #[Route('/import/video_koz/update/all', name: 'app_import_video_koz_update_all_items')]
+    public function updateAllItems(): Response
+    {
+        /** @var Expedition|null $expedition */
+        $expedition = $this->expeditionRepository->find(self::EXPEDITION_ID);
+        if (!$expedition) {
+            throw $this->createNotFoundException('The expedition does not exist');
+        }
+
+        $markers = $this->fileMarkerRepository->getMarkersByExpedition($expedition);
+        $result = ['all' => 0, 'videos' => 0, 'no_found' => 0, 'updated' => 0, 'items' => []];
+        foreach ($markers as $fileMarker) {
+            $result['all']++;
+            $additional = $fileMarker->getAdditional();
+            $videoId = $additional['youtube'] ?? null;
+            if ($videoId) {
+                $result['videos']++;
+                $response = $this->youtubeService->updateInYouTube($fileMarker);
+                if (is_string($response)) {
+                    $result['no_found']++;
+                } elseif (null !== $response) {
+                    $result['updated']++;
+                }
+                $result['items'][$videoId] = $response;
+            }
+        }
+
+        return $this->render('import/show.json.result.html.twig', [
+            'data' => json_encode($result, JSON_FORCE_OBJECT | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR),
         ]);
     }
 

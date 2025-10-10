@@ -43,7 +43,7 @@ class VideoKozParserTest extends TestCase
             ->willReturn([$geoPoint]);
 
         $pack = new Pack();
-        $pack->setName('сольны');
+        $pack->setName('сольны-тэст');
         $this->packRepository->expects($this->exactly(2))
             ->method('getPackByName')
             ->willReturn($pack);
@@ -63,7 +63,8 @@ class VideoKozParserTest extends TestCase
         $this->assertEquals(CategoryType::DANCE, $item->category);
         $this->assertEquals('тып Мікіта', $item->baseName);
         $this->assertEquals('Полька на вылка́х', $item->localName);
-        $this->assertEquals('сольны', $item->pack->getName());
+        $this->assertEquals('aypL7yMMd3A', $item->youTube);
+        $this->assertEquals('сольны-тэст', $item->pack->getName());
         $this->assertEquals('тып Мікіта', $item->improvisation);
         $this->assertNotNull($item->geoPoint);
         $this->assertEquals(242990503, $item->geoPoint->getId());
@@ -85,7 +86,8 @@ class VideoKozParserTest extends TestCase
         $this->assertEquals(CategoryType::STORY, $item->category);
         $this->assertEquals('', $item->baseName);
         $this->assertEquals('', $item->localName);
-        $this->assertEquals('сольны', $item->pack->getName());
+        $this->assertEquals('Q2ClNDiRzsU', $item->youTube);
+        $this->assertEquals('сольны-тэст', $item->pack->getName());
         $this->assertEquals('', $item->improvisation);
         $this->assertNull($item->dateAction);
         $this->assertEquals('Гутарка з мясцовым калектывам.' . "\n\r" . 'Дата запісу: сяр. 1990-х', $item->notes);

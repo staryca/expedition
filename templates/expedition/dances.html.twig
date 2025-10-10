@@ -1,0 +1,76 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+    Танцы, запісаныя ў гэтай экспедыцыі
+{% endblock %}
+
+{% block body %}
+    <div class="container py-5">
+        <h1 class="h2">Танцы экспедыцыі <b>{{ expedition.name }}</b></h1>
+        <div class="row">
+            <p class="text-end d-print-none"><small><a href="{{ path('expedition_show', {id: expedition.id}) }}">Справаздачы</a></small></p>
+
+            <h5>Танцы ({{ markers|length }})</h5>
+            <table class="table">
+                <thead>
+                <tr>
+                    <th scope="col">Год і месца</th>
+                    <th scope="col">Назва</th>
+                    <th scope="col">Заўвагі</th>
+                    <th scope="col">Дадаткова</th>
+                </tr>
+                </thead>
+
+                <tbody>
+                {% for marker in markers %}
+                    <tr>
+                        <td>
+                            {% set report = marker.getReport() %}
+                            {% if report.geoPoint %}
+                                {% set year = report.getDateActionYear() %}
+                                {% if year %}{{ year }},{% endif %}
+                                <b>{{ report.geoPoint.getLongBeName() }}</b>
+                                {% if report.geoPoint.district %}
+                                    {{ report.geoPoint.district }}
+                                {% endif %}
+                            {% endif %}
+                        </td>
+                        <td>
+                            {{ marker.name }}
+                            {% for tag in marker.tags %}
+                                <span class="badge text-bg-secondary">{{ tag.name }}</span>
+                            {% endfor %}
+                        </td>
+                        <td>
+                            {{ marker.notes }}
+                            {% if marker.decoding %}
+                                <button title="Расшыфроўка" class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ marker.id }}" aria-expanded="false" aria-controls="collapse{{ marker.id }}">
+                                    <i class="bi bi-arrow-down-square-fill"></i>
+                                </button>
+                                <div class="collapse" id="collapse{{ marker.id }}">
+                                    <div class="card card-body">
+                                        {{ marker.decoding|nl2br }}
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% set additional = marker.getAdditional() %}
+                            {% for key,value in additional %}
+                                {% if key == constant('App\\Entity\\Additional\\FileMarkerAdditional::YOUTUBE') %}
+                                    <a href="https://youtu.be/{{ value }}" target="_blank"><i class="bi bi-youtube"></i> глядзець</a>
+                                    {% if not loop.last %}<br>{% endif %}
+                                {% else %}
+                                    {{ value }}{% if not loop.last %},<br>{% endif %}
+                                {% endif %}
+                            {% endfor %}
+                        </td>
+                    </tr>
+                {% endfor %}
+
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+{% endblock %}
