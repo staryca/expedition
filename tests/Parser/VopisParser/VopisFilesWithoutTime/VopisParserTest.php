@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Tests\Parser\VopisParser\VopisFilesWithoutTime;
 
 use App\Entity\Type\CategoryType;
-use App\Helper\TextHelper;
 use App\Parser\VopisParser;
 use App\Repository\GeoPointRepository;
 use App\Service\LocationService;
@@ -25,9 +24,8 @@ class VopisParserTest extends TestCase
 
         $this->geoPointRepository = $this->createMock(GeoPointRepository::class);
 
-        $textHelper = new TextHelper();
         $locationService = new LocationService($this->geoPointRepository);
-        $personService = new PersonService($textHelper);
+        $personService = new PersonService();
         $this->vopisParser = new VopisParser($locationService, $personService);
     }
 

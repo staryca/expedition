@@ -6,7 +6,6 @@ namespace App\Tests\Service\PersonService;
 
 use App\Dto\NameGenderDto;
 use App\Entity\Type\GenderType;
-use App\Helper\TextHelper;
 use App\Service\PersonService;
 use PHPUnit\Framework\TestCase;
 
@@ -18,8 +17,7 @@ class NameAndGenderTest extends TestCase
     {
         parent::setUp();
 
-        $textHelper = new TextHelper();
-        $this->personService = new PersonService($textHelper);
+        $this->personService = new PersonService();
     }
 
     public function testUniqueNames(): void

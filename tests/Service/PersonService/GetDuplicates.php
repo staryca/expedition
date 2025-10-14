@@ -6,7 +6,6 @@ namespace App\Tests\Service\PersonService;
 
 use App\Entity\GeoPoint;
 use App\Entity\Informant;
-use App\Helper\TextHelper;
 use App\Service\PersonService;
 use PHPUnit\Framework\TestCase;
 
@@ -18,7 +17,7 @@ class GetDuplicates extends TestCase
     {
         parent::setUp();
 
-        $this->personService = new PersonService(new TextHelper());
+        $this->personService = new PersonService();
     }
 
     /**
