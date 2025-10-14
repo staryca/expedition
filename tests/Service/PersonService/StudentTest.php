@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Tests\Service\PersonService;
 
 use App\Dto\PersonBsuDto;
-use App\Helper\TextHelper;
 use App\Service\PersonService;
 use PHPUnit\Framework\TestCase;
 
@@ -17,8 +16,7 @@ class StudentTest extends TestCase
     {
         parent::setUp();
 
-        $textHelper = new TextHelper();
-        $this->personService = new PersonService($textHelper);
+        $this->personService = new PersonService();
     }
 
     public function testDetectStudentsGroup(): void

@@ -31,7 +31,7 @@ class DocParserTest extends TestCase
 
         $textHelper = new TextHelper();
         $locationService = new LocationService($this->geoPointRepository);
-        $personService = new PersonService($textHelper);
+        $personService = new PersonService();
         $userService = new UserService(
             $this->createMock(UserRepository::class),
             $textHelper,

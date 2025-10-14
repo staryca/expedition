@@ -42,6 +42,9 @@ class Pack
     #[ORM\Column(length: 30)]
     private string $namePlural;
 
+    #[ORM\Column(length: 40, nullable: true)]
+    private ?string $playlist = null;
+
     public function __construct()
     {
     }
@@ -122,6 +125,18 @@ class Pack
     public function setNamePlural(string $namePlural): self
     {
         $this->namePlural = $namePlural;
+
+        return $this;
+    }
+
+    public function getPlaylist(): ?string
+    {
+        return $this->playlist;
+    }
+
+    public function setPlaylist(?string $playlist): static
+    {
+        $this->playlist = $playlist;
 
         return $this;
     }

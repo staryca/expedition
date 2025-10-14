@@ -6,12 +6,10 @@ namespace App\Tests\Parser\BsuParser\BsuReportBirth;
 
 use App\Dto\InformantDto;
 use App\Dto\StudentDto;
-use App\Helper\TextHelper;
 use App\Parser\BsuParser;
 use App\Repository\GeoPointRepository;
 use App\Service\LocationService;
 use App\Service\PersonService;
-use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 class BsuParserTest extends TestCase
@@ -23,9 +21,8 @@ class BsuParserTest extends TestCase
         parent::setUp();
 
         $geoPointRepository = $this->createMock(GeoPointRepository::class);
-        $textHelper = new TextHelper();
         $locationService = new LocationService($geoPointRepository);
-        $personService = new PersonService($textHelper);
+        $personService = new PersonService();
         $this->bsuParser = new BsuParser($locationService, $personService);
     }
 

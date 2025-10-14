@@ -7,7 +7,6 @@ namespace App\Tests\Parser\VideoKozParser\ItemsSimple;
 use App\Entity\GeoPoint;
 use App\Entity\Pack;
 use App\Entity\Type\CategoryType;
-use App\Helper\TextHelper;
 use App\Parser\VideoKozParser;
 use App\Repository\GeoPointRepository;
 use App\Repository\PackRepository;
@@ -29,9 +28,8 @@ class VideoKozParserTest extends TestCase
         $this->geoPointRepository = $this->createMock(GeoPointRepository::class);
         $this->packRepository = $this->createMock(PackRepository::class);
 
-        $textHelper = new TextHelper();
         $locationService = new LocationService($this->geoPointRepository);
-        $personService = new PersonService($textHelper);
+        $personService = new PersonService();
         $this->parser = new VideoKozParser($locationService, $personService, $this->packRepository);
     }
 
@@ -63,7 +61,7 @@ class VideoKozParserTest extends TestCase
         $this->assertEquals(CategoryType::DANCE, $item->category);
         $this->assertEquals('тып Мікіта', $item->baseName);
         $this->assertEquals('Полька на вылка́х', $item->localName);
-        $this->assertEquals('aypL7yMMd3A', $item->youTube);
+        $this->assertEquals('aypL7yMMd3AA', $item->youTube);
         $this->assertEquals('сольны-тэст', $item->pack->getName());
         $this->assertEquals('тып Мікіта', $item->improvisation);
         $this->assertNotNull($item->geoPoint);
@@ -86,7 +84,7 @@ class VideoKozParserTest extends TestCase
         $this->assertEquals(CategoryType::STORY, $item->category);
         $this->assertEquals('', $item->baseName);
         $this->assertEquals('', $item->localName);
-        $this->assertEquals('Q2ClNDiRzsU', $item->youTube);
+        $this->assertEquals('Q2ClNDiRzsUA', $item->youTube);
         $this->assertEquals('сольны-тэст', $item->pack->getName());
         $this->assertEquals('', $item->improvisation);
         $this->assertNull($item->dateAction);

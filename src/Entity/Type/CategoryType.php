@@ -87,7 +87,7 @@ class CategoryType
         self::ABOUT_OTHER_INFORMANTS => null,
         self::CHANGE_INFORMANTS => null,
         self::STAGE_ACTION => null,
-        self::FILM => null,
+        self::FILM => 'фільмы',
         self::OTHER => null,
     ];
 
