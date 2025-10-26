@@ -6,6 +6,7 @@ namespace App\Parser;
 
 use App\Dto\FileDto;
 use App\Dto\VideoItemDto;
+use App\Entity\Additional\FileMarkerAdditional;
 use App\Entity\Type\CategoryType;
 use App\Entity\Type\FileType;
 use App\Helper\TextHelper;
@@ -25,6 +26,15 @@ class VideoKozParser
         private readonly PersonService $personService,
         private readonly PackRepository $packRepository,
     ) {
+    }
+
+    private static function getValue(array $array, string $key): ?string
+    {
+        if (array_key_exists($key, $array)) {
+            return trim($array[$key]);
+        }
+
+        return null;
     }
 
     /**
@@ -62,39 +72,40 @@ class VideoKozParser
 
             $videoDto = new VideoItemDto();
             $videoDto->category = CategoryType::findId($record[VideoKozColumns::TYPE_RECORD], '');
-            $videoDto->baseName = $record[VideoKozColumns::BASE_NAME] ?? null;
+            $videoDto->baseName = self::getValue($record, VideoKozColumns::BASE_NAME);
             $videoDto->localName = $record[VideoKozColumns::LOCAL_NAME] ?? null;
-            $videoDto->youTube = $this->getYoutube($record[VideoKozColumns::YOUTUBE] ?? null);
+            $videoDto->youTube = $this->getYoutube(self::getValue($record, VideoKozColumns::YOUTUBE));
             $videoDto->pack = $this->packRepository->getPackByName(
-                $record[VideoKozColumns::TYPE_DANCE] ?? null
+                self::getValue($record, VideoKozColumns::TYPE_DANCE)
             );
-            $videoDto->improvisation = $record[VideoKozColumns::IMPROVISATION] ?? null;
-            $videoDto->ritual = $record[VideoKozColumns::RITUAL] ?? null;
-            $videoDto->tradition = $record[VideoKozColumns::TRADITION] ?? null;
-            $videoDto->notes = $record[VideoKozColumns::DESCRIPTION] ?? null;
-            $videoDto->texts = $record[VideoKozColumns::TEXTS] ?? null;
-            $videoDto->tmkb = $record[VideoKozColumns::TMKB] ?? null;
+            $videoDto->improvisation = FileMarkerAdditional::getImprovisation(
+                self::getValue($record, VideoKozColumns::IMPROVISATION)
+            );
+            $videoDto->ritual = self::getValue($record, VideoKozColumns::RITUAL);
+            $videoDto->tradition = self::getValue($record, VideoKozColumns::TRADITION);
+            $videoDto->notes = self::getValue($record, VideoKozColumns::DESCRIPTION);
+            $videoDto->source = self::getValue($record, VideoKozColumns::SOURCE);
+            $videoDto->texts = self::getValue($record, VideoKozColumns::TEXTS);
+            $videoDto->tmkb = self::getValue($record, VideoKozColumns::TMKB);
 
-            $subDistrict = trim($record[VideoKozColumns::SOVIET]);
+            $subDistrict = self::getValue($record, VideoKozColumns::SOVIET);
             $location = $this->locationService->detectLocation(
-                $record[VideoKozColumns::VILLAGE],
-                trim($record[VideoKozColumns::DISTINCT]) . ' ' . LocationService::DISTRICT,
+                self::getValue($record, VideoKozColumns::VILLAGE),
+                self::getValue($record, VideoKozColumns::DISTINCT) . ' ' . LocationService::DISTRICT,
                 empty($subDistrict) ? null : $subDistrict . ' ' . LocationService::SUBDISTRICT
             );
-            $geoPointId = $record[VideoKozColumns::MAP_INDEX] ?? null;
+            $geoPointId = self::getValue($record, VideoKozColumns::MAP_INDEX);
             if ($location && (!$geoPointId || $location->getId() === $geoPointId)) {
                 $videoDto->geoPoint = $location;
             } else {
                 $videoDto->place =
-                    $record[VideoKozColumns::VILLAGE] . ', '
-                    . trim($record[VideoKozColumns::DISTINCT]) . ' ' . LocationService::DISTRICT . ', '
+                    self::getValue($record, VideoKozColumns::VILLAGE) . ', '
+                    . self::getValue($record, VideoKozColumns::DISTINCT) . ' ' . LocationService::DISTRICT . ', '
                     . empty($subDistrict) ? null : $subDistrict . ' ' . LocationService::SUBDISTRICT
                 ;
             }
 
-            if (isset($record[VideoKozColumns::ORGANIZATION])) {
-                $videoDto->organizationName = trim($record[VideoKozColumns::ORGANIZATION]);
-            }
+            $videoDto->organizationName = self::getValue($record, VideoKozColumns::ORGANIZATION);
             if (isset($record[VideoKozColumns::INFORMANTS])) {
                 $isMusicians = $videoDto->category === CategoryType::MELODY ? true : null;
                 $videoDto->informants = $this->personService->getInformants($record[VideoKozColumns::INFORMANTS], '', $isMusicians);
@@ -107,8 +118,8 @@ class VideoKozParser
                     ];
             }
 
-            $dateAction = $record[VideoKozColumns::DATE_RECORD] ?? null;
-            if (!empty(trim($dateAction))) {
+            $dateAction = self::getValue($record, VideoKozColumns::DATE_RECORD);
+            if (!empty($dateAction)) {
                 if ($dateAction[0] === '(') {
                     $dateActionNotes = trim(str_replace(['(', ')'], '', $dateAction));
                     $videoDto->dateActionNotes = $dateActionNotes;

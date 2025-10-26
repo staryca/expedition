@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Parser\VideoKozParser\ItemsSimple;
 
+use App\Entity\Additional\Artist;
 use App\Entity\GeoPoint;
 use App\Entity\Pack;
 use App\Entity\Type\CategoryType;
@@ -101,6 +102,8 @@ class VideoKozParserTest extends TestCase
         $this->assertEquals(1949, $item->informants[2]->birth);
         $this->assertEquals('баян, маст. кіраўнік', $item->informants[2]->notes);
         $this->assertTrue($item->informants[2]->isMusician);
+        $this->assertNotEmpty($item->source);
+        $this->assertTrue(Artist::isChildren($item->source));
         $this->assertStringContainsString('Ой чого ты, лысый,', $item->texts);
         $this->assertEquals('', $item->tmkb);
     }

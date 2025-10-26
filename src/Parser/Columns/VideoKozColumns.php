@@ -25,6 +25,7 @@ class VideoKozColumns
     public const ORGANIZATION = 'Калектыў';
     public const INFORMANTS = 'Выканаўцы на відэа';
     public const MUSICIANS = 'Музыкі';
+    public const SOURCE = 'Крыніца';
     public const TEXTS = 'Прыпеўкі пад танец';
     public const TMKB = 'Наяўнасьць у ТМКБ';
 }
