@@ -18,7 +18,7 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 class YoutubeService
 {
     public function __construct(
-        private string $googleCredentials,
+        private readonly string $googleCredentials,
         private readonly TextHelper $textHelper,
         private readonly UrlGeneratorInterface $urlGenerator,
         private readonly RequestStack $requestStack,
@@ -40,7 +40,7 @@ class YoutubeService
         $localNameText = str_replace(' ', '', mb_strtolower($localName));
         $baseNameText = str_replace(' ', '', mb_strtolower($baseName));
         $part .= empty($baseName) || str_contains($localNameText, $baseNameText)
-                || $improvisation === FileMarkerAdditional::IMPROVISATION_MIKITA || mb_strlen($localName) > 20
+                || $improvisation === FileMarkerAdditional::IMPROVISATION_MIKITA_CASE || mb_strlen($localName) > 20
             ? ''
             : ' (' . $baseName . ') ';
         if (!empty($part)) {
@@ -60,10 +60,10 @@ class YoutubeService
             if (!$danceTypeOneWord) {
                 $texts[] = $danceType;
             }
-            if ($improvisation === FileMarkerAdditional::IMPROVISATION_MIKITA && $localName !== 'Мікіта') {
-                $texts[] = 'тыпу Мікіта';
+            if ($improvisation === FileMarkerAdditional::IMPROVISATION_MIKITA_CASE && $localName !== 'Мікіта') {
+                $texts[] = FileMarkerAdditional::IMPROVISATION_MIKITA_CASE;
             }
-            if ($improvisation !== FileMarkerAdditional::IMPROVISATION_MIKITA && $improvisation !== FileMarkerAdditional::IMPROVISATION_VALUE && !empty($improvisation)) {
+            if ($improvisation !== FileMarkerAdditional::IMPROVISATION_MIKITA_CASE && $improvisation !== FileMarkerAdditional::IMPROVISATION_VALUE && !empty($improvisation)) {
                 $texts[] = $improvisation;
             }
             $text = implode(' ', $texts);
@@ -128,10 +128,10 @@ class YoutubeService
             if (!$danceTypeOneWord) {
                 $texts[] = $danceType;
             }
-            if ($improvisation === FileMarkerAdditional::IMPROVISATION_MIKITA && $localName !== 'Мікіта') {
-                $texts[] = 'тыпу Мікіта';
+            if ($improvisation === FileMarkerAdditional::IMPROVISATION_MIKITA_CASE && $localName !== 'Мікіта') {
+                $texts[] = FileMarkerAdditional::IMPROVISATION_MIKITA_CASE;
             }
-            if ($improvisation !== FileMarkerAdditional::IMPROVISATION_MIKITA && $improvisation !== FileMarkerAdditional::IMPROVISATION_VALUE && !empty($improvisation)) {
+            if ($improvisation !== FileMarkerAdditional::IMPROVISATION_MIKITA_CASE && $improvisation !== FileMarkerAdditional::IMPROVISATION_VALUE && !empty($improvisation)) {
                 $texts[] = $improvisation;
             }
             if (empty($improvisation)) {

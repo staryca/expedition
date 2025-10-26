@@ -12,10 +12,10 @@ class Artist
 
     public const CHILDREN_PLAYLIST = '';
 
-    public function isChildren(string $text): bool
+    public static function isChildren(?string $text): bool
     {
-        $text = mb_strtolower(trim($text));
+        $text = mb_strtolower(trim((string) $text));
 
-        return $text === static::CHILDREN || str_starts_with(static::CHILDREN, $text);
+        return !empty($text) && ($text === static::CHILDREN || str_starts_with(static::CHILDREN, $text));
     }
 }

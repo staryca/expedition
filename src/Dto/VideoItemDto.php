@@ -26,6 +26,7 @@ class VideoItemDto extends PlaceDto
     public ?string $youTube = null;
     public ?Pack $pack = null;
     public ?string $improvisation = null;
+    public ?string $source = null;
     public ?string $ritual = null;
     public ?string $tradition = null;
     public ?string $dateActionNotes = null;

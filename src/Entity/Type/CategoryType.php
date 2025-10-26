@@ -32,6 +32,7 @@ class CategoryType
     public const STAGE_ACTION = 97;
     public const FILM = 98;
     public const OTHER = 99;
+    // new types need add to database
 
     public const TYPES = [
         self::KARAHOD => 'карагод',
@@ -86,7 +87,7 @@ class CategoryType
         self::ABOUT_INFORMANT => null,
         self::ABOUT_OTHER_INFORMANTS => null,
         self::CHANGE_INFORMANTS => null,
-        self::STAGE_ACTION => null,
+        self::STAGE_ACTION => 'сцэнічныя дзеі',
         self::FILM => 'фільмы',
         self::OTHER => null,
     ];
@@ -151,6 +152,18 @@ class CategoryType
         self::ABOUT_INFORMANT,
         self::ABOUT_OTHER_INFORMANTS,
         self::CHANGE_INFORMANTS,
+    ];
+
+    private const NOT_IMPORTANT_TYPES = [
+        self::POEMS,
+        self::PAREMIA,
+        self::FAIRY_TALE,
+        self::LULLABY,
+        self::PARABLE,
+        self::SPELL,
+        self::RIDDLE,
+        self::ABOUT_DANCES,
+        self::OTHER,
     ];
 
     public const TYPES_BY_TAGS = [
@@ -233,6 +246,11 @@ class CategoryType
         return in_array($type, [
             self::ABOUT_RECORD, self::CHANGE_INFORMANTS, self::ABOUT_INFORMANT, self::ABOUT_OTHER_INFORMANTS
         ], true);
+    }
+
+    public static function isImportantType(int $type): bool
+    {
+        return !in_array($type, self::NOT_IMPORTANT_TYPES, true);
     }
 
     public static function findId(string $text, string $textNext, bool $isAll = true): ?int

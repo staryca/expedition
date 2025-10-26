@@ -23,15 +23,20 @@ class FileMarkerRepository extends ServiceEntityRepository
         parent::__construct($registry, FileMarker::class);
     }
 
-    public function getStatistics(Expedition $expedition): array
+    public function getStatistics(?Expedition $expedition): array
     {
-        $records = $this->createQueryBuilder('fm')
+        $qb = $this->createQueryBuilder('fm')
             ->select('COUNT(fm.id) AS cnt', 'fm.category')
             ->leftJoin('fm.reportBlock', 'rb')
             ->leftJoin('rb.report', 'r')
-            ->where('r.expedition = :expedition')
-            ->setParameter('expedition', $expedition)
-            ->groupBy('fm.category')
+            ->groupBy('fm.category');
+
+        if ($expedition) {
+            $qb->andWhere('r.expedition = :expedition')
+                ->setParameter('expedition', $expedition);
+        }
+
+        $records = $qb
             ->getQuery()
             ->getResult();
 
