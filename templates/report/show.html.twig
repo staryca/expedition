@@ -199,7 +199,7 @@
                                 <tbody>
 
                                 {% for marker in file.fileMarkers %}
-                                    <tr>
+                                    <tr id="marker{{ marker.id }}">
                                         <th scope="row">
                                             {% if marker.startTime %}
                                                 {{ marker.startTime|date("H:i:s.u")|slice(0,-3) }}
@@ -273,7 +273,7 @@
                             <tbody>
 
                             {% for marker in fileMarkers[fileId] %}
-                                <tr>
+                                <tr id="marker{{ marker.id }}">
                                     <th scope="row">
                                         {% if marker.startTime %}
                                             {{ marker.startTime|date("H:i:s.u")|slice(0,-3) }}
@@ -287,6 +287,11 @@
                                         {% for tag in marker.tags %}
                                             <span class="badge text-bg-secondary">{{ tag.name }}</span>
                                         {% endfor %}
+
+                                        {% set youtube = marker.getAdditionalValue(constant('App\\Entity\\Additional\\FileMarkerAdditional::YOUTUBE')) %}
+                                        {% if youtube %}
+                                            <a href="https://youtu.be/{{ youtube }}" target="_blank"><i class="bi bi-youtube"></i> глядзець</a>
+                                        {% endif %}
                                     </td>
                                     <td>
                                         {{ marker.notes }}

@@ -276,6 +276,9 @@ class VideoKozHandler
                 if (!empty($videoItem->tradition)) {
                     $marker->additional[FileMarkerAdditional::TRADITION] = $videoItem->tradition;
                 }
+                if (!empty($videoItem->source)) {
+                    $marker->additional[FileMarkerAdditional::SOURCE] = $videoItem->source;
+                }
                 if (!empty($videoItem->dateActionNotes)) {
                     $marker->additional[FileMarkerAdditional::DATE_ACTION_NOTES] = $videoItem->dateActionNotes;
                 }

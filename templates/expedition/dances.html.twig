@@ -18,6 +18,7 @@
                     <th scope="col">Назва</th>
                     <th scope="col">Заўвагі</th>
                     <th scope="col">Дадаткова</th>
+                    <th scope="col">PlayLists</th>
                 </tr>
                 </thead>
 
@@ -26,8 +27,8 @@
                     <tr>
                         <td>
                             {% set report = marker.getReport() %}
+                            {% set year = report.getDateActionYear() %}
                             {% if report.geoPoint %}
-                                {% set year = report.getDateActionYear() %}
                                 {% if year %}{{ year }},{% endif %}
                                 <b>{{ report.geoPoint.getLongBeName() }}</b>
                                 {% if report.geoPoint.district %}
@@ -40,6 +41,7 @@
                             {% for tag in marker.tags %}
                                 <span class="badge text-bg-secondary">{{ tag.name }}</span>
                             {% endfor %}
+                            <a href="{{ path('report_show', {id: report.id}) }}#marker{{ marker.id }}"><i class="bi bi-arrow-right-circle"></i></a>
                         </td>
                         <td>
                             {{ marker.notes }}
@@ -56,13 +58,24 @@
                         </td>
                         <td>
                             {% set additional = marker.getAdditional() %}
-                            {% for key,value in additional %}
+                            {% for key, value in additional %}
                                 {% if key == constant('App\\Entity\\Additional\\FileMarkerAdditional::YOUTUBE') %}
                                     <a href="https://youtu.be/{{ value }}" target="_blank"><i class="bi bi-youtube"></i> глядзець</a>
                                     {% if not loop.last %}<br>{% endif %}
                                 {% else %}
                                     {{ value }}{% if not loop.last %},<br>{% endif %}
                                 {% endif %}
+                            {% endfor %}
+                        </td>
+                        <td>
+                            {% for name, playlistId in playlists.(marker.id) %}
+                                {{ name }}
+                                {% if playlistId is empty %}
+                                    <i class="bi bi-exclamation-diamond-fill text-danger"></i>
+                                {% else %}
+                                    {{ playlistId }}
+                                {% endif %}
+                                {%- if not loop.last -%},{% endif %}
                             {% endfor %}
                         </td>
                     </tr>

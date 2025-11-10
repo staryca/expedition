@@ -64,7 +64,7 @@ class VideoKozParserTest extends TestCase
         $this->assertEquals('Полька на вылка́х', $item->localName);
         $this->assertEquals('aypL7yMMd3AA', $item->youTube);
         $this->assertEquals('сольны-тэст', $item->pack->getName());
-        $this->assertEquals('тып Мікіта', $item->improvisation);
+        $this->assertEquals('тыпу Мікіта', $item->improvisation);
         $this->assertNotNull($item->geoPoint);
         $this->assertEquals(242990503, $item->geoPoint->getId());
         $this->assertNotNull($item->dateAction);
