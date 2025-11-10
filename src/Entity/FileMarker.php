@@ -6,6 +6,7 @@ namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
 use App\Dto\EpisodeDto;
+use App\Entity\Additional\FileMarkerAdditional;
 use App\Entity\Type\CategoryType;
 use App\Repository\FileMarkerRepository;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -234,6 +235,21 @@ class FileMarker
     public function getAdditionalValue(string $key): string
     {
         return isset($this->additional[$key]) ? trim($this->additional[$key]) : '';
+    }
+
+    public function getAdditionalDance(): string
+    {
+        return $this->getAdditionalValue(FileMarkerAdditional::BASE_NAME);
+    }
+
+    public function getAdditionalImprovisation(): string
+    {
+        return $this->getAdditionalValue(FileMarkerAdditional::IMPROVISATION);
+    }
+
+    public function getAdditionalPack(): string
+    {
+        return $this->getAdditionalValue(FileMarkerAdditional::DANCE_TYPE);
     }
 
     public function addAdditional(string $key, string $value): void

@@ -19,8 +19,8 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class ImportVideoKozController extends AbstractController
 {
-    private const EXPEDITION_ID = 991; // 9
-    private const FILENAME = '../var/data/video_koz/bre-1.csv';
+    private const EXPEDITION_ID = 990; // 9
+    private const FILENAME = '../var/data/video_koz/br-07.csv';
 
     public function __construct(
         private readonly VideoKozHandler $videoKozHandler,
@@ -232,9 +232,11 @@ class ImportVideoKozController extends AbstractController
         }
 
         $response = $this->youtubeService->updateInYouTube($fileMarker);
+        $data = get_object_vars($response);
+        $data['link'] = 'https://www.youtube.com/watch?v=' . $data['id'];
 
         return $this->render('import/show.json.result.html.twig', [
-            'data' => json_encode($response, JSON_FORCE_OBJECT | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR),
+            'data' => $data,
         ]);
     }
 }

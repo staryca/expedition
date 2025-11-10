@@ -12,6 +12,9 @@ use App\Repository\ExpeditionRepository;
 use App\Repository\FileMarkerRepository;
 use App\Repository\ReportRepository;
 use App\Service\MarkerService;
+use App\Service\PlaylistService;
+use Monolog\Logger;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -23,8 +26,10 @@ class ExpeditionController extends AbstractController
         private readonly ReportRepository $reportRepository,
         private readonly ExpeditionHandler $expeditionHandler,
         private readonly MarkerService $markerService,
+        private readonly PlaylistService $playlistService,
         private readonly GeoMapManager $geoMapManager,
         private readonly FileMarkerRepository $fileMarkerRepository,
+        private readonly LoggerInterface $logger,
     ) {
     }
 
@@ -116,9 +121,17 @@ class ExpeditionController extends AbstractController
 
         $markers = $this->fileMarkerRepository->getMarkersByExpedition($expedition, CategoryType::DANCE);
 
+        $playlists = [];
+        foreach ($markers as $marker) {
+            $playlists[$marker->getId()] = $this->playlistService->getPlaylists($marker);
+        }
+
+        $this->logger->info("Expedition dances", $playlists);
+
         return $this->render('expedition/dances.html.twig', [
             'expedition' => $expedition,
             'markers' => $markers,
+            'playlists' => $playlists,
         ]);
     }
 }

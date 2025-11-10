@@ -10,7 +10,7 @@ class Artist
 
     public const CHILDREN_NAME = 'Выконваюць дзеці';
 
-    public const CHILDREN_PLAYLIST = '';
+    public const CHILDREN_PLAYLIST = 'PLKw5hnive9Zq1i0ngESJev9MAPOZUZ-e4';
 
     public static function isChildren(?string $text): bool
     {

@@ -16,7 +16,6 @@ use App\Entity\Type\CategoryType;
 use App\Repository\CategoryRepository;
 use App\Repository\DanceRepository;
 use App\Repository\ExpeditionRepository;
-use App\Repository\FileMarkerRepository;
 use App\Repository\ImprovisationRepository;
 use App\Repository\PackRepository;
 use App\Repository\RegionRepository;
@@ -38,7 +37,6 @@ class YouTubeController extends AbstractController
         private readonly RegionRepository $regionRepository,
         private readonly TraditionRepository $traditionRepository,
         private readonly ExpeditionRepository $expeditionRepository,
-        private readonly FileMarkerRepository $fileMarkerRepository,
         private readonly MarkerService $markerService,
     ) {
     }
@@ -83,7 +81,7 @@ class YouTubeController extends AbstractController
     {
         $data = [];
 
-        $expedition = $this->expeditionRepository->find(992);
+        $expedition = $this->expeditionRepository->find(990);
         if (!$expedition) {
             throw $this->createNotFoundException('The expedition does not exist');
         }
@@ -108,9 +106,8 @@ class YouTubeController extends AbstractController
         $markers = $markerGroups[CategoryType::DANCE] ?? [];
         $counts = [];
         foreach ($markers as $marker) {
-            $additional = $marker->getAdditional();
-            $dance = $additional[FileMarkerAdditional::BASE_NAME] ?? null;
-            if ($dance) {
+            $dance = $marker->getAdditionalDance();
+            if (!empty($dance)) {
                 $counts[$dance] = isset($counts[$dance]) ? $counts[$dance] + 1 : 1;
             }
         }
@@ -141,9 +138,8 @@ class YouTubeController extends AbstractController
 
         $counts = [];
         foreach ($markers as $marker) {
-            $additional = $marker->getAdditional();
-            $improvisation = $additional[FileMarkerAdditional::IMPROVISATION] ?? null;
-            if ($improvisation) {
+            $improvisation = $marker->getAdditionalImprovisation();
+            if (!empty($improvisation)) {
                 $counts[$improvisation] = isset($counts[$improvisation]) ? $counts[$improvisation] + 1 : 1;
             }
         }
@@ -152,9 +148,6 @@ class YouTubeController extends AbstractController
         foreach ($improvisations as $improvisation) {
             /** @var Improvisation $improvisation */
             $count = $counts[$improvisation->getName()] ?? 0;
-            if ($count === 0) {
-                continue;
-            }
 
             $data[] = [
                 'name' => 'I) ' . CategoryType::getSingleName(CategoryType::DANCE) . ' ' . $improvisation->getName(),
@@ -177,8 +170,8 @@ class YouTubeController extends AbstractController
         foreach ($markerGroups as $markers) {
             foreach ($markers as $marker) {
                 $additional = $marker->getAdditional();
-                $danceType = $additional[FileMarkerAdditional::DANCE_TYPE] ?? null;
-                if ($danceType) {
+                $danceType = $marker->getAdditionalPack();
+                if (!empty($danceType)) {
                     $counts[$danceType] = isset($counts[$danceType]) ? $counts[$danceType] + 1 : 1;
                 }
 
