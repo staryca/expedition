@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Message;
 
-class ImefMessage
+readonly class ImefMessage
 {
     public function __construct(
-        private readonly string $folder,
+        private string $folder,
     ) {
     }
 

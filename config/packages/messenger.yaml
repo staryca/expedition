@@ -5,13 +5,13 @@ framework:
 
         transports:
             # https://symfony.com/doc/current/messenger.html#transport-configuration
-            async: 'doctrine://default'
+            imef: 'doctrine://default'
             failed: 'doctrine://default?queue_name=failed'
             # sync: 'sync://'
 
         routing:
             # Route your messages to the transports
-            'App\Message\ImefMessage': async
+            'App\Message\ImefMessage': imef
 
 # when@test:
 #    framework:

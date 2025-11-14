@@ -24,6 +24,7 @@ use Doctrine\DBAL\Exception;
 class ImefHandler
 {
     private const EXPEDITION_ID = 10; // 10
+    private ?Expedition $expedition = null;
 
     public function __construct(
         private readonly ImefParser $parser,
@@ -35,13 +36,16 @@ class ImefHandler
 
     public function getExpedition(): Expedition
     {
-        /** @var Expedition|null $expedition */
-        $expedition = $this->expeditionRepository->find(self::EXPEDITION_ID);
-        if (!$expedition) {
+        if ($this->expedition) {
+            return $this->expedition;
+        }
+
+        $this->expedition = $this->expeditionRepository->find(self::EXPEDITION_ID);
+        if (!$this->expedition) {
             throw new Exception('Expedition not found');
         }
 
-        return $expedition;
+        return $this->expedition;
     }
 
     /**
@@ -53,6 +57,7 @@ class ImefHandler
         $folderKey = array_rand($newFolders);
 
         $previousDateDayMonth = true;
+
         return $this->parsingOneFolder($previousDateDayMonth, $newFolders[$folderKey]);
     }
 
@@ -76,6 +81,7 @@ class ImefHandler
         $folders = $this->parser->parseCatalog($content);
 
         $importedFolders = $this->getAllImportedFolders();
+
         return array_diff($folders, $importedFolders);
     }
 

@@ -13,8 +13,6 @@ use App\Repository\FileMarkerRepository;
 use App\Repository\ReportRepository;
 use App\Service\MarkerService;
 use App\Service\PlaylistService;
-use Monolog\Logger;
-use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -29,7 +27,6 @@ class ExpeditionController extends AbstractController
         private readonly PlaylistService $playlistService,
         private readonly GeoMapManager $geoMapManager,
         private readonly FileMarkerRepository $fileMarkerRepository,
-        private readonly LoggerInterface $logger,
     ) {
     }
 
@@ -126,12 +123,59 @@ class ExpeditionController extends AbstractController
             $playlists[$marker->getId()] = $this->playlistService->getPlaylists($marker);
         }
 
-        $this->logger->info("Expedition dances", $playlists);
+        return $this->render('expedition/dances.html.twig', [
+            'expedition' => $expedition,
+            'markers' => $markers,
+            'playlists' => $playlists,
+        ]);
+    }
+
+    #[Route('/expedition/{id}/category/{category}', name: 'expedition_category', methods: ['GET'])]
+    public function category(int $id, int $category): Response
+    {
+        /** @var Expedition|null $expedition */
+        $expedition = $this->expeditionRepository->find($id);
+        if (!$expedition) {
+            throw $this->createNotFoundException('The expedition does not exist');
+        }
+
+        $markers = $this->fileMarkerRepository->getMarkersByExpedition($expedition, $category);
+
+        $playlists = [];
+        foreach ($markers as $marker) {
+            $playlists[$marker->getId()] = $this->playlistService->getPlaylists($marker);
+        }
 
         return $this->render('expedition/dances.html.twig', [
             'expedition' => $expedition,
             'markers' => $markers,
             'playlists' => $playlists,
+        ]);
+    }
+
+    #[Route('/expedition/{id}/tags', name: 'expedition_tags', methods: ['GET'])]
+    public function tags(int $id): Response
+    {
+        /** @var Expedition|null $expedition */
+        $expedition = $this->expeditionRepository->find($id);
+        if (!$expedition) {
+            throw $this->createNotFoundException('The expedition does not exist');
+        }
+
+        $markers = $this->fileMarkerRepository->getMarkersByExpedition($expedition);
+
+        $listTags = [];
+        foreach ($markers as $marker) {
+            $rowTag = $marker->getTagNames();
+            $listTag = implode('#', $rowTag);
+            $listTags[] = $listTag;
+        }
+
+        $listTags = array_unique($listTags);
+        sort($listTags);
+
+        return $this->render('import/show.json.result.html.twig', [
+            'data' => $listTags,
         ]);
     }
 }

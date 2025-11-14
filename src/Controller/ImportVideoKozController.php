@@ -122,19 +122,26 @@ class ImportVideoKozController extends AbstractController
             foreach ($report->getBlocks() as $block) {
                 foreach ($block->getFileMarkers() as $fileMarker) {
                     $title = $this->youtubeService->getTitle($report, $fileMarker);
-                    $titleNotes = mb_strlen($title) > 100 ? '<i class="bi bi-exclamation-diamond-fill text-danger"></i> ' : '';
+                    $titleNotes = mb_strlen($title) > YoutubeService::MAX_LENGTH_TITLE
+                        ? '<i class="bi bi-exclamation-diamond-fill text-danger" title="' . mb_strlen($title) . ' charters"></i> '
+                        : ''
+                    ;
                     $description = $this->youtubeService->getDescription($report, $block, $fileMarker);
-                    $descriptionNotes = mb_strlen($description) > 5000 ? '<i class="bi bi-exclamation-diamond-fill text-danger"></i> ' : '';
+                    $descriptionNotes = mb_strlen($description) > YoutubeService::MAX_LENGTH_DESCRIPTION
+                        ? '<i class="bi bi-exclamation-diamond-fill text-danger"></i> '
+                        : ''
+                    ;
 
                     $key = match (true) {
                         !empty($descriptionNotes) => $keyWarningDesc++,
-                        !empty($titleNotes) => 100 + $keyWarningTitle++,
-                        default => 1000 + $keyOk++,
+                        !empty($titleNotes) => YoutubeService::MAX_LENGTH_TITLE + $keyWarningTitle++,
+                        default => YoutubeService::MAX_LENGTH_DESCRIPTION + $keyOk++,
                     };
 
                     $item = [];
                     $item['id'] = $fileMarker->getId();
                     $item['file'] = $fileMarker->getFile()?->getFullFileName();
+                    $item['youtube'] = $fileMarker->getAdditionalYoutube();
                     $item['youtube_title'] = $titleNotes . $title;
                     $item['youtube_description'] = $descriptionNotes . $description;
 //                    $item['category'] = $fileMarker->getCategoryName();
@@ -165,6 +172,7 @@ class ImportVideoKozController extends AbstractController
             'headers' => [
                 'Actions',
                 VideoKozColumns::FILENAME,
+                'Youtube',
                 'Youtube title',
                 'Youtube description',
 //                VideoKozColumns::TYPE_RECORD,
@@ -218,7 +226,7 @@ class ImportVideoKozController extends AbstractController
         }
 
         return $this->render('import/show.json.result.html.twig', [
-            'data' => json_encode($result, JSON_FORCE_OBJECT | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR),
+            'data' => $result,
         ]);
     }
 
@@ -232,8 +240,13 @@ class ImportVideoKozController extends AbstractController
         }
 
         $response = $this->youtubeService->updateInYouTube($fileMarker);
-        $data = get_object_vars($response);
-        $data['link'] = 'https://www.youtube.com/watch?v=' . $data['id'];
+        if (is_string($response)) {
+            $data = ['error' => $response];
+            $data['id'] = $fileMarker->getAdditionalYoutube();
+        } else {
+            $data = get_object_vars($response);
+            $data['link'] = 'https://www.youtube.com/watch?v=' . $data['id'];
+        }
 
         return $this->render('import/show.json.result.html.twig', [
             'data' => $data,
