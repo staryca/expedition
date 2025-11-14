@@ -31,16 +31,18 @@
                         ({{ expedition.geoPoint.district }} )
                     {% endif %}
                 {% endif %}
-                <a href="{{ path('expedition_all_tips', {id: expedition.id}) }}">Усе задачы/наводкі</a>
-                <a href="{{ path('expedition_report', {id: expedition.id}) }}">Вынікі экспедыцыі</a>
+                <a href="{{ path('expedition_all_tips', {id: expedition.id}) }}">Усе задачы/наводкі</a> |
+                <a href="{{ path('expedition_report', {id: expedition.id}) }}">Вынікі экспедыцыі</a> |
+                <a href="{{ path('expedition_tags', {id: expedition.id}) }}">Усе тэгі</a>
             </p>
 
             <p>
                 {% set all = 0 %}
                 {% for category, count in statistics %}
-                    {% set link = '#' %}
                     {% if category == constant('App\\Entity\\Type\\CategoryType::DANCE') %}
                         {% set link = path('expedition_dances', {id: expedition.id}) %}
+                    {% else %}
+                        {% set link = path('expedition_category', {id: expedition.id, category: category}) %}
                     {% endif %}
                     <a href="{{ link }}">{{ categories[category] }} ({{ count }})</a>{% if not loop.last %},{% else %}.{% endif %}
                     {% set all = all + count %}

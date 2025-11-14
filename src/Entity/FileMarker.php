@@ -252,6 +252,11 @@ class FileMarker
         return $this->getAdditionalValue(FileMarkerAdditional::DANCE_TYPE);
     }
 
+    public function getAdditionalYoutube(): string
+    {
+        return $this->getAdditionalValue(FileMarkerAdditional::YOUTUBE);
+    }
+
     public function addAdditional(string $key, string $value): void
     {
         $this->additional[$key] = $value;

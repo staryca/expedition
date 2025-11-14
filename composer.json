@@ -42,6 +42,7 @@
         "symfony/runtime": "*",
         "symfony/security-bundle": "*",
         "symfony/serializer": "*",
+        "symfony/string": "*",
         "symfony/twig-bundle": "*",
         "symfony/validator": "*",
         "symfony/yaml": "*",

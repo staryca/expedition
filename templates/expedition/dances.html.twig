@@ -59,11 +59,13 @@
                         <td>
                             {% set additional = marker.getAdditional() %}
                             {% for key, value in additional %}
-                                {% if key == constant('App\\Entity\\Additional\\FileMarkerAdditional::YOUTUBE') %}
-                                    <a href="https://youtu.be/{{ value }}" target="_blank"><i class="bi bi-youtube"></i> глядзець</a>
-                                    {% if not loop.last %}<br>{% endif %}
-                                {% else %}
-                                    {{ value }}{% if not loop.last %},<br>{% endif %}
+                                {% if value %}
+                                    {% if key == constant('App\\Entity\\Additional\\FileMarkerAdditional::YOUTUBE') %}
+                                        <a href="https://youtu.be/{{ value }}" target="_blank"><i class="bi bi-youtube"></i> глядзець</a>
+                                        {% if not loop.last %}<br>{% endif %}
+                                    {% else %}
+                                        {{ value }}{% if not loop.last %},<br>{% endif %}
+                                    {% endif %}
                                 {% endif %}
                             {% endfor %}
                         </td>
