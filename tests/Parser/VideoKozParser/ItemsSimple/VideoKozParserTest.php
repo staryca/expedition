@@ -37,13 +37,13 @@ class VideoKozParserTest extends TestCase
     public function testParse(): void
     {
         $geoPoint = new GeoPoint('242990503');
-        $this->geoPointRepository->expects($this->exactly(2))
+        $this->geoPointRepository->expects($this->exactly(3))
             ->method('findByNameAndDistrict')
             ->willReturn([$geoPoint]);
 
         $pack = new Pack();
         $pack->setName('сольны-тэст');
-        $this->packRepository->expects($this->exactly(2))
+        $this->packRepository->expects($this->exactly(3))
             ->method('getPackByName')
             ->willReturn($pack);
 
@@ -52,7 +52,7 @@ class VideoKozParserTest extends TestCase
 
         $files = $this->parser->parse($content);
 
-        $this->assertCount(2, $files);
+        $this->assertCount(3, $files);
 
         $file = $files[0];
         $this->assertEquals('Іванаўскі\Беразлянскі СК 08 Мікіта.avi', $file->getFilename());
@@ -106,6 +106,20 @@ class VideoKozParserTest extends TestCase
         $this->assertNotEmpty($item->source);
         $this->assertTrue(Artist::isChildren($item->source));
         $this->assertStringContainsString('Ой чого ты, лысый,', $item->texts);
+        $this->assertEquals('', $item->tmkb);
+
+        $item = $files[2]->videoItems[0];
+        $this->assertEquals(CategoryType::FILM, $item->category);
+        $this->assertEquals('', $item->baseName);
+        $this->assertEquals('Нацыянальны фальклор і яго значэнне', $item->localName);
+        $this->assertEquals('dW-lYqMlbJw', $item->youTube);
+        $this->assertEquals('', $item->improvisation);
+        $this->assertEquals('1991-01-01', $item->dateAction->format('Y-m-d'));
+        $this->assertEquals('', $item->notes);
+        $this->assertEquals('', $item->organizationName);
+        $this->assertCount(0, $item->informants);
+        $this->assertEmpty($item->source);
+        $this->assertEquals('', $item->texts);
         $this->assertEquals('', $item->tmkb);
     }
 }

@@ -41,7 +41,7 @@ class VopisDetailedParser
         $isPrevSubject = false;
         $isPrevFile = false;
 
-        $csv = Reader::createFromString($content);
+        $csv = Reader::fromString($content);
         $csv->setDelimiter(';');
         $csv->setEnclosure('"');
         $csv->setHeaderOffset(0);

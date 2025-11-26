@@ -108,7 +108,7 @@ class MarkerService
      */
     public function generateCsvFromMarkers(array $markerGroups): Writer
     {
-        $csv = Writer::createFromString();
+        $csv = Writer::fromString();
         $csv->setDelimiter(';');
 
         $csv->insertOne(['Назва', 'Месца', 'Дадаткова', 'Крыніца']);

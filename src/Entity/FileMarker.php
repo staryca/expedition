@@ -44,6 +44,9 @@ class FileMarker
     #[Context([DateTimeNormalizer::FORMAT_KEY => 'H:i:s.u'])]
     private ?\DateTimeInterface $endTime = null;
 
+    #[ORM\ManyToOne]
+    private ?Ritual $ritual = null;
+
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $notes = null;
 
@@ -156,6 +159,18 @@ class FileMarker
     public function setEndTime(?\DateTimeInterface $endTime): static
     {
         $this->endTime = $endTime;
+
+        return $this;
+    }
+
+    public function getRitual(): ?Ritual
+    {
+        return $this->ritual;
+    }
+
+    public function setRitual(?Ritual $ritual): static
+    {
+        $this->ritual = $ritual;
 
         return $this;
     }

@@ -207,7 +207,7 @@ class YoutubeService
         $part = '';
         if (null !== $geoPoint) {
             $part = TextHelper::lettersToUpper($geoPoint->getPrefixBe())
-                . ' ' . $geoPoint->getName() . ', ' . $geoPoint->getDistrict() . ', ' . $geoPoint->getRegion() . '.';
+                . ' ' . $geoPoint->getNameWordStressOrName() . ', ' . $geoPoint->getDistrict() . ', ' . $geoPoint->getRegion() . '.';
         }
         $date = !empty($dateActionNotes)
             ? $dateActionNotes

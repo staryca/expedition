@@ -21,11 +21,11 @@ use League\Csv\InvalidArgument;
 use League\Csv\Reader;
 use League\Csv\SyntaxError;
 
-class KoboParser
+readonly class KoboParser
 {
     public function __construct(
-        private readonly LocationService $locationService,
-        private readonly UserService $userService,
+        private LocationService $locationService,
+        private UserService     $userService,
     ) {
     }
 
@@ -40,7 +40,7 @@ class KoboParser
     {
         $informants = [];
 
-        $csv = Reader::createFromString($content);
+        $csv = Reader::fromString($content);
         $csv->setDelimiter(';');
         $csv->setEnclosure('"');
         $csv->setHeaderOffset(0);
@@ -63,7 +63,7 @@ class KoboParser
     {
         $organizations = [];
 
-        $csv = Reader::createFromString($content);
+        $csv = Reader::fromString($content);
         $csv->setDelimiter(';');
         $csv->setEnclosure('"');
         $csv->setHeaderOffset(0);
@@ -86,7 +86,7 @@ class KoboParser
     {
         $reports = [];
 
-        $csv = Reader::createFromString($content);
+        $csv = Reader::fromString($content);
         $csv->setDelimiter(';');
         $csv->setEnclosure('"');
         $csv->setHeaderOffset(0);
@@ -133,7 +133,7 @@ class KoboParser
     {
         $contents = [];
 
-        $csv = Reader::createFromString($contentCsv);
+        $csv = Reader::fromString($contentCsv);
         $csv->setDelimiter(';');
         $csv->setEnclosure('"');
         $csv->setHeaderOffset(0);
@@ -156,7 +156,7 @@ class KoboParser
     {
         $tags = [];
 
-        $csv = Reader::createFromString($content);
+        $csv = Reader::fromString($content);
         $csv->setDelimiter(';');
         $csv->setEnclosure('"');
         $csv->setHeaderOffset(0);

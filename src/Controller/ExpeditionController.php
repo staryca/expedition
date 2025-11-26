@@ -123,7 +123,7 @@ class ExpeditionController extends AbstractController
             $playlists[$marker->getId()] = $this->playlistService->getPlaylists($marker);
         }
 
-        return $this->render('expedition/dances.html.twig', [
+        return $this->render('expedition/markers.html.twig', [
             'expedition' => $expedition,
             'markers' => $markers,
             'playlists' => $playlists,
@@ -146,7 +146,7 @@ class ExpeditionController extends AbstractController
             $playlists[$marker->getId()] = $this->playlistService->getPlaylists($marker);
         }
 
-        return $this->render('expedition/dances.html.twig', [
+        return $this->render('expedition/markers.html.twig', [
             'expedition' => $expedition,
             'markers' => $markers,
             'playlists' => $playlists,

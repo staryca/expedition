@@ -716,4 +716,20 @@ class InformantTest extends TestCase
         $this->assertEquals(GenderType::MALE, $informant->gender);
         $this->assertEquals('бубен', $informant->notes);
     }
+
+    public function testInformantWithBirthAndPlace(): void
+    {
+        $content = 'Клеўжыц (Хурсевіч) Галіна Клеменцеўна, 1947 г.н., в. Мокрава';
+
+        $informants = $this->personService->getInformants($content);
+        $this->assertCount(1, $informants);
+
+        $informant = $informants[0];
+        $this->assertEquals('Клеўжыц (Хурсевіч) Галіна Клеменцеўна', $informant->name);
+        $this->assertEquals(1947, $informant->birth);
+        $this->assertEquals(GenderType::FEMALE, $informant->gender);
+        $this->assertEquals('', $informant->notes);
+        $this->assertCount(1, $informant->locations);
+        $this->assertEquals('в. Мокрава', $informant->locations[0]);
+    }
 }

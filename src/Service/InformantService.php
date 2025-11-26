@@ -58,7 +58,7 @@ class InformantService
      */
     public function generateCsvFromInformants(array $informantsByLocation): Writer
     {
-        $csv = Writer::createFromString();
+        $csv = Writer::fromString();
         $csv->setDelimiter(';');
         $csv->setEnclosure('"');
 

@@ -150,6 +150,11 @@ class GeoPoint
         return $this->nameWordStress;
     }
 
+    public function getNameWordStressOrName(): ?string
+    {
+        return empty($this->nameWordStress) ? $this->name : $this->nameWordStress;
+    }
+
     public function setNameWordStress(?string $nameWordStress): static
     {
         $this->nameWordStress = $nameWordStress;

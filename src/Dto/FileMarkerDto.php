@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Dto;
 
+use App\Entity\Ritual;
 use Carbon\Carbon;
 
 class FileMarkerDto extends PlaceDto
@@ -28,6 +29,7 @@ class FileMarkerDto extends PlaceDto
     public ?string $name = null;
     public ?string $notes = null;
     public array $additional = []; // Keys in FileMarkerAdditional
+    public ?Ritual $ritual = null;
     public ?string $decoding = null;
     public ?int $category = null;
     public bool $isNewBlock = false;

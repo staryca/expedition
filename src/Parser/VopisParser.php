@@ -47,7 +47,7 @@ class VopisParser
         $files = [];
         $key = -1;
 
-        $csv = Reader::createFromString($content);
+        $csv = Reader::fromString($content);
         $csv->setDelimiter(';');
         $csv->setEnclosure('"');
         foreach ($csv->getRecords() as $record) {
