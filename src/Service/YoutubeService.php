@@ -15,9 +15,14 @@ use Google\Service\YouTube;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
+use function Symfony\Component\String\u;
+
 class YoutubeService
 {
     private const LANG_BE = 'be';
+    public const MAX_LENGTH_TITLE = 100;
+    public const MAX_LENGTH_DESCRIPTION = 5000;
+    private const SHORTENER_TRUNCATE = 3;
 
     public function __construct(
         private readonly string $googleCredentials,
@@ -27,7 +32,7 @@ class YoutubeService
     ) {
     }
 
-    public function getTitle(Report $report, FileMarker $fileMarker): string
+    public function getTitle(Report $report, FileMarker $fileMarker, int $shortener = 0): string
     {
         $localName = $fileMarker->getAdditionalValue(FileMarkerAdditional::LOCAL_NAME);
         $baseName = $fileMarker->getAdditionalDance();
@@ -38,10 +43,20 @@ class YoutubeService
 
         $parts = [];
 
-        $part = $localName;
+        // last shortener: show the part of local name only
+        if ($shortener >= self::SHORTENER_TRUNCATE && mb_strlen($localName) < $shortener - 10) {
+            return $localName;
+        }
+
+        // 3rd shortener: truncate the local name
+        $part = $shortener < self::SHORTENER_TRUNCATE
+            ? $localName
+            : u($localName)->truncate(mb_strlen($localName) - $shortener + self::SHORTENER_TRUNCATE - 1, '...', false)
+        ;
         $localNameText = str_replace(' ', '', mb_strtolower($localName));
         $baseNameText = str_replace(' ', '', mb_strtolower($baseName));
-        $part .= empty($baseName) || str_contains($localNameText, $baseNameText)
+        // 1st shortener: hide the base name
+        $part .= empty($baseName) || str_contains($localNameText, $baseNameText) || $shortener >= 1
                 || $improvisation === FileMarkerAdditional::IMPROVISATION_MIKITA_CASE || mb_strlen($localName) > 20
             ? ''
             : ' (' . $baseName . ') ';
@@ -74,7 +89,15 @@ class YoutubeService
             $parts[] = $fileMarker->getCategoryName();
         }
 
-        if (!empty($ritual)) {
+        // 2nd shortener: hide the ritual
+        if (!empty($ritual) && $shortener < 2) {
+            $partsRitual = explode('#', $ritual);
+            if (count($partsRitual) > 4) {
+                $_last = array_pop($partsRitual);
+                $ritual = array_pop($partsRitual) . ' (' . $_last . ')';
+            } else {
+                $ritual = array_pop($partsRitual);
+            }
             $parts[] = $ritual;
         }
 
@@ -92,7 +115,15 @@ class YoutubeService
 
         $title = implode(' / ', $parts);
 
-        return trim(preg_replace('!\s+!', ' ', $title));
+        $title = trim(preg_replace('!\s+!', ' ', $title));
+
+        if (mb_strlen($title) > self::MAX_LENGTH_TITLE) {
+            $step = $shortener < self::SHORTENER_TRUNCATE ? 1 : mb_strlen($title) - self::MAX_LENGTH_TITLE;
+
+            return $this->getTitle($report, $fileMarker, $shortener + $step);
+        }
+
+        return $title;
     }
 
     public function getDescription(Report $report, ReportBlock $reportBlock, FileMarker $fileMarker): string
@@ -176,7 +207,7 @@ class YoutubeService
         $part = '';
         if (null !== $geoPoint) {
             $part = TextHelper::lettersToUpper($geoPoint->getPrefixBe())
-                . ' ' . $geoPoint->getName() . ', ' . $geoPoint->getDistrict() . ', ' . $geoPoint->getRegion() . '.';
+                . ' ' . $geoPoint->getNameWordStressOrName() . ', ' . $geoPoint->getDistrict() . ', ' . $geoPoint->getRegion() . '.';
         }
         $date = !empty($dateActionNotes)
             ? $dateActionNotes
@@ -273,7 +304,11 @@ class YoutubeService
     {
         $youtube = $this->getYoutubeService();
 
-        $videoId = $fileMarker->getAdditionalValue(FileMarkerAdditional::YOUTUBE);
+        $videoId = $fileMarker->getAdditionalYoutube();
+        if (empty($videoId)) {
+            return 'No video item';
+        }
+
         $listResponse = $youtube->videos->listVideos("snippet", ['id' => $videoId]);
         if ($listResponse === null) {
             return null;

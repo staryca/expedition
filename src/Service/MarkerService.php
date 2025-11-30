@@ -14,10 +14,10 @@ use League\Csv\CannotInsertRecord;
 use League\Csv\Exception;
 use League\Csv\Writer;
 
-class MarkerService
+readonly class MarkerService
 {
     public function __construct(
-        private readonly FileMarkerRepository $fileMarkerRepository,
+        private FileMarkerRepository $fileMarkerRepository,
     ) {
     }
 
@@ -108,7 +108,7 @@ class MarkerService
      */
     public function generateCsvFromMarkers(array $markerGroups): Writer
     {
-        $csv = Writer::createFromString();
+        $csv = Writer::fromString();
         $csv->setDelimiter(';');
 
         $csv->insertOne(['Назва', 'Месца', 'Дадаткова', 'Крыніца']);

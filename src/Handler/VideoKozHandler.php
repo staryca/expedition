@@ -22,6 +22,7 @@ use App\Parser\VideoKozParser;
 use App\Repository\ExpeditionRepository;
 use App\Repository\UserRepository;
 use App\Service\PersonService;
+use App\Service\RitualService;
 use Carbon\CarbonImmutable;
 use League\Csv\Exception;
 use League\Csv\InvalidArgument;
@@ -36,6 +37,7 @@ class VideoKozHandler
         private readonly PersonService $personService,
         private readonly UserRepository $userRepository,
         private readonly ReportManager $reportManager,
+        private readonly RitualService $ritualService,
     ) {
     }
 
@@ -270,9 +272,12 @@ class VideoKozHandler
                 if (!empty($videoItem->improvisation)) {
                     $marker->additional[FileMarkerAdditional::IMPROVISATION] = $videoItem->improvisation;
                 }
-                if (!empty($videoItem->ritual)) {
+
+                $marker->ritual = $this->ritualService->findRitual($videoItem->ritual);
+                if (!$marker->ritual && !empty($videoItem->ritual)) {
                     $marker->additional[FileMarkerAdditional::RITUAL] = $videoItem->ritual;
                 }
+
                 if (!empty($videoItem->tradition)) {
                     $marker->additional[FileMarkerAdditional::TRADITION] = $videoItem->tradition;
                 }

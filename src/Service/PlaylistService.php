@@ -9,6 +9,7 @@ use App\Repository\CategoryRepository;
 use App\Repository\DanceRepository;
 use App\Repository\ImprovisationRepository;
 use App\Repository\PackRepository;
+use App\Repository\RitualRepository;
 
 readonly class PlaylistService
 {
@@ -17,6 +18,7 @@ readonly class PlaylistService
         private ImprovisationRepository $improvisationRepository,
         private PackRepository $packRepository,
         private CategoryRepository $categoryRepository,
+        private RitualRepository $ritualRepository,
     ) {
     }
 
@@ -46,6 +48,11 @@ readonly class PlaylistService
         if (!empty($danceType)) {
             $pack = $this->packRepository->findOneBy(['name' => $danceType]);
             $playlists[$danceType] = $pack ? $pack->getPlaylist() : null;
+        }
+
+        $ritual = $fileMarker->getRitual();
+        if ($ritual) {
+            $playlists[$ritual->getName()] = $ritual->getPlaylist();
         }
 
         return $playlists;

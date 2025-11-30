@@ -51,6 +51,7 @@ class GeoPointType
         self::BE_OLD_VILLAGE,
         self::BE_AGRO_CITY,
         self::BE_URBAN_SETTLEMENT,
+        self::BE_WORKER_SETTLEMENT,
         self::BE_SETTLEMENT,
         self::BE_TOWN,
     ];

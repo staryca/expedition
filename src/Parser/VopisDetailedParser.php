@@ -13,16 +13,18 @@ use App\Entity\Type\FileType;
 use App\Entity\Type\SubjectType;
 use App\Helper\TextHelper;
 use App\Parser\Columns\VopisDetailedColumns;
+use App\Service\CategoryService;
 use App\Service\LocationService;
 use Carbon\Carbon;
 use League\Csv\Exception;
 use League\Csv\InvalidArgument;
 use League\Csv\Reader;
 
-class VopisDetailedParser
+readonly class VopisDetailedParser
 {
     public function __construct(
-        private readonly LocationService $locationService,
+        private LocationService $locationService,
+        private CategoryService $categoryService,
     ) {
     }
 
@@ -41,7 +43,7 @@ class VopisDetailedParser
         $isPrevSubject = false;
         $isPrevFile = false;
 
-        $csv = Reader::createFromString($content);
+        $csv = Reader::fromString($content);
         $csv->setDelimiter(';');
         $csv->setEnclosure('"');
         $csv->setHeaderOffset(0);
@@ -126,10 +128,8 @@ class VopisDetailedParser
                 if ($pos !== false && $pos < 3) {
                     $content = trim(mb_substr($content, $pos + 1));
                 }
-                $category = CategoryType::findId($content, '', false);
-                if ($category === null) {
-                    $category = CategoryType::findId($notes, '') ?? CategoryType::OTHER;
-                }
+
+                $category = $this->categoryService->detectCategory($content, $notes) ?? CategoryType::OTHER;
                 $marker->category = $category !== CategoryType::OTHER ? $category : CategoryType::STORY;
                 if (!CategoryType::isSystemType($category)) {
                     $marker->name = $content;

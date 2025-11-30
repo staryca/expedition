@@ -44,7 +44,18 @@
                             <a href="{{ path('report_show', {id: report.id}) }}#marker{{ marker.id }}"><i class="bi bi-arrow-right-circle"></i></a>
                         </td>
                         <td>
+                            {% if marker.ritual %}
+                                {% for ritual in marker.ritual.getRitualList() %}
+                                    {{- ritual.name -}}
+                                    {% if not loop.last %}<i class="bi bi-arrow-right"></i>{% endif %}
+                                {%- endfor -%}.
+
+                                <br />
+                                {% if marker.notes is not empty %}-----<br />{% endif %}
+                            {% endif %}
+
                             {{ marker.notes }}
+
                             {% if marker.decoding %}
                                 <button title="Расшыфроўка" class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ marker.id }}" aria-expanded="false" aria-controls="collapse{{ marker.id }}">
                                     <i class="bi bi-arrow-down-square-fill"></i>
@@ -59,11 +70,13 @@
                         <td>
                             {% set additional = marker.getAdditional() %}
                             {% for key, value in additional %}
-                                {% if key == constant('App\\Entity\\Additional\\FileMarkerAdditional::YOUTUBE') %}
-                                    <a href="https://youtu.be/{{ value }}" target="_blank"><i class="bi bi-youtube"></i> глядзець</a>
-                                    {% if not loop.last %}<br>{% endif %}
-                                {% else %}
-                                    {{ value }}{% if not loop.last %},<br>{% endif %}
+                                {% if value %}
+                                    {% if key == constant('App\\Entity\\Additional\\FileMarkerAdditional::YOUTUBE') %}
+                                        <a href="https://youtu.be/{{ value }}" target="_blank"><i class="bi bi-youtube"></i> глядзець</a>
+                                        {% if not loop.last %}<br>{% endif %}
+                                    {% else %}
+                                        {{ value }}{% if not loop.last %},<br>{% endif %}
+                                    {% endif %}
                                 {% endif %}
                             {% endfor %}
                         </td>

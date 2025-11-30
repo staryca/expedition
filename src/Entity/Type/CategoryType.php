@@ -129,14 +129,18 @@ class CategoryType
 
     private const VARIANTS_OTHER = [
         self::SONGS => [
-            'сьпявае', 'напеў', 'пятроўская', 'валачобная', 'восеньская', 'купальская',
+            'сьпявае', 'спявае', 'напеў', 'пятроўская', 'валачобная', 'восеньская', 'купальская', 'масленкавая',
             'сьпявалі', 'масьленіца', 'бяседная', 'масьленка', 'жніўная', 'любоўная', 'вясельная',
             'лірычная', 'салдацкая', 'талочная', 'балада', 'паставая', 'сямейна-бытавая', 'жартоўная',
             'вялікодная', 'піліпаўская', 'калядная', 'раманс', 'масьленыя', 'вясельныя', 'турэмная', 'рамансы',
             'веснавыя', 'лірычныя', 'на сене', 'провады ў армію', 'лірыка', 'хрэсьбінная',
             'у любы час', 'партызанская', 'карагодная', 'рэкруцкая', 'хрэсьбінская', 'летняя', 'касарская',
             'траецкая', 'сенакосная', 'пазаабрадавая', 'веснавая', 'свадзьбальная', 'жытняя', 'маёвая',
+            'аўтарская',
         ],
+        self::STORY => [
+            'апавядае',
+        ]
     ];
 
     private const VARIANTS_SONG_CEREMONY = [
@@ -145,6 +149,21 @@ class CategoryType
 
     public const TEXT_JOIN = [
         self::OTHER => ['цікавыя словы, дыялекты', 'дыялекты', 'цікавыя выразы'],
+    ];
+
+    private const VARIANTS_GROUPED = [
+        self::STORY => [
+            ['што', 'такое'],
+            ['як', 'гралі'],
+            ['як', 'рабілі'],
+            ['як', 'святкавалі'],
+            ['як', 'спявалі'],
+            ['што', 'рабілі'],
+        ],
+        self::ABOUT_DANCES => [
+            ['як', 'танцавалі'],
+            ['пра', 'танцы'],
+        ],
     ];
 
     public const SYSTEM_TYPES = [
@@ -292,6 +311,22 @@ class CategoryType
             }
         }
 
+        foreach (self::VARIANTS_GROUPED as $key => $variants) {
+            foreach ($variants as $words) {
+                $hasAll = true;
+                foreach ($words as $word) {
+                    if (false === mb_strstr($text, $word)) {
+                        $hasAll = false;
+                        break;
+                    }
+                }
+
+                if ($hasAll) {
+                    return $key;
+                }
+            }
+        }
+
         return self::findOtherVariantsId($text, $textNext);
     }
 
@@ -375,5 +410,20 @@ class CategoryType
         }
 
         return null;
+    }
+
+    public static function detectCategory(string $content, ?string $notes = null, ?int $default = null): ?int
+    {
+        $pos = mb_strpos($content, ') ');
+        if ($pos !== false && $pos < 3) {
+            $content = trim(mb_substr($content, $pos + 1));
+        }
+
+        $category = self::findId($content, '', false);
+        if ($category === null) {
+            $category = self::findId($notes, '') ?? $default;
+        }
+
+        return $category;
     }
 }

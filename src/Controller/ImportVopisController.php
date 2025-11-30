@@ -15,7 +15,7 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class ImportVopisController extends AbstractController
 {
-    private const EXPEDITION_ID = 100;
+    private const EXPEDITION_ID = 970;
     private const DATE_CREATED = '2013-02-20';
     private const WITH_TIME = false;
 

@@ -85,7 +85,7 @@ final class Version20251014112428 extends AbstractMigration
     {
         $result = [];
 
-        $csv = Reader::createFromPath($filename);
+        $csv = Reader::from($filename);
         $csv->setDelimiter(';');
         foreach ($csv->getRecords() as $record) {
             $result[$record[0]] = $record[1];

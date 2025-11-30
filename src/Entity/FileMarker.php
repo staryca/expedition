@@ -44,6 +44,9 @@ class FileMarker
     #[Context([DateTimeNormalizer::FORMAT_KEY => 'H:i:s.u'])]
     private ?\DateTimeInterface $endTime = null;
 
+    #[ORM\ManyToOne]
+    private ?Ritual $ritual = null;
+
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $notes = null;
 
@@ -160,6 +163,18 @@ class FileMarker
         return $this;
     }
 
+    public function getRitual(): ?Ritual
+    {
+        return $this->ritual;
+    }
+
+    public function setRitual(?Ritual $ritual): static
+    {
+        $this->ritual = $ritual;
+
+        return $this;
+    }
+
     public function getNotes(): ?string
     {
         return $this->notes;
@@ -250,6 +265,11 @@ class FileMarker
     public function getAdditionalPack(): string
     {
         return $this->getAdditionalValue(FileMarkerAdditional::DANCE_TYPE);
+    }
+
+    public function getAdditionalYoutube(): string
+    {
+        return $this->getAdditionalValue(FileMarkerAdditional::YOUTUBE);
     }
 
     public function addAdditional(string $key, string $value): void

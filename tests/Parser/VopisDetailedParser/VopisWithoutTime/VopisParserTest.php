@@ -7,7 +7,9 @@ namespace App\Tests\Parser\VopisDetailedParser\VopisWithoutTime;
 use App\Dto\FileMarkerDto;
 use App\Entity\Type\CategoryType;
 use App\Parser\VopisDetailedParser;
+use App\Repository\DanceRepository;
 use App\Repository\GeoPointRepository;
+use App\Service\CategoryService;
 use App\Service\LocationService;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -15,16 +17,17 @@ use PHPUnit\Framework\TestCase;
 class VopisParserTest extends TestCase
 {
     private readonly VopisDetailedParser $parser;
-    private readonly GeoPointRepository $geoPointRepository;
 
     public function setUp(): void
     {
         parent::setUp();
 
-        $this->geoPointRepository = $this->createMock(GeoPointRepository::class);
+        $geoPointRepository = $this->createMock(GeoPointRepository::class);
+        $danceRepository = $this->createMock(DanceRepository::class);
 
-        $locationService = new LocationService($this->geoPointRepository);
-        $this->parser = new VopisDetailedParser($locationService);
+        $locationService = new LocationService($geoPointRepository);
+        $categoryService = new CategoryService($danceRepository);
+        $this->parser = new VopisDetailedParser($locationService, $categoryService);
     }
 
     public function testParse(): void

@@ -19,12 +19,12 @@ use League\Csv\Exception;
 use League\Csv\InvalidArgument;
 use League\Csv\Reader;
 
-class VideoKozParser
+readonly class VideoKozParser
 {
     public function __construct(
-        private readonly LocationService $locationService,
-        private readonly PersonService $personService,
-        private readonly PackRepository $packRepository,
+        private LocationService $locationService,
+        private PersonService $personService,
+        private PackRepository $packRepository,
     ) {
     }
 
@@ -49,7 +49,7 @@ class VideoKozParser
         $files = [];
         $key = -1;
 
-        $csv = Reader::createFromString($content);
+        $csv = Reader::fromString($content);
         $csv->setDelimiter(';');
         $csv->setEnclosure('"');
         $csv->setHeaderOffset(0);
@@ -101,7 +101,7 @@ class VideoKozParser
                 $videoDto->place =
                     self::getValue($record, VideoKozColumns::VILLAGE) . ', '
                     . self::getValue($record, VideoKozColumns::DISTINCT) . ' ' . LocationService::DISTRICT . ', '
-                    . empty($subDistrict) ? null : $subDistrict . ' ' . LocationService::SUBDISTRICT
+                    . (empty($subDistrict) ? '' : ($subDistrict . ' ' . LocationService::SUBDISTRICT))
                 ;
             }
 

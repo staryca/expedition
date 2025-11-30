@@ -11,6 +11,7 @@ use App\Entity\Dance;
 use App\Entity\Improvisation;
 use App\Entity\Pack;
 use App\Entity\Region;
+use App\Entity\Ritual;
 use App\Entity\Tradition;
 use App\Entity\Type\CategoryType;
 use App\Repository\CategoryRepository;
@@ -19,6 +20,7 @@ use App\Repository\ExpeditionRepository;
 use App\Repository\ImprovisationRepository;
 use App\Repository\PackRepository;
 use App\Repository\RegionRepository;
+use App\Repository\RitualRepository;
 use App\Repository\TraditionRepository;
 use App\Service\MarkerService;
 use App\Service\YoutubeService;
@@ -37,6 +39,7 @@ class YouTubeController extends AbstractController
         private readonly RegionRepository $regionRepository,
         private readonly TraditionRepository $traditionRepository,
         private readonly ExpeditionRepository $expeditionRepository,
+        private readonly RitualRepository $ritualRepository,
         private readonly MarkerService $markerService,
     ) {
     }
@@ -87,7 +90,7 @@ class YouTubeController extends AbstractController
         }
         $markerGroups = $this->markerService->getGroupedMarkersByExpedition($expedition);
 
-
+        // Categories
         $categories = $this->categoryRepository->findAll();
         foreach ($categories as $category) {
             /** @var Category $category */
@@ -102,10 +105,10 @@ class YouTubeController extends AbstractController
             ];
         }
 
-
-        $markers = $markerGroups[CategoryType::DANCE] ?? [];
+        // Dances
+        $danceMarkers = $markerGroups[CategoryType::DANCE] ?? [];
         $counts = [];
-        foreach ($markers as $marker) {
+        foreach ($danceMarkers as $marker) {
             $dance = $marker->getAdditionalDance();
             if (!empty($dance)) {
                 $counts[$dance] = isset($counts[$dance]) ? $counts[$dance] + 1 : 1;
@@ -135,9 +138,9 @@ class YouTubeController extends AbstractController
             ];
         }
 
-
+        // Improvisations
         $counts = [];
-        foreach ($markers as $marker) {
+        foreach ($danceMarkers as $marker) {
             $improvisation = $marker->getAdditionalImprovisation();
             if (!empty($improvisation)) {
                 $counts[$improvisation] = isset($counts[$improvisation]) ? $counts[$improvisation] + 1 : 1;
@@ -164,7 +167,7 @@ class YouTubeController extends AbstractController
             ];
         }
 
-
+        // Packs
         $counts = [];
         $countsChildren = 0;
         foreach ($markerGroups as $markers) {
@@ -205,7 +208,7 @@ class YouTubeController extends AbstractController
             ];
         }
 
-
+        // Regions
         $regions = $this->regionRepository->findAll();
         foreach ($regions as $region) {
             /** @var Region $region */
@@ -214,13 +217,13 @@ class YouTubeController extends AbstractController
             }
 
             $data[] = [
-                'name' => 'R) ' . $region->getName(),
+                'name' => 'G) ' . $region->getName(),
                 'count' => 0,
                 'id' => $region->getPlaylist(),
             ];
         }
 
-
+        // Traditions
         $traditions = $this->traditionRepository->findAll();
         foreach ($traditions as $tradition) {
             /** @var Tradition $tradition */
@@ -235,7 +238,33 @@ class YouTubeController extends AbstractController
             ];
         }
 
+        // Rituals
+        $counts = [];
+        foreach ($markerGroups as $markers) {
+            foreach ($markers as $marker) {
+                if ($marker->getRitual()) {
+                    $id = $marker->getRitual()->getId();
+                    $counts[$id] = isset($counts[$id]) ? $counts[$id] + 1 : 1;
+                }
+            }
+        }
 
+        $rituals = $this->ritualRepository->findAll();
+        foreach ($rituals as $ritual) {
+            /** @var Ritual $ritual */
+            if (!isset($counts[$ritual->getId()])) {
+                continue;
+            }
+
+            $data[] = [
+                'name' => 'R) ' . $ritual->getName(),
+                'count' => $counts[$ritual->getId()],
+                'id' => $ritual->getPlaylist(),
+            ];
+            unset($counts[$ritual->getId()]);
+        }
+
+        // Children
         $data[] = [
             'name' => 'S) ' . Artist::CHILDREN_NAME,
             'count' => $countsChildren,

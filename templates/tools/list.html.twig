@@ -1,7 +1,7 @@
 {% extends 'base.html.twig' %}
 
 {% block title %}
-    Сьпіс скрыптоў па дапамоце ў апрацоўцы
+    Сьпіс скрыптоў па дапамозе ў апрацоўцы
 {% endblock %}
 
 {% block body %}
@@ -44,7 +44,13 @@
                 <h3>Архіў Козенкі</h3>
                 <ul class="list-group">
                     <li class="list-group-item">
-                        <a href="{{ path('app_import_video_koz_list') }}">Сьпіс відэа</a>
+                        <a href="{{ path('app_videos_playlists') }}">Сьпіс плэйлістоў для канала</a> <br>
+                        <a href="{{ path('app_import_video_koz_list') }}">Сьпіс відэа</a> <br>
+
+                        <span class="badge text-bg-danger">Увага!</span>
+                        <a href="{{ path('app_import_video_koz_update_all_items') }}">
+                            Абнавіць усе апісаньні
+                        </a>
                     </li>
                 </ul>
             </p>
@@ -56,6 +62,21 @@
                         <a href="{{ path('app_import_tools_update_geo') }}">Удакладненьне рэгіёна і вобласьці для ўрочышч</a> <br>
                         <a href="{{ path('app_import_tools_detect_report_points') }}">Знайсьці пункты для нявызначаных месц справаздач</a> <br>
                         <a href="{{ path('app_import_tools_detect_informant_points') }}">Знайсьці пункты для нявызначаных месц у інфармантаў</a>
+                    </li>
+                </ul>
+            </p>
+
+            <p>
+                <h3>Імпарты</h3>
+                <ul class="list-group">
+                    <li class="list-group-item">
+                        <a href="{{ path('app_import_imef_queue') }}">Стварыць чаргу для апрацоўкі ІМЭФ данных</a> <br>
+                        <a href="{{ path('app_import_kobo_check') }}">Прэдпрагляд апрацоўкі Kobo-файла</a> <br>
+                        <a href="{{ path('app_import_video_koz_check') }}">Прэдпрагляд апрацоўкі файла відэа-архіва Козенкі</a> <br>
+                        <a href="{{ path('app_import_doc_check') }}">Прэдпрагляд апрацоўкі Word-файла архіва СЭТа</a> <br>
+                        <a href="{{ path('app_import_files_check') }}">Прэдпрагляд апрацоўкі медыа-файлаў архіва СЭТа</a> <br>
+                        <a href="{{ path('app_import_vopis_check') }}">Прэдпрагляд апрацоўкі простага вопіса ў табліцы</a> <br>
+                        <a href="{{ path('app_import_vopis_detailed_check') }}">Прэдпрагляд апрацоўкі дэталізаванага вопіса ў табліцы</a>
                     </li>
                 </ul>
             </p>
