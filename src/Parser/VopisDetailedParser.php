@@ -20,11 +20,11 @@ use League\Csv\Exception;
 use League\Csv\InvalidArgument;
 use League\Csv\Reader;
 
-class VopisDetailedParser
+readonly class VopisDetailedParser
 {
     public function __construct(
-        private readonly LocationService $locationService,
-        private readonly CategoryService $categoryService,
+        private LocationService $locationService,
+        private CategoryService $categoryService,
     ) {
     }
 
@@ -124,6 +124,11 @@ class VopisDetailedParser
                 }
 
                 $notes = trim($record[VopisDetailedColumns::ADDITIONAL]);
+                $pos = mb_strpos($content, ') ');
+                if ($pos !== false && $pos < 3) {
+                    $content = trim(mb_substr($content, $pos + 1));
+                }
+
                 $category = $this->categoryService->detectCategory($content, $notes) ?? CategoryType::OTHER;
                 $marker->category = $category !== CategoryType::OTHER ? $category : CategoryType::STORY;
                 if (!CategoryType::isSystemType($category)) {
