@@ -273,7 +273,7 @@ class VideoKozHandler
                     $marker->additional[FileMarkerAdditional::IMPROVISATION] = $videoItem->improvisation;
                 }
 
-                $marker->ritual = $this->ritualService->detectRitual($videoItem->ritual);
+                $marker->ritual = $this->ritualService->findRitual($videoItem->ritual);
                 if (!$marker->ritual && !empty($videoItem->ritual)) {
                     $marker->additional[FileMarkerAdditional::RITUAL] = $videoItem->ritual;
                 }

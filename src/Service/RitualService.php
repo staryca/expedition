@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\Entity\Ritual;
+use App\Entity\Type\RitualType;
 use App\Repository\RitualRepository;
 
 class RitualService
@@ -44,14 +45,14 @@ class RitualService
         return $this->ritualRepository->findAll();
     }
 
-    public function detectRitual(string $text): ?Ritual
+    public function findRitual(string $ritualName): ?Ritual
     {
         if ($this->rituals === null) {
             $this->rituals = $this->getRitualTree();
         }
 
-        $text = trim($text, "#\t\n\r\0\x0B");
-        $parts = explode('#', $text);
+        $ritualName = trim($ritualName, "#\t\n\r\0\x0B");
+        $parts = explode('#', $ritualName);
         $last = array_pop($parts);
 
         foreach ($this->rituals as $ritual) {
@@ -61,5 +62,12 @@ class RitualService
         }
 
         return null;
+    }
+
+    public function detectRitual(string $text): ?Ritual
+    {
+        $ritualName = RitualType::detectRitual($text);
+
+        return $ritualName ? $this->findRitual($ritualName) : null;
     }
 }

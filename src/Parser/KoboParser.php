@@ -25,7 +25,7 @@ readonly class KoboParser
 {
     public function __construct(
         private LocationService $locationService,
-        private UserService     $userService,
+        private UserService $userService,
     ) {
     }
 

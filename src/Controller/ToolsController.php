@@ -5,12 +5,16 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Entity\Additional\Musician;
+use App\Entity\Type\CategoryType;
 use App\Entity\Type\GenderType;
 use App\Handler\GeoPointHandler;
 use App\Repository\InformantRepository;
 use App\Repository\ReportRepository;
+use App\Service\CategoryService;
 use App\Service\LocationService;
+use App\Service\MarkerService;
 use App\Service\PersonService;
+use App\Service\RitualService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -24,6 +28,9 @@ class ToolsController extends AbstractController
         private readonly GeoPointHandler $geoPointHandler,
         private readonly PersonService $personService,
         private readonly LocationService $locationService,
+        private readonly RitualService $ritualService,
+        private readonly MarkerService $markerService,
+        private readonly CategoryService $categoryService,
         private readonly EntityManagerInterface $entityManager,
     ) {
     }
@@ -301,6 +308,49 @@ class ToolsController extends AbstractController
 
         return $this->render('import/show.table.result.html.twig', [
             'headers' => ['Інфармант', 'Лакацыя', 'Знойдзена'],
+            'data' => $data,
+        ]);
+    }
+
+    #[Route('/import/tools/rituals_check', name: 'app_import_tools_rituals_check')]
+    public function checkRituals(): Response
+    {
+        $data = [];
+        $key = 10000;
+
+        $markerGroups = $this->markerService->getGroupedMarkersInLocation();
+        foreach ($markerGroups as $category => $markers) {
+            if (CategoryType::isSystemType($category)) {
+                continue;
+            }
+
+            foreach ($markers as $marker) {
+                if (empty($marker->getNotes())) {
+                    continue;
+                }
+
+                $item = [];
+                $item['id'] = $marker->getId();
+                $item['type'] = $marker->getCategoryName();
+                $item['name'] = $marker->getName();
+                $item['notes'] = $marker->getNotes();
+
+                $item['ritual'] = ($this->ritualService->detectRitual($marker->getNotes()))?->getName();
+
+                $category = $this->categoryService->detectCategory($marker->getName(), $marker->getNotes());
+                $errorCategory = $category !== $marker->getCategory();
+                $item['category'] = ($category ? CategoryType::getSingleName($category) : '???') .
+                    ($errorCategory ? ' <i class="bi bi-exclamation-diamond-fill text-danger"></i>' : '');
+
+                $key++;
+                $data[$key + ($errorCategory ? 10000 : 0)] = $item;
+            }
+        }
+
+        krsort($data);
+
+        return $this->render('import/show.table.result.html.twig', [
+            'headers' => ['Id', 'Тып', 'Назва', 'Заўвагі', 'Жанр', 'Тып 2'],
             'data' => $data,
         ]);
     }

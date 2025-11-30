@@ -33,7 +33,7 @@ class DetectRitualTest extends TestCase
             ->method('findAll')
             ->willReturn($rituals);
 
-        $result = $this->ritualService->detectRitual($label);
+        $result = $this->ritualService->findRitual($label);
 
         $this->assertEquals($expected, $result !== null);
     }
