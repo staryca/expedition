@@ -17,6 +17,7 @@ class SubjectType
     public const TYPE_VIDEO_VHS_C = 9;
     public const TYPE_VIDEO_MINI_DV = 10;
     public const TYPE_BOOK = 11;
+    public const TYPE_OTHER = 99;
 
     public const TYPES = [
         self::TYPE_REEL => 'Бабіна',
@@ -30,6 +31,7 @@ class SubjectType
         self::TYPE_VIDEO_VHS_C => 'Відэакасета VHS-C',
         self::TYPE_VIDEO_MINI_DV => 'Відэакасета MiniDV',
         self::TYPE_BOOK => 'Альбом, сшытак, кніга',
+        self::TYPE_OTHER => '',
     ];
 
     public const CONVERTER_FILE_TYPES = [
@@ -39,8 +41,9 @@ class SubjectType
         FileType::TYPE_PHOTO => self::TYPE_PHOTO,
         FileType::TYPE_SCAN_NOTES => self::TYPE_BOOK,
         FileType::TYPE_SCAN_ANY => self::TYPE_BOOK,
-        FileType::TYPE_WORD => null,
-        FileType::TYPE_XML => null,
+        FileType::TYPE_WORD => self::TYPE_OTHER,
+        FileType::TYPE_XML => self::TYPE_OTHER,
+        FileType::TYPE_OTHER => self::TYPE_OTHER,
     ];
 
     public static function getName(int $type): ?string

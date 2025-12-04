@@ -14,6 +14,8 @@ class FileType
     public const TYPE_SCAN_ANY = 5;
     public const TYPE_WORD = 6;
     public const TYPE_XML = 7;
+    public const TYPE_OTHER = 99;
+    // For new types need add converter to SubjectType!
 
     public const AUDIO_MIME_TYPE = 'audio';
     public const PHOTO_MIME_TYPE = 'image';

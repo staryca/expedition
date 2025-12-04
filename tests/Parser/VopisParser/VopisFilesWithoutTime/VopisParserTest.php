@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Parser\VopisParser\VopisFilesWithoutTime;
 
 use App\Entity\Type\CategoryType;
+use App\Manager\FileManager;
 use App\Parser\VopisParser;
 use App\Repository\GeoPointRepository;
 use App\Service\LocationService;
@@ -17,6 +18,7 @@ class VopisParserTest extends TestCase
 {
     private readonly VopisParser $vopisParser;
     private readonly GeoPointRepository $geoPointRepository;
+    private readonly FileManager $fileManager;
 
     public function setUp(): void
     {
@@ -26,7 +28,8 @@ class VopisParserTest extends TestCase
 
         $locationService = new LocationService($this->geoPointRepository);
         $personService = new PersonService();
-        $this->vopisParser = new VopisParser($locationService, $personService);
+        $this->vopisParser = new VopisParser($locationService);
+        $this->fileManager = new FileManager($personService);
     }
 
     public function testParse(): void
@@ -86,7 +89,7 @@ class VopisParserTest extends TestCase
         $content = file_get_contents($filename);
 
         $files = $this->vopisParser->parse($content, false);
-        $reports = $this->vopisParser->createReports($files, Carbon::now());
+        $reports = $this->fileManager->createReports($files, Carbon::now());
 
         $this->assertCount(1, $reports);
 

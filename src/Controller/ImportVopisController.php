@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Entity\Expedition;
+use App\Manager\FileManager;
 use App\Manager\ReportManager;
 use App\Parser\VopisParser;
 use App\Repository\ExpeditionRepository;
@@ -22,6 +23,7 @@ class ImportVopisController extends AbstractController
     public function __construct(
         private readonly VopisParser $parser,
         private readonly ExpeditionRepository $expeditionRepository,
+        private readonly FileManager $fileManager,
         private readonly ReportManager $reportManager,
     ) {
     }
@@ -36,7 +38,7 @@ class ImportVopisController extends AbstractController
         $files = $this->parser->parse($content, self::WITH_TIME);
         $data['files_count'] = count($files);
 
-        $reports = $this->parser->createReports($files, Carbon::parse(self::DATE_CREATED));
+        $reports = $this->fileManager->createReports($files, Carbon::parse(self::DATE_CREATED));
         $data['reports_count'] = count($reports);
 
         $data['reports_location_errors'] = [];
@@ -67,7 +69,7 @@ class ImportVopisController extends AbstractController
         $files = $this->parser->parse($content, self::WITH_TIME);
         $data['files_count'] = count($files);
 
-        $reports = $this->parser->createReports($files, Carbon::parse(self::DATE_CREATED));
+        $reports = $this->fileManager->createReports($files, Carbon::parse(self::DATE_CREATED));
 
         $this->reportManager->saveVopisReports(
             $expedition,

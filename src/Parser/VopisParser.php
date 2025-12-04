@@ -6,14 +6,9 @@ namespace App\Parser;
 
 use App\Dto\FileDto;
 use App\Dto\FileMarkerDto;
-use App\Dto\ReportBlockDataDto;
-use App\Dto\ReportDataDto;
 use App\Entity\Type\CategoryType;
 use App\Entity\Type\FileType;
-use App\Entity\Type\ReportBlockType;
 use App\Service\LocationService;
-use App\Service\PersonService;
-use Carbon\Carbon;
 use League\Csv\Exception;
 use League\Csv\InvalidArgument;
 use League\Csv\Reader;
@@ -25,7 +20,6 @@ class VopisParser
 
     public function __construct(
         private readonly LocationService $locationService,
-        private readonly PersonService $personService,
     ) {
     }
 
@@ -130,48 +124,5 @@ class VopisParser
         }
 
         return $files;
-    }
-
-    /**
-     * @param array<FileDto> $files
-     * @return array<ReportDataDto>
-     */
-    public function createReports(array &$files, Carbon $dateCreated): array
-    {
-        $reports = [];
-        $reportKey = -1;
-        $blockKey = -1;
-
-        foreach ($files as $file) {
-            foreach ($file->markers as $marker) {
-                if ($marker->isNewBlock) {
-                    if (
-                        $reportKey === -1
-                        || $reports[$reportKey]->geoPoint !== $marker->geoPoint
-                        || $reports[$reportKey]->place !== $marker->place
-                    ) {
-                        $reportKey++;
-                        $reports[$reportKey] = new ReportDataDto();
-                        $reports[$reportKey]->geoPoint = $marker->geoPoint;
-                        $reports[$reportKey]->place = $marker->place;
-                        $reports[$reportKey]->dateCreated = $dateCreated;
-                        $blockKey = 0;
-                    } else {
-                        $blockKey++;
-                    }
-                    $reports[$reportKey]->blocks[$blockKey] = new ReportBlockDataDto();
-                    $reports[$reportKey]->blocks[$blockKey]->type = ReportBlockType::TYPE_CONVERSATION;
-
-                    if (!empty($marker->informantsText)) {
-                        $reports[$reportKey]->blocks[$blockKey]->informants =
-                            $this->personService->getInformants($marker->informantsText);
-                    }
-                }
-                $marker->reportKey = $reportKey;
-                $marker->blockKey = $blockKey;
-            }
-        }
-
-        return $reports;
     }
 }
