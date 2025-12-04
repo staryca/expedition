@@ -1,0 +1,28 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+    Мапа {{ expedition.name }}
+{% endblock %}
+
+{% block stylesheets %}
+<style>
+    html, body {
+        height: 100%;
+    }
+    #map { min-height: 900px; }
+</style>
+{% endblock %}
+
+{% block styles_finish %}
+    {{ include('part/finish.for.geomapdata.html.twig') }}
+{% endblock %}
+
+{% block body %}
+    <div class="container">
+        <div class="row">
+            {% if geoMapData.center %}
+                <div id="map"></div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

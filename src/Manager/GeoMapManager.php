@@ -16,15 +16,15 @@ use App\Repository\TaskRepository;
 use App\Service\LocationService;
 use Twig\Environment;
 
-class GeoMapManager
+readonly class GeoMapManager
 {
     public function __construct(
-        private readonly TaskRepository $taskRepository,
-        private readonly GeoPointRepository $geoPointRepository,
-        private readonly ReportRepository $reportRepository,
-        private readonly InformantRepository $informantRepository,
-        private readonly LocationService $locationService,
-        private readonly Environment $twig,
+        private TaskRepository $taskRepository,
+        private GeoPointRepository $geoPointRepository,
+        private ReportRepository $reportRepository,
+        private InformantRepository $informantRepository,
+        private LocationService $locationService,
+        private Environment $twig,
     ) {
     }
 
@@ -287,6 +287,30 @@ class GeoMapManager
         if ($latLonPoint) {
             $geoMapData->setCenter($latLonPoint);
         }
+
+        return $geoMapData;
+    }
+
+    public function getGeoMapDataForMarkers(Expedition $expedition): GeoMapDto
+    {
+        $geoMapData = new GeoMapDto();
+
+        foreach ($expedition->getReports() as $report) {
+            $latLon = $report->getLatLon();
+            if ($latLon) {
+                $popup = $report->getShortGeoPlace();
+                foreach ($report->getBlocks() as $block) {
+                    foreach ($block->getFileMarkers() as $fileMarker) {
+                        $color = $fileMarker->getAdditionalValue('color');
+                        $type = empty($color) ? GeoMapDto::TYPE_REPORT : null;
+                        $geoMapData->addLatLon($latLon, $popup, $type, $color);
+                    }
+                }
+            }
+        }
+
+        // Group by location
+        $geoMapData->groupByLocation();
 
         return $geoMapData;
     }

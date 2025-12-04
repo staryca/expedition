@@ -64,6 +64,23 @@ class ExpeditionController extends AbstractController
         ]);
     }
 
+    #[Route('/expedition/{id}/map', name: 'expedition_show_map')]
+    public function showMap(int $id): Response
+    {
+        /** @var Expedition|null $expedition */
+        $expedition = $this->expeditionRepository->find($id);
+        if (!$expedition) {
+            throw $this->createNotFoundException('The expedition does not exist');
+        }
+
+        $geoMapData = $this->geoMapManager->getGeoMapDataForMarkers($expedition);
+
+        return $this->render('expedition/map.html.twig', [
+            'expedition' => $expedition,
+            'geoMapData' => $geoMapData,
+        ]);
+    }
+
     #[Route('/expedition/{id}/tips', name: 'expedition_all_tips', methods: ['GET'])]
     public function tips(int $id): Response
     {

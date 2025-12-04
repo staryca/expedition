@@ -4,7 +4,7 @@
         const geoZoom = {{ geoMapData.zoom }};
         const geoPlaces = {{ geoMapData.points|json_encode|raw }};
         const geoPopups = {{ geoMapData.popups|json_encode|raw }};
-        const geoTypes = {{ geoMapData.types|json_encode|raw }};
+        const geoColors = {{ geoMapData.colors|json_encode|raw }};
     </script>
 
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -13,30 +13,42 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
             integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
             crossorigin=""></script>
+{#
+    <!-- Font Awesome 5 SVG -->
+    <script defer src="https://use.fontawesome.com/releases/v5.12.0/js/all.js"></script>
+
+    <!-- Semantic UI -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.0/dist/semantic.min.css">
+
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+#}
+    <!-- Extra Markers -->
+    <link rel="stylesheet" href="/css/leaflet.extra-markers.min.css" />
+    <script src="/js/leaflet.extra-markers.js"></script>
 
     <script type="text/javascript">
         let map = L.map('map').setView(geoLatLon, geoZoom);
-
+{#
         const iconColors = ['green', 'violet', 'red', 'grey', 'black']
         const icons = []
         for (let i = 0; i < iconColors.length; i++) {
-            icons[i] = new L.Icon({
-                iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-' + iconColors[i] + '.png',
-                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-                iconSize: [25, 41],
-                iconAnchor: [12, 41],
-                popupAnchor: [1, -34],
-                shadowSize: [41, 41]
-            })
+            icons[i] = L.ExtraMarkers.icon({
+                markerColor: iconColors[i],
+                // icon: 'fa-number',
+                // number: '42',
+                // svg: true,
+            });
         }
-
+#}
         L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 20,
             attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         }).addTo(map);
         for (let i in geoPlaces) {
-            const geoIcon = icons[geoTypes[i] - 1]
-            L.marker(geoPlaces[i], {icon: geoIcon}).addTo(map).bindPopup(geoPopups[i]);
+            //const geoIcon = icons[geoTypes[i] - 1]
+            //L.marker(geoPlaces[i], {icon: geoIcon}).addTo(map).bindPopup(geoPopups[i]);
+            L.circleMarker(geoPlaces[i], {color: geoColors[i], fillOpacity: 0.5}).addTo(map).bindPopup(geoPopups[i]);
         }
     </script>
 {% endif %}
