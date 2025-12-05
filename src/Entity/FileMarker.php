@@ -252,6 +252,11 @@ class FileMarker
         return isset($this->additional[$key]) ? trim($this->additional[$key]) : '';
     }
 
+    public function getAdditionalLocalName(): string
+    {
+        return $this->getAdditionalValue(FileMarkerAdditional::LOCAL_NAME);
+    }
+
     public function getAdditionalDance(): string
     {
         return $this->getAdditionalValue(FileMarkerAdditional::BASE_NAME);
@@ -270,6 +275,13 @@ class FileMarker
     public function getAdditionalYoutube(): string
     {
         return $this->getAdditionalValue(FileMarkerAdditional::YOUTUBE);
+    }
+
+    public function getAdditionalYoutubeLink(): string
+    {
+        $id = trim($this->getAdditionalValue(FileMarkerAdditional::YOUTUBE));
+
+        return empty($id) ? '' : 'https://www.youtube.com/watch?v=' . $id;
     }
 
     public function addAdditional(string $key, string $value): void

@@ -79,6 +79,32 @@ class FileMarkerRepository extends ServiceEntityRepository
     }
 
     /**
+     * @param Expedition $expedition
+     * @return array<FileMarker>
+     */
+    public function getMarkersWithFullObjects(Expedition $expedition): array
+    {
+        $qb = $this->createQueryBuilder('fm')
+            ->addSelect('f')
+            ->addSelect('rb')
+            ->addSelect('rb2')
+            ->addSelect('r')
+            ->addSelect('r2')
+            ->leftJoin('fm.reportBlock', 'rb')
+            ->leftJoin('fm.file', 'f')
+            ->leftJoin('f.reportBlock', 'rb2')
+            ->leftJoin('rb.report', 'r')
+            ->leftJoin('rb2.report', 'r2')
+            ->where('r.expedition = :expedition')
+            ->orWhere('r2.expedition = :expedition')
+            ->setParameter('expedition', $expedition);
+
+        return $qb
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
      * @param GeoPoint $geoPoint
      * @return array<FileMarker>
      */
