@@ -55,7 +55,9 @@ class TextHelper
             $text = implode(' ', $parts);
         }
 
-        $text = str_replace(['-', ','], ' ', $text);
+        $text = str_replace(['-', ',', '"'], ' ', $text);
+        $text = preg_replace('/\d/', ' ', $text);
+        $text = self::cleanManySpaces($text);
         $text = self::lettersToUpper(mb_strtolower($text));
         $text = str_replace(' ', '', $text);
 

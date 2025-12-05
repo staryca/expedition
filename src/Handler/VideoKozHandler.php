@@ -13,6 +13,7 @@ use App\Dto\ReportDataDto;
 use App\Dto\UserRolesDto;
 use App\Entity\Additional\FileMarkerAdditional;
 use App\Entity\Expedition;
+use App\Entity\FileMarker;
 use App\Entity\Report;
 use App\Entity\Type\CategoryType;
 use App\Entity\Type\ReportBlockType;
@@ -20,9 +21,11 @@ use App\Entity\Type\UserRoleType;
 use App\Manager\ReportManager;
 use App\Parser\VideoKozParser;
 use App\Repository\ExpeditionRepository;
+use App\Repository\FileMarkerRepository;
 use App\Repository\UserRepository;
 use App\Service\PersonService;
 use App\Service\RitualService;
+use App\Service\YoutubeService;
 use Carbon\CarbonImmutable;
 use League\Csv\Exception;
 use League\Csv\InvalidArgument;
@@ -34,10 +37,12 @@ class VideoKozHandler
     public function __construct(
         private readonly VideoKozParser $parser,
         private readonly ExpeditionRepository $expeditionRepository,
+        private readonly FileMarkerRepository $fileMarkerRepository,
         private readonly PersonService $personService,
         private readonly UserRepository $userRepository,
         private readonly ReportManager $reportManager,
         private readonly RitualService $ritualService,
+        private readonly YoutubeService $youtubeService,
     ) {
     }
 
@@ -241,17 +246,7 @@ class VideoKozHandler
                 $marker = new FileMarkerDto();
                 $marker->category = $videoItem->category;
                 $marker->name = $videoItem->localName . (empty($videoItem->baseName) ? '' : ' (' . $videoItem->baseName . ')');
-                $notes = '';
-                if ($videoItem->pack || !empty($videoItem->improvisation . $videoItem->ritual)) {
-                    $notes = CategoryType::getSingleName($videoItem->category)
-                        . ($videoItem->pack ? ' ' . $videoItem->pack->getName() : '')
-                        . (empty($videoItem->improvisation) ? '' : ', ' . $videoItem->improvisation)
-                        . (empty($videoItem->ritual) ? '' : ', ' . $videoItem->ritual)
-                        . '.';
-                }
-                $notes .= (empty($videoItem->notes) ? '' : "\r\n" . $videoItem->notes)
-                    . (empty($videoItem->tmkb) ? '' : "\r\n" . $videoItem->tmkb);
-                $marker->notes = $notes;
+                $marker->notes = empty(trim($videoItem->notes)) ? null : trim($videoItem->notes);
                 $marker->decoding = empty(trim($videoItem->texts)) ? null : trim($videoItem->texts);
 
                 $marker->reportKey = $videoItem->reportKey;
@@ -318,5 +313,125 @@ class VideoKozHandler
         $this->convertVideoItemsToFileMarkers($files);
 
         return $this->reportManager->saveVideoKozReports($expedition, $informants, $organizations, $reportsData, $files);
+    }
+
+    /**
+     * @throws \Exception
+     */
+    public function getYoutubeList(int $expeditionId): array
+    {
+        /** @var Expedition|null $expedition */
+        $expedition = $this->expeditionRepository->find($expeditionId);
+        if (!$expedition) {
+            throw new \Exception('The expedition {$expeditionId} is not found');
+        }
+
+        $markers = $this->fileMarkerRepository->getMarkersWithFullObjects($expedition);
+        $markerLinks = $this->createTypeLinks($markers);
+
+        $data = [];
+        $keyWarningDesc = $keyWarningTitle = $keyOk = 1;
+        foreach ($markers as $fileMarker) {
+            $linkKey = self::getLinkKey($fileMarker);
+            $linkTypeMarker = self::getRandomMarker($markerLinks[$linkKey], $fileMarker->getId());
+            $descriptionTypeLink = '';
+            if ($linkTypeMarker && !empty($linkTypeMarker->getAdditionalYoutubeLink())) {
+                $descriptionTypeLink = 'Глядзіце яшчэ ' . mb_strtolower($linkTypeMarker->getCategoryName()) . ' ';
+                $linkText = $linkTypeMarker->getAdditionalLocalName();
+                $descriptionTypeLink .= ' ' . $linkText;
+                //$descriptionTypeLink .= '<a href="' . $fileMarker->getAdditionalYoutubeLink() . '">' . $linkText . '</a>';
+                if ($linkTypeMarker->getReport()->getId() !== $fileMarker->getReport()->getId()) {
+                    $descriptionTypeLink .= ' з ' . $linkTypeMarker->getReport()->getGeoPlace();
+                }
+                $descriptionTypeLink .= ': ' . $fileMarker->getAdditionalYoutubeLink();
+            }
+
+            $title = $this->youtubeService->getTitle($fileMarker->getReport(), $fileMarker);
+            $titleNotes = mb_strlen($title) > YoutubeService::MAX_LENGTH_TITLE
+                ? '<i class="bi bi-exclamation-diamond-fill text-danger" title="' . mb_strlen($title) . ' charters"></i> '
+                : ''
+            ;
+            $description = $this->youtubeService->getDescription($fileMarker, $descriptionTypeLink);
+            $descriptionWarning = mb_strlen($description) > YoutubeService::MAX_LENGTH_DESCRIPTION
+                ? '<i class="bi bi-exclamation-diamond-fill text-danger"></i> '
+                : ''
+            ;
+
+            $key = match (true) {
+                !empty($descriptionWarning) => $keyWarningDesc++,
+                !empty($titleNotes) => YoutubeService::MAX_LENGTH_TITLE + $keyWarningTitle++,
+                default => YoutubeService::MAX_LENGTH_DESCRIPTION + $keyOk++,
+            };
+
+            $item = [];
+            $item['id'] = $fileMarker->getId();
+            $item['file'] = $fileMarker->getFile()?->getFullFileName();
+            $item['youtube'] = $fileMarker->getAdditionalYoutube();
+            $item['youtube_title'] = $titleNotes . $title;
+            $item['youtube_description'] = $descriptionWarning . $description;
+//                    $item['category'] = $fileMarker->getCategoryName();
+//                    $item['name'] = $fileMarker->getAdditionalValue('baseName');
+//                    $item['name_local'] = $fileMarker->getAdditionalValue('localName');
+//                    $item['dance_type'] = $fileMarker->getAdditionalValue('danceType');
+//                    $item['improvisation'] = $fileMarker->getAdditionalValue('improvisation');
+//                    $item['ritual'] = $fileMarker->getAdditionalValue('ritual');
+//                    $item['tradition'] = $fileMarker->getAdditionalValue('tradition');
+//                    $item['location'] = $report->getGeoPlace();
+//                    $item['date'] = $report->getTextDateAction();
+//                    $item['description'] = $fileMarker->getNotes();
+//                    $item['org'] = $block->getOrganization()?->getName();
+//                    $item['informants'] = $block->getInformants()->count() . ' persons';
+//
+//                    $text = (string) $fileMarker->getDecoding();
+//                    $item['texts'] = mb_strlen($text) > 100 ? mb_substr($text, 0, 100) . '...' : $text;
+//                    $item['tmkb'] = $fileMarker->getAdditionalValue('tmkb');
+//                    $item['additional'] = var_export($fileMarker->getAdditional(), true);
+
+            $data[$key] = $item;
+        }
+        ksort($data);
+
+        return $data;
+    }
+
+    /**
+     * @param array<FileMarker> $markers
+     * @return array<string, array<FileMarker>>
+     */
+    private function createTypeLinks(array $markers): array
+    {
+        $links = [];
+
+        foreach ($markers as $marker) {
+             $links[self::getLinkKey($marker)][] = $marker;
+        }
+
+        return $links;
+    }
+
+    private static function getLinkKey(FileMarker $marker): string
+    {
+        return match (true) {
+            $marker->getCategory() === CategoryType::DANCE => CategoryType::DANCE . '-' . $marker->getAdditionalDance(),
+            default => $marker->getCategoryName(),
+        };
+    }
+
+    /**
+     * @param array<FileMarker> $array
+     * @param int $exceptId
+     * @return FileMarker|null
+     */
+    private static function getRandomMarker(array $array, int $exceptId): ?FileMarker
+    {
+        shuffle($array);
+
+        foreach ($array as $marker) {
+            if ($marker->getId() !== $exceptId && !empty($marker->getAdditionalYoutube())) {
+                return $marker;
+            }
+        }
+
+        return null;
     }
 }

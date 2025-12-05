@@ -34,7 +34,7 @@ class YoutubeService
 
     public function getTitle(Report $report, FileMarker $fileMarker, int $shortener = 0): string
     {
-        $localName = $fileMarker->getAdditionalValue(FileMarkerAdditional::LOCAL_NAME);
+        $localName = $fileMarker->getAdditionalLocalName();
         $baseName = $fileMarker->getAdditionalDance();
         $improvisation = $fileMarker->getAdditionalImprovisation();
         $danceType = $fileMarker->getAdditionalPack();
@@ -126,9 +126,9 @@ class YoutubeService
         return $title;
     }
 
-    public function getDescription(Report $report, ReportBlock $reportBlock, FileMarker $fileMarker): string
+    public function getDescription(FileMarker $fileMarker, ?string $otherText = null): string
     {
-        $localName = $fileMarker->getAdditionalValue(FileMarkerAdditional::LOCAL_NAME);
+        $localName = $fileMarker->getAdditionalLocalName();
         $baseName = $fileMarker->getAdditionalDance();
         $danceType = $fileMarker->getAdditionalPack();
         $improvisation = $fileMarker->getAdditionalImprovisation();
@@ -180,7 +180,7 @@ class YoutubeService
             $parts[] = $notes;
         }
 
-        $informants = $reportBlock->getInformantsWithoutMusicians();
+        $informants = $fileMarker->getReportBlock()->getInformantsWithoutMusicians();
         $persons = [];
         foreach ($informants as $informant) {
             $persons[] = $informant->getFirstName()
@@ -192,7 +192,7 @@ class YoutubeService
         }
 
         // Musicians
-        $informants = $reportBlock->getMusicians();
+        $informants = $fileMarker->getReportBlock()->getMusicians();
         $persons = [];
         foreach ($informants as $informant) {
             $persons[] = $informant->getFirstName()
@@ -203,7 +203,7 @@ class YoutubeService
             $parts[] = 'Музык' . (count($persons) === 1 ? 'а' : 'і') . ': ' . implode('; ', $persons); // todo
         }
 
-        $geoPoint = $report->getGeoPoint();
+        $geoPoint = $fileMarker->getReport()->getGeoPoint();
         $part = '';
         if (null !== $geoPoint) {
             $part = TextHelper::lettersToUpper($geoPoint->getPrefixBe())
@@ -211,7 +211,7 @@ class YoutubeService
         }
         $date = !empty($dateActionNotes)
             ? $dateActionNotes
-            : (empty($report->getDateActionYear()) ? '' : $report->getDateActionYear() . ' годзе.');
+            : (empty($fileMarker->getReport()->getDateActionYear()) ? '' : $fileMarker->getReport()->getDateActionYear() . ' годзе.');
         if (!empty($date)) {
             if (!empty($part)) {
                 $part .= '<br>';
@@ -262,6 +262,10 @@ class YoutubeService
         $notes .= ' Калі ласка, будзьце тактычныя і ўважлівыя пры напісанні вашых допісаў да відэа. Не дасылайце паведамленні, якія парушаюць закон, змяшчаюць пагрозы, абразы ці непрыстойнасці. Архіў мае за сабой права не публікаваць вашы каментары. Калі вы з гэтым не пагаджаецеся, калі ласка, не дасылайце іх.';
         $notes .= ' Калі вы кагосьці пазналі ці людзі, якіх вы дакладна ведаеце, не пазначаныя, то напішыце ў каментары.';
         $parts[] = $notes;
+
+        if ($otherText) {
+            $parts[] = $otherText;
+        }
 
         return implode('<br><br>', $parts);
     }
@@ -322,11 +326,7 @@ class YoutubeService
         $snippet->setTitle($this->getTitle($fileMarker->getReport(), $fileMarker));
         $snippet->setDefaultAudioLanguage(self::LANG_BE);
 
-        $description = $this->getDescription(
-            $fileMarker->getReport(),
-            $fileMarker->getReportBlock(),
-            $fileMarker
-        );
+        $description = $this->getDescription($fileMarker);
         $snippet->setDescription($this->fixDescription($description));
 
         return $youtube->videos->update('snippet', $video);
