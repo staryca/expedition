@@ -218,6 +218,17 @@ class CategoryType
         self::OTHER => [],
     ];
 
+    private const DANCE_TYPES = [
+        self::KARAHOD,
+        self::DANCE,
+        self::QUADRILLE,
+        self::DANCE_GAME,
+        self::CHORUSES,
+        self::MELODY,
+        self::DANCE_MOVEMENTS,
+        self::ABOUT_DANCES,
+    ];
+
     public static function getSingleName(int $type): ?string
     {
         return isset(self::TYPES[$type]) ? mb_ucfirst(self::TYPES[$type]) : null;
@@ -425,5 +436,10 @@ class CategoryType
         }
 
         return $category;
+    }
+
+    public static function asDanceType(int $category): bool
+    {
+        return in_array($category, self::DANCE_TYPES, true);
     }
 }

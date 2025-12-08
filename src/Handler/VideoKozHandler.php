@@ -13,9 +13,7 @@ use App\Dto\ReportDataDto;
 use App\Dto\UserRolesDto;
 use App\Entity\Additional\FileMarkerAdditional;
 use App\Entity\Expedition;
-use App\Entity\FileMarker;
 use App\Entity\Report;
-use App\Entity\Type\CategoryType;
 use App\Entity\Type\ReportBlockType;
 use App\Entity\Type\UserRoleType;
 use App\Manager\ReportManager;
@@ -327,31 +325,16 @@ class VideoKozHandler
         }
 
         $markers = $this->fileMarkerRepository->getMarkersWithFullObjects($expedition);
-        $markerLinks = $this->createTypeLinks($markers);
 
         $data = [];
         $keyWarningDesc = $keyWarningTitle = $keyOk = 1;
         foreach ($markers as $fileMarker) {
-            $linkKey = self::getLinkKey($fileMarker);
-            $linkTypeMarker = self::getRandomMarker($markerLinks[$linkKey], $fileMarker->getId());
-            $descriptionTypeLink = '';
-            if ($linkTypeMarker && !empty($linkTypeMarker->getAdditionalYoutubeLink())) {
-                $descriptionTypeLink = 'Глядзіце яшчэ ' . mb_strtolower($linkTypeMarker->getCategoryName()) . ' ';
-                $linkText = $linkTypeMarker->getAdditionalLocalName();
-                $descriptionTypeLink .= ' ' . $linkText;
-                //$descriptionTypeLink .= '<a href="' . $fileMarker->getAdditionalYoutubeLink() . '">' . $linkText . '</a>';
-                if ($linkTypeMarker->getReport()->getId() !== $fileMarker->getReport()->getId()) {
-                    $descriptionTypeLink .= ' з ' . $linkTypeMarker->getReport()->getGeoPlace();
-                }
-                $descriptionTypeLink .= ': ' . $fileMarker->getAdditionalYoutubeLink();
-            }
-
-            $title = $this->youtubeService->getTitle($fileMarker->getReport(), $fileMarker);
+            $title = $this->youtubeService->getTitle($fileMarker);
             $titleNotes = mb_strlen($title) > YoutubeService::MAX_LENGTH_TITLE
                 ? '<i class="bi bi-exclamation-diamond-fill text-danger" title="' . mb_strlen($title) . ' charters"></i> '
                 : ''
             ;
-            $description = $this->youtubeService->getDescription($fileMarker, $descriptionTypeLink);
+            $description = $this->youtubeService->getDescription($fileMarker);
             $descriptionWarning = mb_strlen($description) > YoutubeService::MAX_LENGTH_DESCRIPTION
                 ? '<i class="bi bi-exclamation-diamond-fill text-danger"></i> '
                 : ''
@@ -392,46 +375,5 @@ class VideoKozHandler
         ksort($data);
 
         return $data;
-    }
-
-    /**
-     * @param array<FileMarker> $markers
-     * @return array<string, array<FileMarker>>
-     */
-    private function createTypeLinks(array $markers): array
-    {
-        $links = [];
-
-        foreach ($markers as $marker) {
-             $links[self::getLinkKey($marker)][] = $marker;
-        }
-
-        return $links;
-    }
-
-    private static function getLinkKey(FileMarker $marker): string
-    {
-        return match (true) {
-            $marker->getCategory() === CategoryType::DANCE => CategoryType::DANCE . '-' . $marker->getAdditionalDance(),
-            default => $marker->getCategoryName(),
-        };
-    }
-
-    /**
-     * @param array<FileMarker> $array
-     * @param int $exceptId
-     * @return FileMarker|null
-     */
-    private static function getRandomMarker(array $array, int $exceptId): ?FileMarker
-    {
-        shuffle($array);
-
-        foreach ($array as $marker) {
-            if ($marker->getId() !== $exceptId && !empty($marker->getAdditionalYoutube())) {
-                return $marker;
-            }
-        }
-
-        return null;
     }
 }

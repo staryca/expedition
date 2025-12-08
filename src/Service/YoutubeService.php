@@ -6,10 +6,9 @@ namespace App\Service;
 
 use App\Entity\Additional\FileMarkerAdditional;
 use App\Entity\FileMarker;
-use App\Entity\Report;
-use App\Entity\ReportBlock;
 use App\Entity\Type\CategoryType;
 use App\Helper\TextHelper;
+use App\Repository\FileMarkerRepository;
 use Google\Client;
 use Google\Service\YouTube;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -24,15 +23,24 @@ class YoutubeService
     public const MAX_LENGTH_DESCRIPTION = 5000;
     private const SHORTENER_TRUNCATE = 3;
 
+    /**
+     * @var array<FileMarker>|null $markers
+     * Only from 1 expedition!
+     */
+    private $isSetMarkers = false;
+    private ?array $markersByPlace = null;
+    private ?array $markersByType = null;
+
     public function __construct(
         private readonly string $googleCredentials,
         private readonly TextHelper $textHelper,
         private readonly UrlGeneratorInterface $urlGenerator,
         private readonly RequestStack $requestStack,
+        private readonly FileMarkerRepository $fileMarkerRepository,
     ) {
     }
 
-    public function getTitle(Report $report, FileMarker $fileMarker, int $shortener = 0): string
+    public function getTitle(FileMarker $fileMarker, int $shortener = 0): string
     {
         $localName = $fileMarker->getAdditionalLocalName();
         $baseName = $fileMarker->getAdditionalDance();
@@ -101,6 +109,7 @@ class YoutubeService
             $parts[] = $ritual;
         }
 
+        $report = $fileMarker->getReport();
         $date = !empty($dateActionNotes)
             ? $dateActionNotes
             : (empty($report->getDateActionYear()) ? '' : $report->getDateActionYear() . ' г.');
@@ -120,13 +129,13 @@ class YoutubeService
         if (mb_strlen($title) > self::MAX_LENGTH_TITLE) {
             $step = $shortener < self::SHORTENER_TRUNCATE ? 1 : mb_strlen($title) - self::MAX_LENGTH_TITLE;
 
-            return $this->getTitle($report, $fileMarker, $shortener + $step);
+            return $this->getTitle($fileMarker, $shortener + $step);
         }
 
         return $title;
     }
 
-    public function getDescription(FileMarker $fileMarker, ?string $otherText = null): string
+    public function getDescription(FileMarker $fileMarker): string
     {
         $localName = $fileMarker->getAdditionalLocalName();
         $baseName = $fileMarker->getAdditionalDance();
@@ -161,6 +170,9 @@ class YoutubeService
             if (!$danceTypeOneWord) {
                 $texts[] = $danceType;
             }
+            if (!empty($localName)) {
+                $texts[] = '"' . $localName . '"';
+            }
             if ($improvisation === FileMarkerAdditional::IMPROVISATION_MIKITA_CASE && $localName !== 'Мікіта') {
                 $texts[] = FileMarkerAdditional::IMPROVISATION_MIKITA_CASE;
             }
@@ -173,6 +185,24 @@ class YoutubeService
 
             $text = implode(' ', $texts);
             $parts[] = mb_strtoupper(mb_substr($text, 0, 1)) . mb_substr($text, 1) . '.';
+        } elseif ($fileMarker->isCategoryNotOther()) {
+            $texts = [];
+            $tradition_text = FileMarkerAdditional::getTradition($tradition);
+            if (!empty($tradition_text)) {
+                $texts[] = $tradition_text;
+            }
+            if ($danceType !== '') {
+                $texts[] = $danceType;
+            }
+            if ($fileMarker->getCategoryName()) {
+                $texts[] = $fileMarker->getCategoryName();
+            }
+            if (!empty($localName)) {
+                $texts[] = '"' . $localName . '"';
+            }
+
+            $text = implode(' ', $texts);
+            $parts[] = mb_strtoupper(mb_substr($text, 0, 1)) . mb_substr($text, 1) . '.';
         }
 
         $notes = $fileMarker->getNotes();
@@ -180,15 +210,37 @@ class YoutubeService
             $parts[] = $notes;
         }
 
+        $part = '';
+        $date = !empty($dateActionNotes)
+            ? $dateActionNotes
+            : (empty($fileMarker->getReport()->getDateActionYear()) ? '' : $fileMarker->getReport()->getDateActionYear() . ' годзе.');
+        if (!empty($date)) {
+            $part .= $fileMarker->getCategory() !== CategoryType::FILM
+                ? 'Відэа запісана Козенкам М.А. у ' . $date
+                : 'Відэа запісаны ў ' . $date;
+        }
+        $geoPoint = $fileMarker->getReport()->getGeoPoint();
+        if (null !== $geoPoint) {
+            if (!empty($part)) {
+                $part .= '<br>';
+            }
+            $part .= TextHelper::lettersToUpper($geoPoint->getPrefixBe())
+                . ' ' . $geoPoint->getNameWordStressOrName() . ', ' . $geoPoint->getDistrict() . ', ' . $geoPoint->getRegion() . '.';
+        }
+        if (!empty($part)) {
+            $parts[] = $part;
+        }
+
         $informants = $fileMarker->getReportBlock()->getInformantsWithoutMusicians();
         $persons = [];
+        $partPersons = '';
         foreach ($informants as $informant) {
             $persons[] = $informant->getFirstName()
                 . (null !== $informant->getYearBirth() ? ', ' . $informant->getYearBirth() . ' г.н.' : '')
                 . (!empty($informant->getNotes()) ? ' (' . $informant->getNotes() . ')' : '');
         }
         if (!empty($persons)) {
-            $parts[] = 'Выконваюць: ' . implode('; ', $persons); // todo
+            $partPersons = 'Выконваюць: ' . implode('; ', $persons); // todo
         }
 
         // Musicians
@@ -200,28 +252,13 @@ class YoutubeService
                 . (!empty($informant->getNotes()) ? ' (' . $informant->getNotes() . ')' : '');
         }
         if (!empty($persons)) {
-            $parts[] = 'Музык' . (count($persons) === 1 ? 'а' : 'і') . ': ' . implode('; ', $persons); // todo
-        }
-
-        $geoPoint = $fileMarker->getReport()->getGeoPoint();
-        $part = '';
-        if (null !== $geoPoint) {
-            $part = TextHelper::lettersToUpper($geoPoint->getPrefixBe())
-                . ' ' . $geoPoint->getNameWordStressOrName() . ', ' . $geoPoint->getDistrict() . ', ' . $geoPoint->getRegion() . '.';
-        }
-        $date = !empty($dateActionNotes)
-            ? $dateActionNotes
-            : (empty($fileMarker->getReport()->getDateActionYear()) ? '' : $fileMarker->getReport()->getDateActionYear() . ' годзе.');
-        if (!empty($date)) {
-            if (!empty($part)) {
-                $part .= '<br>';
+            if (!empty($partPersons)) {
+                $partPersons .= '<br>';
             }
-            $part .= $fileMarker->getCategory() !== CategoryType::FILM
-                ? 'Запісана Козенкам М.А. у ' . $date
-                : 'Запісаны ў ' . $date;
+            $partPersons .= 'Музык' . (count($persons) === 1 ? 'а' : 'і') . ': ' . implode('; ', $persons); // todo
         }
-        if (!empty($part)) {
-            $parts[] = $part;
+        if (!empty($partPersons)) {
+            $parts[] = $partPersons;
         }
 
         $texts = $fileMarker->getDecoding();
@@ -258,13 +295,62 @@ class YoutubeService
             $parts[] = $tmkb;
         }
 
-        $notes = 'Апрацоўку відэа рабіла валантэрская група М.А. Козенкі ў 2023-2025 гг. з дэвізам: "Я буду драцца за кожную бабулю!"';
-        $notes .= ' Калі ласка, будзьце тактычныя і ўважлівыя пры напісанні вашых допісаў да відэа. Не дасылайце паведамленні, якія парушаюць закон, змяшчаюць пагрозы, абразы ці непрыстойнасці. Архіў мае за сабой права не публікаваць вашы каментары. Калі вы з гэтым не пагаджаецеся, калі ласка, не дасылайце іх.';
-        $notes .= ' Калі вы кагосьці пазналі ці людзі, якіх вы дакладна ведаеце, не пазначаныя, то напішыце ў каментары.';
+        $notes = 'Відэа падрыхтавана да публікацыі валанцёрскай групай ў 2023-2026 гг. з дэвізам: "Я буду драцца за кожную бабулю!"';
+        $notes .= ' Калі ласка, будзьце тактычныя і ўважлівыя пры напісанні вашых допісаў да відэа. Калі вы кагосьці пазналі ці людзі, якіх вы дакладна ведаеце, не пазначаныя, то напішыце ў каментары.';
+        $notes .= ' Не дасылайце паведамленні, якія парушаюць закон, змяшчаюць пагрозы, абразы ці непрыстойнасці. Архіў мае за сабой права не публікаваць вашы каментары. Калі вы з гэтым не пагаджаецеся, калі ласка, не дасылайце іх.';
         $parts[] = $notes;
 
-        if ($otherText) {
-            $parts[] = $otherText;
+        if (!$this->isSetMarkers) {
+            $markers = $this->fileMarkerRepository->getMarkersWithFullObjects(
+                $fileMarker->getReport()->getExpedition()
+            );
+            $this->createLinks($markers);
+            $this->isSetMarkers = true;
+        }
+        $descriptionLinks = '';
+
+        // Other YouTube link by place
+        $linkKey = $fileMarker->getReport()->getMiddleGeoPlace();
+        $linkPlaceMarker = isset($this->markersByPlace[$linkKey])
+            ? self::getRandomMarker($this->markersByPlace[$linkKey], $fileMarker->getId())
+            : null;
+        if ($linkPlaceMarker && !empty($linkPlaceMarker->getAdditionalYoutubeLink())) {
+            $descriptionLinks .= 'Глядзіце яшчэ ' . mb_strtolower($linkPlaceMarker->getCategoryName());
+            $descriptionLinks .= ' "' . $linkPlaceMarker->getAdditionalLocalName() . '"';
+            $descriptionLinks .= ' адсюль жа (' . $linkPlaceMarker->getReport()->getShortGeoPlace(true) . ')';
+            $descriptionLinks .= ': ' . $linkPlaceMarker->getAdditionalYoutubeLink();
+        }
+
+        // Other YouTube link by type
+        $linkKey = self::getLinkKey($fileMarker);
+        $linkTypeMarker = isset($this->markersByType[$linkKey])
+            ? self::getRandomMarker($this->markersByType[$linkKey], $fileMarker->getId())
+            : null;
+        if ($linkTypeMarker && !empty($linkTypeMarker->getAdditionalYoutubeLink())) {
+            if (!empty($descriptionLinks)) {
+                $descriptionLinks .= '<br>';
+            }
+            $descriptionLinks .= 'Глядзіце яшчэ ' . mb_strtolower($linkTypeMarker->getCategoryName());
+            $descriptionLinks .= ' "' . $linkTypeMarker->getAdditionalLocalName() . '"';
+            if ($linkTypeMarker->getReport()->getId() !== $fileMarker->getReport()->getId()) {
+                $descriptionLinks .= ', ' . $linkTypeMarker->getReport()->getMiddleGeoPlace();
+            }
+            $descriptionLinks .= ': ' . $linkTypeMarker->getAdditionalYoutubeLink();
+        }
+        if (!empty($descriptionLinks)) {
+            $parts[] = $descriptionLinks;
+        }
+
+        $tags = [];
+        if (CategoryType::asDanceType($fileMarker->getCategory())) {
+            $texts = ['традыцыйны танец', 'беларускі народны танец', 'побытавы танец', 'фальклор Беларусі',
+                'традиционный танец', 'бытовой танец', 'фольклор Беларуси', 'traditional dance', 'folklore Belarus'];
+            foreach ($texts as $text) {
+                $tags[] = '#' . $this->textHelper->getTagFormat($text);
+            }
+        }
+        if (!empty($tags)) {
+            $parts[] = implode(' ', $tags);
         }
 
         return implode('<br><br>', $parts);
@@ -323,12 +409,51 @@ class YoutubeService
 
         $video = $listResponse->getItems()[0];
         $snippet = $video->getSnippet();
-        $snippet->setTitle($this->getTitle($fileMarker->getReport(), $fileMarker));
+        $snippet->setTitle($this->getTitle($fileMarker));
         $snippet->setDefaultAudioLanguage(self::LANG_BE);
 
         $description = $this->getDescription($fileMarker);
         $snippet->setDescription($this->fixDescription($description));
 
         return $youtube->videos->update('snippet', $video);
+    }
+
+    /**
+     * @param array<FileMarker> $markers
+     */
+    private function createLinks(array $markers): void
+    {
+        foreach ($markers as $marker) {
+            if (!empty($marker->getAdditionalYoutube())) {
+                $this->markersByPlace[$marker->getReport()->getMiddleGeoPlace()][] = $marker;
+                $this->markersByType[self::getLinkKey($marker)][] = $marker;
+            }
+        }
+    }
+
+    private static function getLinkKey(FileMarker $marker): string
+    {
+        return match (true) {
+            $marker->getCategory() === CategoryType::DANCE => CategoryType::DANCE . '-' . $marker->getAdditionalDance(),
+            default => $marker->getCategoryName(),
+        };
+    }
+
+    /**
+     * @param array<FileMarker> $array
+     * @param int $exceptId
+     * @return FileMarker|null
+     */
+    private static function getRandomMarker(array $array, int $exceptId): ?FileMarker
+    {
+        shuffle($array);
+
+        foreach ($array as $marker) {
+            if ($marker->getId() !== $exceptId && !empty($marker->getAdditionalYoutube())) {
+                return $marker;
+            }
+        }
+
+        return null;
     }
 }

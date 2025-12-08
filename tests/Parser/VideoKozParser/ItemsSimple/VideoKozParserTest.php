@@ -37,13 +37,13 @@ class VideoKozParserTest extends TestCase
     public function testParse(): void
     {
         $geoPoint = new GeoPoint('242990503');
-        $this->geoPointRepository->expects($this->exactly(3))
+        $this->geoPointRepository->expects($this->exactly(4))
             ->method('findByNameAndDistrict')
             ->willReturn([$geoPoint]);
 
         $pack = new Pack();
         $pack->setName('сольны-тэст');
-        $this->packRepository->expects($this->exactly(3))
+        $this->packRepository->expects($this->exactly(4))
             ->method('getPackByName')
             ->willReturn($pack);
 
@@ -52,7 +52,7 @@ class VideoKozParserTest extends TestCase
 
         $files = $this->parser->parse($content);
 
-        $this->assertCount(3, $files);
+        $this->assertCount(4, $files);
 
         $file = $files[0];
         $this->assertEquals('Іванаўскі\Беразлянскі СК 08 Мікіта.avi', $file->getFilename());
@@ -119,6 +119,23 @@ class VideoKozParserTest extends TestCase
         $this->assertEquals('', $item->organizationName);
         $this->assertCount(0, $item->informants);
         $this->assertEmpty($item->source);
+        $this->assertEquals('', $item->texts);
+        $this->assertEquals('', $item->tmkb);
+
+        $item = $files[3]->videoItems[0];
+        $this->assertEquals(CategoryType::MELODY, $item->category);
+        $this->assertEquals('', $item->baseName);
+        $this->assertEquals('Полька', $item->localName);
+        $this->assertEquals('0KFjrlD7JKA', $item->youTube);
+        $this->assertEquals('з камандамі', $item->improvisation);
+        $this->assertEquals('2003-06-26', $item->dateAction->format('Y-m-d'));
+        $this->assertEquals('', $item->notes);
+        $this->assertEquals('', $item->organizationName);
+        $this->assertCount(1, $item->informants);
+        $this->assertEquals('Лемяшэўскі Міхаіл', $item->informants[0]->name);
+        $this->assertEquals(1953, $item->informants[0]->birth);
+        $this->assertNotEmpty($item->source);
+        $this->assertFalse(Artist::isChildren($item->source));
         $this->assertEquals('', $item->texts);
         $this->assertEquals('', $item->tmkb);
     }

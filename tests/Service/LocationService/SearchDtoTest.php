@@ -437,4 +437,39 @@ class SearchDtoTest extends TestCase
         $this->assertEquals('Юрцава', $dto->names[0]);
         $this->assertEquals('Юрцова', $dto->names[1]);
     }
+
+    public function testGetGeoPointEmptyVillage(): void
+    {
+        $dto = $this->locationService->getSearchDto(' ', 'Гомельскі раён');
+
+        $this->assertNull($dto->region);
+        $this->assertEquals('Гомельскі раён', $dto->district);
+        $this->assertEquals(GeoPointType::BE_VILLAGE_LONGS, $dto->prefixes);
+        $this->assertCount(0, $dto->names);
+    }
+
+    public function testGetGeoPointManySpaces(): void
+    {
+        $dto = $this->locationService->getSearchDto('Старая  Машчаніца', 'Бярэзінскі  раён');
+
+        $this->assertNull($dto->region);
+        $this->assertEquals('Бярэзінскі раён', $dto->district);
+        $this->assertEquals(GeoPointType::BE_VILLAGE_LONGS, $dto->prefixes);
+        $this->assertCount(5, $dto->names);
+        $this->assertEquals('Старая Машчаніца', $dto->names[0]);
+        $this->assertEquals('Сторая Машчаніца', $dto->names[1]);
+        $this->assertEquals('Старае Машчаніца', $dto->names[2]);
+        $this->assertEquals('Старая Матчаніца', $dto->names[3]);
+        $this->assertEquals('Старая Машчаняца', $dto->names[4]);
+    }
+
+    public function testGetGeoPointQuestionVillage(): void
+    {
+        $dto = $this->locationService->getSearchDto('Дзятлавічы?', 'Лунінецкі  раён');
+
+        $this->assertNull($dto->region);
+        $this->assertEquals('Лунінецкі раён', $dto->district);
+        $this->assertEquals(GeoPointType::BE_VILLAGE_LONGS, $dto->prefixes);
+        $this->assertCount(0, $dto->names);
+    }
 }

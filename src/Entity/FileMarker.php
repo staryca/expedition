@@ -279,7 +279,7 @@ class FileMarker
 
     public function getAdditionalYoutubeLink(): string
     {
-        $id = trim($this->getAdditionalValue(FileMarkerAdditional::YOUTUBE));
+        $id = trim($this->getAdditionalYoutube());
 
         return empty($id) ? '' : 'https://www.youtube.com/watch?v=' . $id;
     }

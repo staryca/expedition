@@ -158,6 +158,7 @@ class LocationService
                 [self::DISTRICT, '’'],
                 TextHelper::replaceLetters($district)
             );
+            $district = preg_replace('!\s+!', ' ', $district);
             if (isset(GeoPointSearchDto::DISTINCTS[$district])) {
                 $district = GeoPointSearchDto::DISTINCTS[$district];
             } elseif (str_contains($district, '.')) {
@@ -200,6 +201,9 @@ class LocationService
         $prefix = self::getPrefixForPlace($place);
         $shortPart = '';
         $village = $place;
+        if (str_contains($village, '?')) {
+            $village = '';
+        }
 
         if ($prefix === GeoPointType::BE_VILLAGE_SHORT) {
             $dto->prefixes = GeoPointType::BE_VILLAGE_LONGS;
