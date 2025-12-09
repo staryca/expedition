@@ -23,7 +23,7 @@ readonly class MarkerService
 
     public function getGroupedMarkersByExpedition(Expedition $expedition): array
     {
-        $markers = $this->fileMarkerRepository->getMarkersByExpedition($expedition);
+        $markers = $this->fileMarkerRepository->getMarkersWithFullObjects($expedition);
 
         return self::groupMarkersByCategory($markers);
     }

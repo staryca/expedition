@@ -20,7 +20,7 @@ use Symfony\Component\Routing\Attribute\Route;
 class ImportVideoKozController extends AbstractController
 {
     private const EXPEDITION_ID = 990; // 9
-    private const FILENAME = '../var/data/video_koz/br-004.csv';
+    private const FILENAME = '../var/data/video_koz/br-007.csv';
 
     public function __construct(
         private readonly VideoKozHandler $videoKozHandler,
@@ -108,65 +108,11 @@ class ImportVideoKozController extends AbstractController
     #[Route('/import/video_koz/list', name: 'app_import_video_koz_list')]
     public function list(): Response
     {
-        /** @var Expedition|null $expedition */
-        $expedition = $this->expeditionRepository->find(self::EXPEDITION_ID);
-        if (!$expedition) {
-            throw $this->createNotFoundException('The expedition does not exist');
+        try {
+            $data = $this->videoKozHandler->getYoutubeList(self::EXPEDITION_ID);
+        } catch (\Exception $exception) {
+            throw $this->createNotFoundException($exception->getMessage());
         }
-
-        $reports = $this->reportRepository->findByExpedition($expedition);
-
-        $data = [];
-        $keyWarningDesc = $keyWarningTitle = $keyOk = 1;
-        foreach ($reports as $report) {
-            foreach ($report->getBlocks() as $block) {
-                foreach ($block->getFileMarkers() as $fileMarker) {
-                    $title = $this->youtubeService->getTitle($report, $fileMarker);
-                    $titleNotes = mb_strlen($title) > YoutubeService::MAX_LENGTH_TITLE
-                        ? '<i class="bi bi-exclamation-diamond-fill text-danger" title="' . mb_strlen($title) . ' charters"></i> '
-                        : ''
-                    ;
-                    $description = $this->youtubeService->getDescription($report, $block, $fileMarker);
-                    $descriptionNotes = mb_strlen($description) > YoutubeService::MAX_LENGTH_DESCRIPTION
-                        ? '<i class="bi bi-exclamation-diamond-fill text-danger"></i> '
-                        : ''
-                    ;
-
-                    $key = match (true) {
-                        !empty($descriptionNotes) => $keyWarningDesc++,
-                        !empty($titleNotes) => YoutubeService::MAX_LENGTH_TITLE + $keyWarningTitle++,
-                        default => YoutubeService::MAX_LENGTH_DESCRIPTION + $keyOk++,
-                    };
-
-                    $item = [];
-                    $item['id'] = $fileMarker->getId();
-                    $item['file'] = $fileMarker->getFile()?->getFullFileName();
-                    $item['youtube'] = $fileMarker->getAdditionalYoutube();
-                    $item['youtube_title'] = $titleNotes . $title;
-                    $item['youtube_description'] = $descriptionNotes . $description;
-//                    $item['category'] = $fileMarker->getCategoryName();
-//                    $item['name'] = $fileMarker->getAdditionalValue('baseName');
-//                    $item['name_local'] = $fileMarker->getAdditionalValue('localName');
-//                    $item['dance_type'] = $fileMarker->getAdditionalValue('danceType');
-//                    $item['improvisation'] = $fileMarker->getAdditionalValue('improvisation');
-//                    $item['ritual'] = $fileMarker->getAdditionalValue('ritual');
-//                    $item['tradition'] = $fileMarker->getAdditionalValue('tradition');
-//                    $item['location'] = $report->getGeoPlace();
-//                    $item['date'] = $report->getTextDateAction();
-//                    $item['description'] = $fileMarker->getNotes();
-//                    $item['org'] = $block->getOrganization()?->getName();
-//                    $item['informants'] = $block->getInformants()->count() . ' persons';
-//
-//                    $text = (string) $fileMarker->getDecoding();
-//                    $item['texts'] = mb_strlen($text) > 100 ? mb_substr($text, 0, 100) . '...' : $text;
-//                    $item['tmkb'] = $fileMarker->getAdditionalValue('tmkb');
-//                    $item['additional'] = var_export($fileMarker->getAdditional(), true);
-
-                    $data[$key] = $item;
-                }
-            }
-        }
-        ksort($data);
 
         return $this->render('import/show.table.result.html.twig', [
             'headers' => [
@@ -207,7 +153,7 @@ class ImportVideoKozController extends AbstractController
             throw $this->createNotFoundException('The expedition does not exist');
         }
 
-        $markers = $this->fileMarkerRepository->getMarkersByExpedition($expedition);
+        $markers = $this->fileMarkerRepository->getMarkersWithFullObjects($expedition);
         $result = ['all' => 0, 'videos' => 0, 'no_found' => 0, 'updated' => 0, 'items' => []];
         foreach ($markers as $fileMarker) {
             $result['all']++;
@@ -245,7 +191,7 @@ class ImportVideoKozController extends AbstractController
             $data['id'] = $fileMarker->getAdditionalYoutube();
         } else {
             $data = get_object_vars($response);
-            $data['link'] = 'https://www.youtube.com/watch?v=' . $data['id'];
+            $data['link'] = $fileMarker->getAdditionalYoutubeLink();
         }
 
         return $this->render('import/show.json.result.html.twig', [

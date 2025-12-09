@@ -27,6 +27,10 @@ class GeoPointRepository extends ServiceEntityRepository
      */
     public function findByNameAndDistrict(GeoPointSearchDto $geoPointSearchDto): array
     {
+        if (empty($geoPointSearchDto->names)) {
+            return [];
+        }
+
         $qb = $this->createQueryBuilder('gp');
 
         if ($geoPointSearchDto->prefixes) {

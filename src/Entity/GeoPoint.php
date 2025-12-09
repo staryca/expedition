@@ -164,7 +164,12 @@ class GeoPoint
 
     public function getSubdistrict(): ?string
     {
-        return $this->subdistrict;
+        return str_replace('Савет', 'савет', $this->subdistrict);
+    }
+
+    public function getShortSubdistrict(): ?string
+    {
+        return $this->subdistrict ? str_replace('сельскі Савет', 'с/с', $this->subdistrict) : null;
     }
 
     public function setSubdistrict(?string $subdistrict): static
@@ -222,6 +227,11 @@ class GeoPoint
         return (!empty($prefix) ? $prefix . ' ' : '') . ($this->name ? (' ' . $this->name) : '');
     }
 
+    public function getMiddleBeName(): string
+    {
+        return ($this->prefixBe ? self::getShortPrefixBe() . ' ' : '') . ($this->name ? (' ' . $this->name) : '');
+    }
+
     public function getLongBeName(): string
     {
         return ($this->prefixBe ? $this->prefixBe . ' ' : '') . ($this->name ? (' ' . $this->name) : '');
@@ -238,7 +248,7 @@ class GeoPoint
             $name .= ', ' . $this->region;
         }
         if ($this->subdistrict) {
-            $name .= ' (' . str_replace('сельскі Савет', 'с/с', $this->subdistrict) . ')';
+            $name .= ' (' . $this->getShortSubdistrict() . ')';
         }
 
         return $name;

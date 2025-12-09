@@ -193,9 +193,31 @@ class Report
         return $this->geoNotes;
     }
 
-    public function getShortGeoPlace(): ?string
+
+    public function getMiddleGeoPlace(bool $withSubdistrict = true): ?string
     {
-        return ($this->geoPoint !== null) ? $this->geoPoint->getName() : $this->geoNotes;
+        if ($this->geoPoint !== null) {
+            $place = $this->geoPoint->getMiddleBeName();
+            if (!empty($this->geoPoint->getDistrict())) {
+                $place .= ', ' . $this->geoPoint->getDistrict();
+            }
+            if ($withSubdistrict && !empty($this->geoPoint->getSubdistrict())) {
+                $place .= ', ' . $this->geoPoint->getShortSubdistrict();
+            }
+
+            return $place;
+        }
+
+        return $this->geoNotes;
+    }
+
+    public function getShortGeoPlace(bool $withPrefix = false): ?string
+    {
+        if ($this->geoPoint !== null) {
+            return $withPrefix ? $this->geoPoint->getMiddleBeName() : $this->geoPoint->getName();
+        }
+
+        return $this->geoNotes;
     }
 
     public function getLat(): ?string
