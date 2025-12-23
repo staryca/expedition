@@ -124,7 +124,7 @@ readonly class MarkerService
                     empty($marker->getName()) ? ' ' : $marker->getName(),
                     empty($place) ? ' ' : $place,
                     empty($marker->getNotes()) ? ' ' : $marker->getNotes(),
-                    ((!empty($year)) ? $year . ', ' : '') . $marker->getReport()?->getExpedition()->getShortName()
+                    ($year ? $year . ', ' : '') . $marker->getReport()?->getExpedition()->getShortName()
                 ]);
             }
         }

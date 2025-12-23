@@ -28,6 +28,25 @@ readonly class VopisDetailedParser
     ) {
     }
 
+    public static function getColumns(): string
+    {
+        $columns = [
+            VopisDetailedColumns::NAME_TIME,
+            VopisDetailedColumns::DATE,
+            VopisDetailedColumns::RECORD,
+            VopisDetailedColumns::CURRENT_VILLAGE,
+            VopisDetailedColumns::CURRENT_DISTRICT,
+            VopisDetailedColumns::INFORMANTS,
+            VopisDetailedColumns::BIRTH_VILLAGE,
+            VopisDetailedColumns::BIRTH_DISTRICT,
+            VopisDetailedColumns::MENTION,
+            VopisDetailedColumns::CONTENT,
+            VopisDetailedColumns::ADDITIONAL,
+        ];
+
+        return implode(', ', $columns);
+    }
+
     /**
      * @param string $content
      * @return SubjectDto[]
@@ -137,9 +156,10 @@ readonly class VopisDetailedParser
                 }
 
                 $locationText = '';
-                $marker->geoPoint = $this->parsePlace(
+                $marker->geoPoint = $this->locationService->parsePlace(
                     TextHelper::replaceLetters($record[VopisDetailedColumns::CURRENT_VILLAGE]),
                     TextHelper::replaceLetters($record[VopisDetailedColumns::CURRENT_DISTRICT]),
+                    null,
                     $locationText
                 );
                 if (null === $marker->geoPoint) {
@@ -155,9 +175,10 @@ readonly class VopisDetailedParser
                 }
 
                 $locationText = '';
-                $geoPoint = $this->parsePlace(
+                $geoPoint = $this->locationService->parsePlace(
                     TextHelper::replaceLetters($record[VopisDetailedColumns::BIRTH_VILLAGE]),
                     TextHelper::replaceLetters($record[VopisDetailedColumns::BIRTH_DISTRICT]),
+                    null,
                     $locationText
                 );
                 if (null !== $geoPoint) {
@@ -186,25 +207,5 @@ readonly class VopisDetailedParser
         }
 
         return $subjects;
-    }
-
-    private function parsePlace(string $place, string $district, string &$locationText): ?GeoPoint
-    {
-        $district = str_replace(['р.', 'р-н'], LocationService::DISTRICT, $district);
-        if ($district !== '' && !str_contains($district, LocationService::DISTRICT)) {
-            $district .= ' ' . LocationService::DISTRICT;
-        }
-
-        $place = TextHelper::cleanManySpaces($place);
-        $district = TextHelper::cleanManySpaces($district);
-
-        if (empty($place)) {
-            $locationText = $district;
-        } else {
-            $locationText = $place . ($district === '' ? '' : ', ') . $district;
-            return $this->locationService->detectLocationByFullPlace($locationText);
-        }
-
-        return null;
     }
 }

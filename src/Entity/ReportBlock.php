@@ -262,6 +262,11 @@ class ReportBlock
         return $result;
     }
 
+    public function hasFiles(): bool
+    {
+        return !$this->files->isEmpty() || !$this->fileMarkers->isEmpty();
+    }
+
     public function addFile(File $file): static
     {
         if (!$this->files->contains($file)) {
