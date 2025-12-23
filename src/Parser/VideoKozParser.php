@@ -48,6 +48,7 @@ readonly class VideoKozParser
         /** @var array<FileDto> $files */
         $files = [];
         $key = -1;
+        $count = 0;
 
         $csv = Reader::fromString($content);
         $csv->setDelimiter(';');
@@ -55,6 +56,7 @@ readonly class VideoKozParser
         $csv->setHeaderOffset(0);
         $header = $csv->getHeader();
         foreach ($csv->getRecords($header) as $record) {
+            $count++;
             $filename = $record[VideoKozColumns::FILENAME];
             [$filename] = TextHelper::getNotes($filename);
             if ($filename === '') {
@@ -89,23 +91,32 @@ readonly class VideoKozParser
             $videoDto->tmkb = self::getValue($record, VideoKozColumns::TMKB);
 
             $subDistrict = self::getValue($record, VideoKozColumns::SOVIET);
-            $location = $this->locationService->detectLocation(
+            $locationText = '';
+            $location = $this->locationService->parsePlace(
                 self::getValue($record, VideoKozColumns::VILLAGE),
-                self::getValue($record, VideoKozColumns::DISTINCT) . ' ' . LocationService::DISTRICT,
-                empty($subDistrict) ? null : $subDistrict . ' ' . LocationService::SUBDISTRICT
+                self::getValue($record, VideoKozColumns::DISTINCT),
+                empty($subDistrict) ? null : $subDistrict . ' ' . LocationService::SUBDISTRICT,
+                $locationText
             );
             $geoPointId = self::getValue($record, VideoKozColumns::MAP_INDEX);
-            if ($location && (!$geoPointId || $location->getId() === $geoPointId)) {
+            if ($location && !empty($geoPointId) && $location->getId() !== $geoPointId) {
+                throw new \Exception(sprintf(
+                    'Bad location "%s" and Map index "%s", row #%d: %s',
+                    $location->getFullBeName(),
+                    $geoPointId,
+                    $count,
+                    implode(';', $record)
+                ));
+            }
+            if ($location) {
                 $videoDto->geoPoint = $location;
             } else {
-                $videoDto->place =
-                    self::getValue($record, VideoKozColumns::VILLAGE) . ', '
-                    . self::getValue($record, VideoKozColumns::DISTINCT) . ' ' . LocationService::DISTRICT . ', '
-                    . (empty($subDistrict) ? '' : ($subDistrict . ' ' . LocationService::SUBDISTRICT))
-                ;
+                $videoDto->place = $locationText;
             }
 
-            $videoDto->organizationName = self::getValue($record, VideoKozColumns::ORGANIZATION);
+            $organizationName = self::getValue($record, VideoKozColumns::ORGANIZATION);
+            $videoDto->organizationName = empty($organizationName) ? null : $organizationName;
+
             if (isset($record[VideoKozColumns::INFORMANTS])) {
                 $isMusicians = $videoDto->category === CategoryType::MELODY ? true : null;
                 $videoDto->informants = $this->personService->getInformants($record[VideoKozColumns::INFORMANTS], '', $isMusicians);
@@ -130,12 +141,12 @@ readonly class VideoKozParser
                     $videoDto->dateAction = Carbon::createFromDate((int) $dateAction, 1, 1);
                 } else {
                     try {
-                        $videoDto->dateAction = Carbon::createFromFormat('d.m.Y', (string) $dateAction);
+                        $videoDto->dateAction = Carbon::createFromFormat('d.m.Y', $dateAction);
                     } catch (\Exception $e) {
                         throw new \Exception(sprintf(
                             'Bad date "%s", row #%d: %s',
                             $dateAction,
-                            $key,
+                            $count,
                             $content
                         ));
                     }

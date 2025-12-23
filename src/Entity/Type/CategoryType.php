@@ -124,7 +124,7 @@ class CategoryType
             'зьвесткі пра інфарматара',
         ],
         self::ABOUT_OTHER_INFORMANTS => ['зьвесткі пра іншых інфармантаў'],
-        self::CHANGE_INFORMANTS => ['змена інфарманта', 'зьмена інфарманта', 'зьмена інфармантаў'],
+        self::CHANGE_INFORMANTS => ['змена інфарманта', 'зьмена інфарманта', 'зьмена інфармантаў', 'змена інфарматара'],
     ];
 
     private const VARIANTS_OTHER = [
@@ -163,6 +163,9 @@ class CategoryType
         self::ABOUT_DANCES => [
             ['як', 'танцавалі'],
             ['пра', 'танцы'],
+        ],
+        self::MELODY => [
+            ['на', 'язык'],
         ],
     ];
 

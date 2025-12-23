@@ -424,6 +424,33 @@ class LocationService
         return empty($locations) ? null : implode(', ', $locations);
     }
 
+    public function parsePlace(string $place, ?string $district, ?string $subDistrict, string &$locationText): ?GeoPoint
+    {
+        $place = TextHelper::cleanManySpaces($place);
+
+        if (!empty($district)) {
+            $district = str_replace(['р.', 'р-н'], LocationService::DISTRICT, $district);
+            if (!str_contains($district, LocationService::DISTRICT)) {
+                $district .= ' ' . LocationService::DISTRICT;
+            }
+            $district = TextHelper::cleanManySpaces($district);
+        }
+
+        $locationText = '';
+        if (empty($place) && !empty($district)) {
+            $locationText = $district;
+        } elseif (!empty($place)) {
+            $location = $this->detectLocation($place, $district, $subDistrict);
+            if ($location !== null) {
+                 return $location;
+            }
+
+            $locationText = $place . ($district === '' ? '' : ', ') . $district;
+        }
+
+        return null;
+    }
+
     public function detectLocation(string $place, ?string $district = null, ?string $subDistrict = null): ?GeoPoint
     {
         $dto = $this->getSearchDto($place, $district, $subDistrict);

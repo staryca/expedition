@@ -32,4 +32,26 @@ class FindIdTest extends TestCase
             }
         }
     }
+
+    /**
+     * @dataProvider dataProviderFindIdTexts
+     */
+    public function testFindIdText(string $text, int $expectedId): void
+    {
+        self::assertEquals($expectedId, CategoryType::findId($text, ''));
+    }
+
+    private function dataProviderFindIdTexts(): array
+    {
+        return [
+            ['прыпеўкі і мелодыя танца', CategoryType::CHORUSES],
+            ['прыпеўка, пяе', CategoryType::CHORUSES],
+            ['прыпеўка да полькі Тэрніца', CategoryType::CHORUSES],
+            ['прыпеўкі пад акампанемент квінтэта', CategoryType::CHORUSES],
+            ['найгрыш на скрыпцы', CategoryType::MELODY],
+            ['найгрыш з прыпеўкамі', CategoryType::MELODY],
+            ['на язык', CategoryType::MELODY],
+            ['жартоўная песня, пад гітару', CategoryType::SONGS],
+        ];
+    }
 }

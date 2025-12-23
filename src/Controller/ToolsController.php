@@ -5,11 +5,10 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Entity\Additional\Musician;
-use App\Entity\Expedition;
 use App\Entity\Type\CategoryType;
 use App\Entity\Type\GenderType;
 use App\Handler\GeoPointHandler;
-use App\Repository\ExpeditionRepository;
+use App\Parser\VopisDetailedParser;
 use App\Repository\InformantRepository;
 use App\Repository\ReportRepository;
 use App\Service\CategoryService;
@@ -27,7 +26,6 @@ class ToolsController extends AbstractController
     public function __construct(
         private readonly InformantRepository $informantRepository,
         private readonly ReportRepository $reportRepository,
-        private readonly ExpeditionRepository $expeditionRepository,
         private readonly GeoPointHandler $geoPointHandler,
         private readonly PersonService $personService,
         private readonly LocationService $locationService,
@@ -41,7 +39,12 @@ class ToolsController extends AbstractController
     #[Route('/import/tools/list', name: 'app_import_tools_list')]
     public function list(): Response
     {
-        return $this->render('tools/list.html.twig');
+        return $this->render(
+            'tools/list.html.twig',
+            [
+                'vopis_detailed_columns' => VopisDetailedParser::getColumns(),
+            ]
+        );
     }
 
     #[Route('/import/tools/all_informants', name: 'app_import_tools_informants')]

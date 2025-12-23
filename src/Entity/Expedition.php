@@ -157,6 +157,18 @@ class Expedition
         return $this;
     }
 
+    public function isMustHaveReportCode(): bool
+    {
+        foreach ($this->reports as $report) {
+            $year = $report->getDateActionYear();
+            if (!$year || $year < 2011) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     /**
      * @return Collection<int, Subject>
      */

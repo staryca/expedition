@@ -10,7 +10,7 @@ class GeoPointType
 
     public const BE_AGRO_CITY = 'аграгарадок';
     public const BE_VILLAGE = 'вёска';
-    public const BE_OLD_VILLAGE = 'раней вёска';
+    public const BE_OLD_VILLAGE = 'былая вёска';
     public const BE_TOWN = 'горад';
     public const BE_SETTLEMENT = 'пасёлак';
     public const BE_URBAN_SETTLEMENT = 'гарадскі пасёлак';
@@ -63,7 +63,7 @@ class GeoPointType
 
     public static function getShortName(?string $longName): string
     {
-        if ('' === $longName) {
+        if (empty($longName)) {
             return '';
         }
 
