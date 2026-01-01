@@ -37,6 +37,8 @@ doctrine:
                 WEBSEARCH_TO_TSQUERY: App\ORM\Functions\WebsearchToTsquery
                 TS_RANK: App\ORM\Functions\TsRank
                 TS_HEADLINE: App\ORM\Functions\TsHeadline
+                JSON_GET_FIELD: MartinGeorgiev\Doctrine\ORM\Query\AST\Functions\JsonGetField
+                JSON_GET_FIELD_AS_INTEGER: MartinGeorgiev\Doctrine\ORM\Query\AST\Functions\JsonGetFieldAsInteger
 
 when@test:
     doctrine:

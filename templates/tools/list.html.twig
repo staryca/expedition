@@ -44,13 +44,18 @@
                 <h3>Архіў Козенкі</h3>
                 <ul class="list-group">
                     <li class="list-group-item">
-                        <a href="{{ path('app_videos_playlists') }}">Сьпіс плэйлістоў для канала</a> <br>
+                        <a href="{{ path('app_import_video_koz_playlists') }}">Сьпіс плэйлістоў для канала</a> <br>
                         <a href="{{ path('app_import_video_koz_list') }}">Сьпіс відэа</a> <br>
 
                         <span class="badge text-bg-danger">Увага!</span>
                         <a href="{{ path('app_import_video_koz_update_all_items') }}">
                             Абнавіць усе апісаньні
-                        </a>
+                        </a> <br>
+
+                        <span class="badge text-bg-danger">Увага!</span>
+                        <a href="{{ path('app_import_video_koz_show_all_items') }}">
+                            Адкрыць усе відыа для ўсіх
+                        </a> <br>
                     </li>
                 </ul>
             </p>
@@ -77,6 +82,9 @@
                         <a href="{{ path('app_import_files_check') }}">Прэдпрагляд апрацоўкі медыа-файлаў архіва СЭТа</a> <br>
                         <a href="{{ path('app_import_vopis_check') }}">Прэдпрагляд апрацоўкі простага вопіса ў табліцы</a> <br>
                         <a href="{{ path('app_import_vopis_detailed_check') }}">Прэдпрагляд апрацоўкі дэталізаванага вопіса ў табліцы</a>
+                            <mark data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="{{ vopis_detailed_columns }}">
+                                 Калонкі
+                            </mark><br>
                         <a href="{{ path('app_import_map_select') }}">Загрузка данных на мапу</a> <br>
                     </li>
                 </ul>

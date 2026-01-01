@@ -10,6 +10,7 @@ use App\Entity\Type\CategoryType;
 use App\Helper\TextHelper;
 use App\Repository\FileMarkerRepository;
 use Google\Client;
+use Google\Service\Exception;
 use Google\Service\YouTube;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -24,11 +25,12 @@ class YoutubeService
     private const SHORTENER_TRUNCATE = 3;
 
     /**
-     * @var array<FileMarker>|null $markers
      * Only from 1 expedition!
      */
-    private $isSetMarkers = false;
+    private bool $isSetMarkers = false;
+    /** @var array<FileMarker>|null $markersByPlace */
     private ?array $markersByPlace = null;
+    /** @var array<FileMarker>|null $markersByType */
     private ?array $markersByType = null;
 
     public function __construct(
@@ -295,7 +297,7 @@ class YoutubeService
             $parts[] = $tmkb;
         }
 
-        $notes = 'Відэа падрыхтавана да публікацыі валанцёрскай групай ў 2023-2026 гг. з дэвізам: "Я буду драцца за кожную бабулю!"';
+        $notes = 'Відэа падрыхтавана да публікацыі валанцёрскай групай ў 2023-2026 гг.';
         $notes .= ' Калі ласка, будзьце тактычныя і ўважлівыя пры напісанні вашых допісаў да відэа. Калі вы кагосьці пазналі ці людзі, якіх вы дакладна ведаеце, не пазначаныя, то напішыце ў каментары.';
         $notes .= ' Не дасылайце паведамленні, якія парушаюць закон, змяшчаюць пагрозы, абразы ці непрыстойнасці. Архіў мае за сабой права не публікаваць вашы каментары. Калі вы з гэтым не пагаджаецеся, калі ласка, не дасылайце іх.';
         $parts[] = $notes;
@@ -363,6 +365,9 @@ class YoutubeService
         return mb_substr($description, 0, 5000);
     }
 
+    /**
+     * @throws \Google\Exception
+     */
     public function getGoogleClient(): Client
     {
         $client = new Client();
@@ -380,6 +385,9 @@ class YoutubeService
         return $client;
     }
 
+    /**
+     * @throws \Google\Exception
+     */
     public function getYoutubeService(): YouTube
     {
         $client = $this->getGoogleClient();
@@ -390,6 +398,10 @@ class YoutubeService
         return new YouTube($client);
     }
 
+    /**
+     * @throws Exception
+     * @throws \Google\Exception
+     */
     public function updateInYouTube(FileMarker $fileMarker): mixed
     {
         $youtube = $this->getYoutubeService();
@@ -415,7 +427,47 @@ class YoutubeService
         $description = $this->getDescription($fileMarker);
         $snippet->setDescription($this->fixDescription($description));
 
-        return $youtube->videos->update('snippet', $video);
+        $result = $youtube->videos->update('snippet', $video);
+
+        if (!is_string($result)) {
+            $fileMarker->addAdditional(FileMarkerAdditional::STATUS_UPDATED, '1');
+        }
+
+        return $result;
+    }
+
+    /**
+     * @throws Exception
+     * @throws \Google\Exception
+     */
+    public function showInYouTube(FileMarker $fileMarker): mixed
+    {
+        $youtube = $this->getYoutubeService();
+
+        $videoId = $fileMarker->getAdditionalYoutube();
+        if (empty($videoId)) {
+            return 'No video item';
+        }
+
+        $listResponse = $youtube->videos->listVideos("status", ['id' => $videoId]);
+        if ($listResponse === null) {
+            return null;
+        }
+        if (0 === count($listResponse->getItems())) {
+            return 'No videos found. Check out the list of available videos.';
+        }
+
+        $video = $listResponse->getItems()[0];
+        $status = $video->getStatus();
+        $status->setPrivacyStatus('public');
+
+        $result = $youtube->videos->update('status', $video);
+
+        if (!is_string($result)) {
+            $fileMarker->addAdditional(FileMarkerAdditional::STATUS_ACTIVE, '1');
+        }
+
+        return $result;
     }
 
     /**
@@ -455,5 +507,35 @@ class YoutubeService
         }
 
         return null;
+    }
+
+    /**
+     * @param string $playlist
+     * @param array<FileMarker> $markers
+     * @return array
+     * @throws Exception
+     * @throws \Google\Exception
+     */
+    public function addMarkersInPlaylist(string $playlist, array $markers): array
+    {
+        $result = [];
+
+        $youtube = $this->getYoutubeService();
+
+        $videoIds = [];
+        foreach ($markers as $marker) {
+            $videoIds[] = $marker->getAdditionalYoutube();
+        }
+        $result['amount'] = count($videoIds);
+
+        $result['in_playlist'] = 0;
+        $list = $youtube->playlistItems->listPlaylistItems('snippet', ['playlistId' => $playlist]);
+        $items = $list->getItems();
+        foreach ($items as $item) {
+            /** @var YouTube\PlaylistItem $item */
+            $result['in_playlist']++;
+        }
+
+        return $result;
     }
 }

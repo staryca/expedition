@@ -28,6 +28,10 @@ class FileMarkerAdditional
     public const IMPROVISATION_MIKITA_CASE = 'тыпу Мікіта';
     public const IMPROVISATION_QUADRILLE = 'кадрыльнага тыпу';
 
+    // status fields
+    public const STATUS_UPDATED = 'statusUpdated';
+    public const STATUS_ACTIVE = 'statusActive';
+
     public static function getTradition(string $value): string
     {
         $value = mb_strtolower($value);

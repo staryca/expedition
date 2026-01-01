@@ -327,6 +327,29 @@ class VideoKozHandler
         $markers = $this->fileMarkerRepository->getMarkersWithFullObjects($expedition);
 
         $data = [];
+
+        $updated = 0;
+        $active = 0;
+        $all = 0;
+        foreach ($markers as $fileMarker) {
+            $all++;
+            if ((int)$fileMarker->getAdditionalValue(FileMarkerAdditional::STATUS_UPDATED) > 0) {
+                $updated++;
+            }
+            if ((int)$fileMarker->getAdditionalValue(FileMarkerAdditional::STATUS_ACTIVE) > 0) {
+                $active++;
+            }
+        }
+
+        $item = ['id' => ''];
+        $item['status'] = '';
+        $item['file'] = '<i class="bi bi-arrow-clockwise"></i> / <i class="bi bi-eye-fill"></i> / all<br>'
+            . $updated . ' / ' . $active . ' / ' . $all;
+        $item['youtube'] = '';
+        $item['youtube_title'] = '';
+        $item['youtube_description'] = '';
+        $data[0] = $item;
+
         $keyWarningDesc = $keyWarningTitle = $keyOk = 1;
         foreach ($markers as $fileMarker) {
             $title = $this->youtubeService->getTitle($fileMarker);
@@ -346,8 +369,17 @@ class VideoKozHandler
                 default => YoutubeService::MAX_LENGTH_DESCRIPTION + $keyOk++,
             };
 
+            $status = '';
+            if ((int) $fileMarker->getAdditionalValue(FileMarkerAdditional::STATUS_UPDATED) > 0) {
+                $status .= '<i class="bi bi-arrow-clockwise"></i> ';
+            }
+            if ((int) $fileMarker->getAdditionalValue(FileMarkerAdditional::STATUS_ACTIVE) > 0) {
+                $status .= '<i class="bi bi-eye-fill"></i> ';
+            }
+
             $item = [];
             $item['id'] = $fileMarker->getId();
+            $item['status'] = $status;
             $item['file'] = $fileMarker->getFile()?->getFullFileName();
             $item['youtube'] = $fileMarker->getAdditionalYoutube();
             $item['youtube_title'] = $titleNotes . $title;

@@ -7,7 +7,6 @@ namespace App\Parser;
 use App\Dto\FileDto;
 use App\Dto\FileMarkerDto;
 use App\Dto\SubjectDto;
-use App\Entity\GeoPoint;
 use App\Entity\Type\CategoryType;
 use App\Entity\Type\FileType;
 use App\Entity\Type\SubjectType;
@@ -26,6 +25,25 @@ readonly class VopisDetailedParser
         private LocationService $locationService,
         private CategoryService $categoryService,
     ) {
+    }
+
+    public static function getColumns(): string
+    {
+        $columns = [
+            VopisDetailedColumns::NAME_TIME,
+            VopisDetailedColumns::DATE,
+            VopisDetailedColumns::RECORD,
+            VopisDetailedColumns::CURRENT_VILLAGE,
+            VopisDetailedColumns::CURRENT_DISTRICT,
+            VopisDetailedColumns::INFORMANTS,
+            VopisDetailedColumns::BIRTH_VILLAGE,
+            VopisDetailedColumns::BIRTH_DISTRICT,
+            VopisDetailedColumns::MENTION,
+            VopisDetailedColumns::CONTENT,
+            VopisDetailedColumns::ADDITIONAL,
+        ];
+
+        return implode('; ', $columns);
     }
 
     /**
@@ -137,9 +155,10 @@ readonly class VopisDetailedParser
                 }
 
                 $locationText = '';
-                $marker->geoPoint = $this->parsePlace(
+                $marker->geoPoint = $this->locationService->parsePlace(
                     TextHelper::replaceLetters($record[VopisDetailedColumns::CURRENT_VILLAGE]),
                     TextHelper::replaceLetters($record[VopisDetailedColumns::CURRENT_DISTRICT]),
+                    null,
                     $locationText
                 );
                 if (null === $marker->geoPoint) {
@@ -155,9 +174,10 @@ readonly class VopisDetailedParser
                 }
 
                 $locationText = '';
-                $geoPoint = $this->parsePlace(
+                $geoPoint = $this->locationService->parsePlace(
                     TextHelper::replaceLetters($record[VopisDetailedColumns::BIRTH_VILLAGE]),
                     TextHelper::replaceLetters($record[VopisDetailedColumns::BIRTH_DISTRICT]),
+                    null,
                     $locationText
                 );
                 if (null !== $geoPoint) {
@@ -186,25 +206,5 @@ readonly class VopisDetailedParser
         }
 
         return $subjects;
-    }
-
-    private function parsePlace(string $place, string $district, string &$locationText): ?GeoPoint
-    {
-        $district = str_replace(['р.', 'р-н'], LocationService::DISTRICT, $district);
-        if ($district !== '' && !str_contains($district, LocationService::DISTRICT)) {
-            $district .= ' ' . LocationService::DISTRICT;
-        }
-
-        $place = TextHelper::cleanManySpaces($place);
-        $district = TextHelper::cleanManySpaces($district);
-
-        if (empty($place)) {
-            $locationText = $district;
-        } else {
-            $locationText = $place . ($district === '' ? '' : ', ') . $district;
-            return $this->locationService->detectLocationByFullPlace($locationText);
-        }
-
-        return null;
     }
 }

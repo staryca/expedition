@@ -13,7 +13,7 @@ class VopisDetailedColumns
     public const CURRENT_DISTRICT = 'Раён';
     public const INFORMANTS = 'Інфарманты';
     public const BIRTH_VILLAGE = 'Вёс. Нар';
-    public const BIRTH_DISTRICT = 'Раё Нар';
+    public const BIRTH_DISTRICT = 'Раён Нар';
     public const MENTION = 'Узгадка';
     public const CONTENT = 'Назва';
     public const ADDITIONAL = 'Дадаткова';

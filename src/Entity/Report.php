@@ -107,9 +107,9 @@ class Report
             );
     }
 
-    public function getDateActionYear(): string
+    public function getDateActionYear(): ?int
     {
-        return !$this->dateAction ? '' : $this->dateAction->format('Y');
+        return !$this->dateAction ? null : (int)$this->dateAction->format('Y');
     }
 
     public function setDateAction(\DateTimeInterface $dateAction): static

@@ -40,7 +40,7 @@ class RitualService
     /**
      * @return array<Ritual>
      */
-    private function getRitualTree(): array
+    private function getRitualAll(): array
     {
         return $this->ritualRepository->findAll();
     }
@@ -48,7 +48,7 @@ class RitualService
     public function findRitual(string $ritualName): ?Ritual
     {
         if ($this->rituals === null) {
-            $this->rituals = $this->getRitualTree();
+            $this->rituals = $this->getRitualAll();
         }
 
         $ritualName = trim($ritualName, "#\t\n\r\0\x0B");

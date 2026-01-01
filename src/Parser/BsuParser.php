@@ -19,11 +19,11 @@ use App\Service\LocationService;
 use App\Service\PersonService;
 use Symfony\Component\DomCrawler\Crawler;
 
-class BsuParser
+readonly class BsuParser
 {
     public function __construct(
-        private readonly LocationService $locationService,
-        private readonly PersonService $personService,
+        private LocationService $locationService,
+        private PersonService $personService,
     ) {
     }
 

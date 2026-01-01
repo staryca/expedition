@@ -40,11 +40,9 @@ class DetectRitualTest extends TestCase
 
     private static function dataRituals(): iterable
     {
-        $ritualA = new Ritual();
-        $ritualA->setName('A');
+        $ritualA = new Ritual('A');
 
-        $ritualB = new Ritual();
-        $ritualB->setName('B');
+        $ritualB = new Ritual('B');
         $ritualB->setParent($ritualA);
 
         yield ['#A', [$ritualA], true];

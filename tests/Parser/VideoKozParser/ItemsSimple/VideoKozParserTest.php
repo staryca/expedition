@@ -37,7 +37,7 @@ class VideoKozParserTest extends TestCase
     public function testParse(): void
     {
         $geoPoint = new GeoPoint('242990503');
-        $this->geoPointRepository->expects($this->exactly(4))
+        $this->geoPointRepository->expects($this->exactly(3))
             ->method('findByNameAndDistrict')
             ->willReturn([$geoPoint]);
 
