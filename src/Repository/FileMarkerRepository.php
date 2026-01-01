@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repository;
 
 use App\Dto\LatLonDto;
+use App\Entity\Additional\FileMarkerAdditional;
 use App\Entity\Expedition;
 use App\Entity\FileMarker;
 use App\Entity\GeoPoint;
@@ -80,9 +81,10 @@ class FileMarkerRepository extends ServiceEntityRepository
 
     /**
      * @param Expedition $expedition
+     * @param array<string, bool> $filterMarkerAdditional
      * @return array<FileMarker>
      */
-    public function getMarkersWithFullObjects(Expedition $expedition): array
+    public function getMarkersWithFullObjects(Expedition $expedition, array $filterMarkerAdditional = []): array
     {
         $qb = $this->createQueryBuilder('fm')
             ->addSelect('f')
@@ -98,6 +100,11 @@ class FileMarkerRepository extends ServiceEntityRepository
             ->where('r.expedition = :expedition')
             ->orWhere('r2.expedition = :expedition')
             ->setParameter('expedition', $expedition);
+
+        foreach ($filterMarkerAdditional as $field => $value) {
+            $sign = $value ? '> 0' : 'IS NULL';
+            $qb->andWhere("JSON_GET_FIELD_AS_INTEGER(fm.additional, '" . $field . "') " . $sign);
+        }
 
         return $qb
             ->getQuery()

@@ -24,11 +24,7 @@ class ImportVopisDetailedController extends AbstractController
     #[Route('/import/vopis_detailed/check', name: 'app_import_vopis_detailed_check')]
     public function check(): Response
     {
-        try {
-            $subjects = $this->handler->checkFile(self::FILENAME);
-        } catch (\Exception $exception) {
-            throw $exception;
-        }
+        $subjects = $this->handler->checkFile(self::FILENAME);
 
         $data = [];
         $data['errors_type'] = [];

@@ -16,7 +16,7 @@ class Dance
     private ?int $id = null;
 
     #[ORM\Column(length: 100)]
-    private ?string $name = null;
+    private string $name;
 
     #[ORM\Column(length: 40, nullable: true)]
     private ?string $playlist = null;
@@ -26,7 +26,7 @@ class Dance
         return $this->id;
     }
 
-    public function getName(): ?string
+    public function getName(): string
     {
         return $this->name;
     }

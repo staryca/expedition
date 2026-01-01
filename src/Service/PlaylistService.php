@@ -9,7 +9,6 @@ use App\Repository\CategoryRepository;
 use App\Repository\DanceRepository;
 use App\Repository\ImprovisationRepository;
 use App\Repository\PackRepository;
-use App\Repository\RitualRepository;
 
 readonly class PlaylistService
 {
@@ -18,7 +17,6 @@ readonly class PlaylistService
         private ImprovisationRepository $improvisationRepository,
         private PackRepository $packRepository,
         private CategoryRepository $categoryRepository,
-        private RitualRepository $ritualRepository,
     ) {
     }
 
@@ -35,19 +33,19 @@ readonly class PlaylistService
         $baseName = $fileMarker->getAdditionalDance();
         if (!empty($baseName)) {
             $dance = $this->danceRepository->findOneBy(['name' => $baseName]);
-            $playlists[$baseName] = $dance ? $dance->getPlaylist() : null;
+            $playlists[$baseName] = $dance?->getPlaylist();
         }
 
         $improvisation = $fileMarker->getAdditionalImprovisation();
         if (!empty($improvisation)) {
             $improvisationObject = $this->improvisationRepository->findOneBy(['name' => $improvisation]);
-            $playlists[$improvisation] = $improvisationObject ? $improvisationObject->getPlaylist() : null;
+            $playlists[$improvisation] = $improvisationObject?->getPlaylist();
         }
 
         $danceType = $fileMarker->getAdditionalPack();
         if (!empty($danceType)) {
             $pack = $this->packRepository->findOneBy(['name' => $danceType]);
-            $playlists[$danceType] = $pack ? $pack->getPlaylist() : null;
+            $playlists[$danceType] = $pack?->getPlaylist();
         }
 
         $ritual = $fileMarker->getRitual();

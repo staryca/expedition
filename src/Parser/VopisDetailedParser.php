@@ -7,7 +7,6 @@ namespace App\Parser;
 use App\Dto\FileDto;
 use App\Dto\FileMarkerDto;
 use App\Dto\SubjectDto;
-use App\Entity\GeoPoint;
 use App\Entity\Type\CategoryType;
 use App\Entity\Type\FileType;
 use App\Entity\Type\SubjectType;
@@ -44,7 +43,7 @@ readonly class VopisDetailedParser
             VopisDetailedColumns::ADDITIONAL,
         ];
 
-        return implode(', ', $columns);
+        return implode('; ', $columns);
     }
 
     /**

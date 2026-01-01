@@ -147,7 +147,7 @@ readonly class VideoKozParser
                             'Bad date "%s", row #%d: %s',
                             $dateAction,
                             $count,
-                            $content
+                            implode(';', $record)
                         ));
                     }
                 }

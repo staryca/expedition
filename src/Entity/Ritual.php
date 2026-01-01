@@ -18,7 +18,7 @@ class Ritual
     private ?int $id = null;
 
     #[ORM\Column(length: 120)]
-    private ?string $name = null;
+    private string $name;
 
     #[ORM\ManyToOne(targetEntity: self::class, inversedBy: 'rituals')]
     private ?self $parent = null;
@@ -32,9 +32,10 @@ class Ritual
     #[ORM\Column(length: 40, nullable: true)]
     private ?string $playlist = null;
 
-    public function __construct()
+    public function __construct(string $name)
     {
         $this->rituals = new ArrayCollection();
+        $this->name = $name;
     }
 
     public function getId(): ?int
@@ -42,7 +43,7 @@ class Ritual
         return $this->id;
     }
 
-    public function getName(): ?string
+    public function getName(): string
     {
         return $this->name;
     }

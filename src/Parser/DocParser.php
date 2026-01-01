@@ -17,13 +17,13 @@ use App\Service\UserService;
 use Carbon\Carbon;
 use Symfony\Component\DomCrawler\Crawler;
 
-class DocParser
+readonly class DocParser
 {
     public function __construct(
-        private readonly LocationService $locationService,
-        private readonly PersonService $personService,
-        private readonly UserService $userService,
-        private readonly ReportService $reportService,
+        private LocationService $locationService,
+        private PersonService $personService,
+        private UserService $userService,
+        private ReportService $reportService,
     ) {
     }
 

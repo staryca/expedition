@@ -617,6 +617,7 @@ class ReportManager
                 $fileMarker->setName($markerDto->name);
                 $fileMarker->setNotes($markerDto->notes);
                 $fileMarker->setDecoding($markerDto->decoding);
+                $fileMarker->setRitual($markerDto->ritual);
                 $fileMarker->setAdditional($markerDto->additional);
 
                 $fileMarker->setReportBlock($reportBlocks[$markerDto->reportKey][$markerDto->blockKey]);

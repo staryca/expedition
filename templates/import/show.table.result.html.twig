@@ -23,7 +23,7 @@
                     {% for key, item in row %}
                         <td>
                             {{ item|raw }}
-                            {% if key == 'id' and actions is defined %}
+                            {% if key == 'id' and item is not empty and actions is defined %}
                                 <br />
                                 {% for action, icon in actions %}
                                     <a class="btn btn-primary" href="{{ path(action, {id: item}) }}" role="button"><i class="bi {{ icon }}"></i></a>
