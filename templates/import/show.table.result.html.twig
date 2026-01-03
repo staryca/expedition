@@ -22,12 +22,18 @@
                 <tr>
                     {% for key, item in row %}
                         <td>
-                            {{ item|raw }}
-                            {% if key == 'id' and item is not empty and actions is defined %}
-                                <br />
-                                {% for action, icon in actions %}
-                                    <a class="btn btn-primary" href="{{ path(action, {id: item}) }}" role="button"><i class="bi {{ icon }}"></i></a>
+                            {% if key == 'actions' %}
+                                {% for action, icon in item %}
+                                    <a class="btn btn-primary" href="{{ path(action, {id: row.id}) }}" role="button"><i class="bi {{ icon }}"></i></a>
                                 {% endfor %}
+                            {% else %}
+                                {{ item|raw }}
+                                {% if key == 'id' and item is not empty and actions is defined %}
+                                    <br />
+                                    {% for action, icon in actions %}
+                                        <a class="btn btn-primary" href="{{ path(action, {id: item}) }}" role="button"><i class="bi {{ icon }}"></i></a>
+                                    {% endfor %}
+                                {% endif %}
                             {% endif %}
                         </td>
                     {% endfor %}

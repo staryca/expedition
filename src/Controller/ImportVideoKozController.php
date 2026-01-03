@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use App\Dto\PlaylistInfoDto;
 use App\Entity\Additional\Artist;
 use App\Entity\Additional\FileMarkerAdditional;
 use App\Entity\Category;
@@ -178,14 +177,21 @@ class ImportVideoKozController extends AbstractController
         ]);
     }
 
-    #[Route('/import/video_koz/update/all', name: 'app_import_video_koz_update_all_items')]
-    public function updateAllItems(): Response
+    private function getExpedition(): Expedition
     {
         /** @var Expedition|null $expedition */
         $expedition = $this->expeditionRepository->find(self::EXPEDITION_ID);
         if (!$expedition) {
             throw $this->createNotFoundException('The expedition does not exist');
         }
+
+        return $expedition;
+    }
+
+    #[Route('/import/video_koz/update/all', name: 'app_import_video_koz_update_all_items')]
+    public function updateAllItems(): Response
+    {
+        $expedition = $this->getExpedition();
 
         $markers = $this->fileMarkerRepository->getMarkersWithFullObjects($expedition, [FileMarkerAdditional::STATUS_UPDATED => false]);
         $result = ['message' => 'ok', 'all' => 0, 'videos' => 0, 'no_found' => 0, 'updated' => 0, 'items' => []];
@@ -228,11 +234,7 @@ class ImportVideoKozController extends AbstractController
     #[Route('/import/video_koz/show/all', name: 'app_import_video_koz_show_all_items')]
     public function showAllItems(): Response
     {
-        /** @var Expedition|null $expedition */
-        $expedition = $this->expeditionRepository->find(self::EXPEDITION_ID);
-        if (!$expedition) {
-            throw $this->createNotFoundException('The expedition does not exist');
-        }
+        $expedition = $this->getExpedition();
 
         $markers = $this->fileMarkerRepository->getMarkersWithFullObjects($expedition, [FileMarkerAdditional::STATUS_ACTIVE => false]);
         $result = ['message' => 'ok', 'all' => 0, 'videos' => 0, 'no_found' => 0, 'showed' => 0, 'items' => []];
@@ -334,10 +336,7 @@ class ImportVideoKozController extends AbstractController
     #[Route('/import/video_koz/playlists', name: 'app_import_video_koz_playlists')]
     public function playlists(): Response
     {
-        $expedition = $this->expeditionRepository->find(self::EXPEDITION_ID);
-        if (!$expedition) {
-            throw $this->createNotFoundException('The expedition does not exist');
-        }
+        $expedition = $this->getExpedition();
         $markerGroups = $this->markerService->getGroupedMarkersByExpedition($expedition);
 
         $data = [];
@@ -351,9 +350,13 @@ class ImportVideoKozController extends AbstractController
             }
 
             $data[] = [
+                'id' => $category->getId(),
                 'name' => 'C) ' . CategoryType::getManyOrSingleName($category->getId()),
                 'count' => isset($markerGroups[$category->getId()]) ? count($markerGroups[$category->getId()]) : 0,
-                'id' => $category->getPlaylist(),
+                'actions' => [
+                    'app_import_video_koz_category_update' => 'bi-arrow-clockwise',
+                ],
+                'playlist' => $category->getPlaylist(),
             ];
         }
 
@@ -376,17 +379,23 @@ class ImportVideoKozController extends AbstractController
             }
 
             $data[] = [
+                'id' => $dance->getId(),
                 'name' => 'D) ' . CategoryType::getSingleName(CategoryType::DANCE) . ' ' . $dance->getName(),
                 'count' => $count,
-                'id' => $dance->getPlaylist(),
+                'actions' => [
+                    'app_import_video_koz_dance_update' => 'bi-arrow-clockwise',
+                ],
+                'playlist' => $dance->getPlaylist(),
             ];
             unset($counts[$dance->getName()]);
         }
         foreach ($counts as $name => $count) {
             $data[] = [
+                'id' => '<i class="bi bi-exclamation-triangle"></i>',
                 'name' => 'DE) ' . CategoryType::getSingleName(CategoryType::DANCE) . ' ' . $name,
                 'count' => $count,
-                'id' => '',
+                'actions' => [],
+                'playlist' => '',
             ];
         }
 
@@ -405,28 +414,34 @@ class ImportVideoKozController extends AbstractController
             $count = $counts[$improvisation->getName()] ?? 0;
 
             $data[] = [
+                'id' => $improvisation->getId(),
                 'name' => 'I) ' . CategoryType::getSingleName(CategoryType::DANCE) . ' ' . $improvisation->getName(),
                 'count' => $count,
-                'id' => $improvisation->getPlaylist(),
+                'actions' => [
+                    'app_import_video_koz_improvisation_update' => 'bi-arrow-clockwise',
+                ],
+                'playlist' => $improvisation->getPlaylist(),
             ];
             unset($counts[$improvisation->getName()]);
         }
         foreach ($counts as $name => $count) {
             $data[] = [
+                'id' => '<i class="bi bi-exclamation-triangle"></i>',
                 'name' => 'IE) ' . CategoryType::getSingleName(CategoryType::DANCE) . ' ' . $name,
                 'count' => $count,
-                'id' => '',
+                'actions' => [],
+                'playlist' => '',
             ];
         }
 
         // Packs
         $counts = [];
         $countsChildren = 0;
-        foreach ($markerGroups as $markers) {
+        foreach ($markerGroups as $category => $markers) {
             foreach ($markers as $marker) {
                 $additional = $marker->getAdditional();
                 $danceType = $marker->getAdditionalPack();
-                if (!empty($danceType)) {
+                if (!empty($danceType) && $category === CategoryType::DANCE) {
                     $counts[$danceType] = isset($counts[$danceType]) ? $counts[$danceType] + 1 : 1;
                 }
 
@@ -446,17 +461,23 @@ class ImportVideoKozController extends AbstractController
             }
 
             $data[] = [
+                'id' => $pack->getId(),
                 'name' => 'T) ' . CategoryType::getSingleName(CategoryType::DANCE) . ' ' . $pack->getName(),
                 'count' => $count,
-                'id' => $pack->getPlaylist(),
+                'actions' => [
+                    'app_import_video_koz_pack_update' => 'bi-arrow-clockwise',
+                ],
+                'playlist' => $pack->getPlaylist(),
             ];
             unset($counts[$pack->getName()]);
         }
         foreach ($counts as $name => $count) {
             $data[] = [
+                'id' => '<i class="bi bi-exclamation-triangle"></i>',
                 'name' => 'TE) ' . CategoryType::getSingleName(CategoryType::DANCE) . ' ' . $name,
                 'count' => $count,
-                'id' => '',
+                'actions' => [],
+                'playlist' => '',
             ];
         }
 
@@ -469,9 +490,11 @@ class ImportVideoKozController extends AbstractController
             }
 
             $data[] = [
+                'id' => $region->getId(),
                 'name' => 'G) ' . $region->getName(),
                 'count' => 0,
-                'id' => $region->getPlaylist(),
+                'actions' => [],
+                'playlist' => $region->getPlaylist(),
             ];
         }
 
@@ -484,9 +507,11 @@ class ImportVideoKozController extends AbstractController
             }
 
             $data[] = [
+                'id' => $tradition->getId(),
                 'name' => 'A) ' . $tradition->getName(),
                 'count' => 0,
-                'id' => $tradition->getPlaylist(),
+                'actions' => [],
+                'playlist' => $tradition->getPlaylist(),
             ];
         }
 
@@ -509,44 +534,148 @@ class ImportVideoKozController extends AbstractController
             }
 
             $data[] = [
+                'id' => $ritual->getId(),
                 'name' => 'R) ' . $ritual->getName(),
                 'count' => $counts[$ritual->getId()],
-                'id' => $ritual->getPlaylist(),
+                'actions' => [],
+                'playlist' => $ritual->getPlaylist(),
             ];
             unset($counts[$ritual->getId()]);
         }
 
         // Children
         $data[] = [
+            'id' => '0',
             'name' => 'S) ' . Artist::CHILDREN_NAME,
             'count' => $countsChildren,
-            'id' => Artist::CHILDREN_PLAYLIST,
+            'actions' => [
+                'app_import_video_koz_children_update' => 'bi-arrow-clockwise',
+            ],
+            'playlist' => Artist::CHILDREN_PLAYLIST,
         ];
 
+        foreach ($data as $key => $playlist) {
+            if (!empty($playlist['playlist'])) {
+                $link = YoutubeService::getPlaylistLink($playlist['playlist']);
+                $data[$key]['playlist'] .= ' <a href="' . $link . '">глядзець</a>';
+            }
+        }
+
         return $this->render('import/show.table.result.html.twig', [
-            'headers' => ['Name', 'Count', 'On Youtube'],
+            'headers' => ['ID', 'Name', 'Count', 'Actions', 'Playlist on Youtube'],
             'data' => $data,
-            'actions' => [
-                'app_import_video_koz_category_update' => 'bi-arrow-clockwise',
-            ],
         ]);
     }
 
     #[Route('/import/video_koz/category/{id}', name: 'app_import_video_koz_category_update')]
     public function categoryUpdate(int $id): Response
     {
+        $expedition = $this->getExpedition();
+
         $category = $this->categoryRepository->find($id);
         if (!$category) {
             throw $this->createNotFoundException('Category not found');
         }
 
-        $expedition = $this->expeditionRepository->find(self::EXPEDITION_ID);
-        if (!$expedition) {
-            throw $this->createNotFoundException('The expedition does not exist');
-        }
-
         $markers = $this->fileMarkerRepository->getMarkersByExpedition($expedition, $id);
         $playlist = $category->getPlaylist();
+
+        $data = $this->youtubeService->addMarkersInPlaylist($playlist, $markers);
+
+        return $this->render('import/show.json.result.html.twig', [
+            'data' => $data,
+        ]);
+    }
+
+    #[Route('/import/video_koz/dance/{id}', name: 'app_import_video_koz_dance_update')]
+    public function danceUpdate(int $id): Response
+    {
+        $expedition = $this->getExpedition();
+
+        $dance = $this->danceRepository->find($id);
+        if (!$dance) {
+            throw $this->createNotFoundException('Dance not found');
+        }
+
+        $markers = $this->fileMarkerRepository->getMarkersByExpedition($expedition, CategoryType::DANCE);
+        foreach ($markers as $key => $marker) {
+            if ($marker->getAdditionalDance() !== $dance->getName()) {
+                unset($markers[$key]);
+            }
+        }
+        $playlist = $dance->getPlaylist();
+
+        $data = $this->youtubeService->addMarkersInPlaylist($playlist, $markers);
+
+        return $this->render('import/show.json.result.html.twig', [
+            'data' => $data,
+        ]);
+    }
+
+    #[Route('/import/video_koz/improvisation/{id}', name: 'app_import_video_koz_improvisation_update')]
+    public function improvisationUpdate(int $id): Response
+    {
+        $expedition = $this->getExpedition();
+
+        $improvisation = $this->improvisationRepository->find($id);
+        if (!$improvisation) {
+            throw $this->createNotFoundException('Dance not found');
+        }
+
+        $markers = $this->fileMarkerRepository->getMarkersByExpedition($expedition, CategoryType::DANCE);
+        foreach ($markers as $key => $marker) {
+            if ($marker->getAdditionalImprovisation() !== $improvisation->getName()) {
+                unset($markers[$key]);
+            }
+        }
+        $playlist = $improvisation->getPlaylist();
+
+        $data = $this->youtubeService->addMarkersInPlaylist($playlist, $markers);
+
+        return $this->render('import/show.json.result.html.twig', [
+            'data' => $data,
+        ]);
+    }
+
+    #[Route('/import/video_koz/pack/{id}', name: 'app_import_video_koz_pack_update')]
+    public function packUpdate(int $id): Response
+    {
+        $expedition = $this->getExpedition();
+
+        $pack = $this->packRepository->find($id);
+        if (!$pack) {
+            throw $this->createNotFoundException('Dance not found');
+        }
+
+        $markers = $this->fileMarkerRepository->getMarkersByExpedition($expedition, CategoryType::DANCE);
+        foreach ($markers as $key => $marker) {
+            if ($marker->getAdditionalPack() !== $pack->getName()) {
+                unset($markers[$key]);
+            }
+        }
+        $playlist = $pack->getPlaylist();
+
+        $data = $this->youtubeService->addMarkersInPlaylist($playlist, $markers);
+
+        return $this->render('import/show.json.result.html.twig', [
+            'data' => $data,
+        ]);
+    }
+
+    #[Route('/import/video_koz/children/{id}', name: 'app_import_video_koz_children_update')]
+    public function childrenUpdate(): Response
+    {
+        $expedition = $this->getExpedition();
+
+        $markers = $this->fileMarkerRepository->getMarkersByExpedition($expedition);
+        foreach ($markers as $key => $marker) {
+            $additional = $marker->getAdditional();
+            $children = $additional[FileMarkerAdditional::SOURCE] ?? null;
+            if (!Artist::isChildren($children)) {
+                unset($markers[$key]);
+            }
+        }
+        $playlist = Artist::CHILDREN_PLAYLIST;
 
         $data = $this->youtubeService->addMarkersInPlaylist($playlist, $markers);
 

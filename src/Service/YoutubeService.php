@@ -524,18 +524,56 @@ class YoutubeService
 
         $videoIds = [];
         foreach ($markers as $marker) {
-            $videoIds[] = $marker->getAdditionalYoutube();
+            $videoId = $marker->getAdditionalYoutube();
+            if (empty($videoId)) {
+                continue;
+            }
+
+            $videoIds[] = $videoId;
         }
         $result['amount'] = count($videoIds);
+        $result['videoIds'] = $videoIds;
 
         $result['in_playlist'] = 0;
+        $result['deleted_from_playlist'] = 0;
+        $result['added_to_playlist'] = 0;
+
         $list = $youtube->playlistItems->listPlaylistItems('snippet', ['playlistId' => $playlist]);
         $items = $list->getItems();
         foreach ($items as $item) {
-            /** @var YouTube\PlaylistItem $item */
-            $result['in_playlist']++;
+            $videoId = $item->getSnippet()->getResourceId()->getVideoId();
+
+            $key = array_search($videoId, $videoIds);
+            if ($key !== false) {
+                $result['in_playlist']++;
+                unset($videoIds[$key]);
+            } else {
+                $youtube->playlistItems->delete($item->id);
+                $result['deleted_from_playlist']++;
+            }
+        }
+
+        foreach ($videoIds as $videoId) {
+            $resource = new YouTube\ResourceId();
+            $resource->setVideoId($videoId);
+            $resource->setKind('youtube#video');
+
+            $snippet = new YouTube\PlaylistItemSnippet();
+            $snippet->setPlaylistId($playlist);
+            $snippet->setResourceId($resource);
+
+            $item = new YouTube\PlaylistItem();
+            $item->setSnippet($snippet);
+
+            $youtube->playlistItems->insert('snippet', $item);
+            $result['added_to_playlist']++;
         }
 
         return $result;
+    }
+
+    public static function getPlaylistLink(string $playlistId): string
+    {
+        return 'https://www.youtube.com/playlist?list=' . $playlistId;
     }
 }
