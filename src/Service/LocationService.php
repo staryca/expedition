@@ -440,7 +440,13 @@ class LocationService
         if (empty($place) && !empty($district)) {
             $locationText = $district;
         } elseif (!empty($place)) {
-            $location = $this->detectLocation($place, $district, $subDistrict);
+            if (empty($district) && empty($subDistrict)) {
+                $place = str_replace(['р.', 'р-н'], LocationService::DISTRICT, $place);
+                $location = $this->detectLocationByFullPlace($place);
+            } else {
+                $location = $this->detectLocation($place, $district, $subDistrict);
+            }
+
             if ($location !== null) {
                  return $location;
             }
