@@ -103,7 +103,7 @@ class VopisDetailedHandler
                     /* for ReportBlock */
                     if ($blockKey > 0 && !isset($reports[$reportKey]->blocks[$blockKey])) {
                         throw new \Exception(
-                            sprintf('Block key %s not found. Marker: %s', $blockKey, $marker->informantsText)
+                            sprintf('Block key %s not found. Marker: %s', $blockKey, var_export($marker, true))
                         );
                     }
                     if (

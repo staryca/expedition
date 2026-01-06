@@ -445,4 +445,24 @@ class CategoryType
     {
         return in_array($category, self::DANCE_TYPES, true);
     }
+
+    public static function getDanceMovementName(array $words): string
+    {
+        $texts = [];
+        foreach ($words as $word) {
+            $texts = array_merge($texts, explode(' ', $word));
+        }
+
+        foreach ($texts as $key => $word) {
+            if (mb_substr($word, -1) === 'ы' || mb_substr($word, -1) === 'і') {
+                $texts[$key] = mb_substr($word, 0, -1) . 'ага';
+            }
+        }
+        $text = implode(' ', $texts);
+        if (!empty($text)) {
+            $text .= ' ';
+        }
+
+        return 'рухі ' . $text . 'танца';
+    }
 }

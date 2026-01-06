@@ -164,7 +164,7 @@ class GeoPoint
 
     public function getSubdistrict(): ?string
     {
-        return str_replace('Савет', 'савет', $this->subdistrict);
+        return $this->subdistrict ? str_replace('Савет', 'савет', $this->subdistrict) : null;
     }
 
     public function getShortSubdistrict(): ?string
