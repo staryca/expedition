@@ -478,8 +478,6 @@ class YoutubeService
      */
     public function addMarkersInPlaylist(string $playlist, array $markers): array
     {
-        $result = [];
-
         $youtube = $this->getYoutubeService();
 
         $videoIds = [];
@@ -491,6 +489,8 @@ class YoutubeService
 
             $videoIds[$marker->getId()] = $videoId;
         }
+
+        $result = [];
         $result['amount'] = count($videoIds);
         $result['videoIds'] = $videoIds;
 
@@ -498,7 +498,15 @@ class YoutubeService
         $result['deleted_from_playlist'] = 0;
         $result['added_to_playlist'] = 0;
 
-        $list = $youtube->playlistItems->listPlaylistItems('snippet', ['playlistId' => $playlist]);
+        try {
+            $list = $youtube->playlistItems->listPlaylistItems('snippet', ['playlistId' => $playlist]);
+        } catch (Exception $e) {
+            $result['error'] = $e->getMessage();
+            $result['error_playlist'] = $playlist;
+
+            return $result;
+        }
+
         $items = $list->getItems();
         foreach ($items as $item) {
             $videoId = $item->getSnippet()->getResourceId()->getVideoId();

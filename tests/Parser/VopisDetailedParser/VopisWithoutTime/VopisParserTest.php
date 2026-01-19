@@ -54,7 +54,7 @@ class VopisParserTest extends TestCase
         $this->assertNull($file->markers[0]->name);
         $this->assertEquals(CategoryType::ABOUT_RECORD, $file->markers[0]->category);
         $this->assertEquals('', $file->markers[0]->notes);
-        $this->assertEquals('в. Верацеі, Старынкаўскі с/с, Глыбоцкі р-н', $file->markers[0]->place);
+        $this->assertEquals('в. Верацеі, Старынкаўскі с/с, Глыбоцкі раён', $file->markers[0]->place);
         $this->assertEquals(
             'Вершылоўскі Канстанцін Ульянавіч (Юльянавіч), 1892 г.н. (скрыпач)',
             $file->markers[0]->informantsText
