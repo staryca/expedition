@@ -198,11 +198,11 @@ class Report
     {
         if ($this->geoPoint !== null) {
             $place = $this->geoPoint->getMiddleBeName();
-            if (!empty($this->geoPoint->getDistrict())) {
-                $place .= ', ' . $this->geoPoint->getDistrict();
-            }
             if ($withSubdistrict && !empty($this->geoPoint->getSubdistrict())) {
                 $place .= ', ' . $this->geoPoint->getShortSubdistrict();
+            }
+            if (!empty($this->geoPoint->getDistrict())) {
+                $place .= ', ' . $this->geoPoint->getDistrict();
             }
 
             return $place;

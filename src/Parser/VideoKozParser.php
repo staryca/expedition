@@ -91,9 +91,14 @@ readonly class VideoKozParser
             $videoDto->tmkb = self::getValue($record, VideoKozColumns::TMKB);
 
             $subDistrict = self::getValue($record, VideoKozColumns::SOVIET);
+            $village = self::getValue($record, VideoKozColumns::VILLAGE);
+            if (str_contains($village, '?')) {
+                $village = '';
+            }
+
             $locationText = '';
             $location = $this->locationService->parsePlace(
-                self::getValue($record, VideoKozColumns::VILLAGE),
+                $village,
                 self::getValue($record, VideoKozColumns::DISTINCT),
                 empty($subDistrict) ? null : $subDistrict . ' ' . LocationService::SUBDISTRICT,
                 $locationText
@@ -134,9 +139,6 @@ readonly class VideoKozParser
                 if ($dateAction[0] === '(') {
                     $dateActionNotes = trim(str_replace(['(', ')'], '', $dateAction));
                     $videoDto->dateActionNotes = $dateActionNotes;
-                    $videoDto->notes .=
-                        (empty($videoDto->notes) ? '' : "\n\r")
-                        . 'Дата запісу: ' . $dateActionNotes;
                 } elseif (strlen($dateAction) < 5) {
                     $videoDto->dateAction = Carbon::createFromDate((int) $dateAction, 1, 1);
                 } else {

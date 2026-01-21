@@ -11,22 +11,20 @@ use App\Repository\GeoPointRepository;
 use App\Service\LocationService;
 use App\Service\PersonService;
 use Carbon\Carbon;
-use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 class VopisParserTest extends TestCase
 {
     private readonly VopisParser $vopisParser;
-    private readonly GeoPointRepository $geoPointRepository;
     private readonly FileManager $fileManager;
 
     public function setUp(): void
     {
         parent::setUp();
 
-        $this->geoPointRepository = $this->createMock(GeoPointRepository::class);
+        $geoPointRepository = $this->createMock(GeoPointRepository::class);
 
-        $locationService = new LocationService($this->geoPointRepository);
+        $locationService = new LocationService($geoPointRepository);
         $personService = new PersonService();
         $this->vopisParser = new VopisParser($locationService);
         $this->fileManager = new FileManager($personService);
