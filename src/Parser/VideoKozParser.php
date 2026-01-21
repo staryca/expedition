@@ -91,9 +91,14 @@ readonly class VideoKozParser
             $videoDto->tmkb = self::getValue($record, VideoKozColumns::TMKB);
 
             $subDistrict = self::getValue($record, VideoKozColumns::SOVIET);
+            $village = self::getValue($record, VideoKozColumns::VILLAGE);
+            if (str_contains($village, '?')) {
+                $village = '';
+            }
+
             $locationText = '';
             $location = $this->locationService->parsePlace(
-                self::getValue($record, VideoKozColumns::VILLAGE),
+                $village,
                 self::getValue($record, VideoKozColumns::DISTINCT),
                 empty($subDistrict) ? null : $subDistrict . ' ' . LocationService::SUBDISTRICT,
                 $locationText

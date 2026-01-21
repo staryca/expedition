@@ -8,6 +8,7 @@ use ApiPlatform\Metadata\ApiResource;
 use App\Dto\EpisodeDto;
 use App\Entity\Additional\FileMarkerAdditional;
 use App\Entity\Type\CategoryType;
+use App\Helper\TextHelper;
 use App\Repository\FileMarkerRepository;
 use Carbon\Carbon;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -131,6 +132,16 @@ class FileMarker
     public function isCategoryDance(): bool
     {
         return $this->category === CategoryType::DANCE;
+    }
+
+    public function isCategoryDanceMovements(): bool
+    {
+        return $this->category === CategoryType::DANCE_MOVEMENTS;
+    }
+
+    public function isCategoryStory(): bool
+    {
+        return $this->category === CategoryType::STORY;
     }
 
     public function isCategoryQuadrille(): bool
@@ -259,6 +270,15 @@ class FileMarker
     public function getAdditionalLocalName(): string
     {
         return $this->getAdditionalValue(FileMarkerAdditional::LOCAL_NAME);
+    }
+
+    public function getAdditionalLocalNameWithCategory(): string
+    {
+        $categoryName = mb_strtolower($this->getCategoryName());
+        $localName = $this->getAdditionalLocalName();
+        $nameHasType = !empty($localName) && !empty($categoryName) && str_contains(mb_strtolower($localName), $categoryName);
+
+        return ($nameHasType ? '' : $categoryName . ' ') . TextHelper::getTextWithQuotation($localName);
     }
 
     public function getAdditionalDance(): string

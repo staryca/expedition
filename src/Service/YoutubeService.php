@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\Entity\Additional\FileMarkerAdditional;
+use App\Entity\Category;
 use App\Entity\FileMarker;
 use App\Entity\Type\CategoryType;
 use App\Helper\TextHelper;
@@ -97,7 +98,11 @@ class YoutubeService
             $text = implode(' ', $texts);
             $parts[] = mb_strtoupper(mb_substr($text, 0, 1)) . mb_substr($text, 1);
         } elseif ($fileMarker->isCategoryNotOther()) {
-            $parts[] = $fileMarker->getCategoryName();
+            $categoryName = $fileMarker->getCategoryName();
+            $nameHasType = !empty($localName) && !empty($categoryName) && str_contains(mb_strtolower($localName), mb_strtolower($categoryName));
+            if (!$nameHasType) {
+                $parts[] = $categoryName;
+            }
         }
 
         // 2nd shortener: hide the ritual
@@ -142,72 +147,14 @@ class YoutubeService
     {
         $localName = $fileMarker->getAdditionalLocalName();
         $baseName = $fileMarker->getAdditionalDance();
-        $danceType = $fileMarker->getAdditionalPack();
-        $improvisation = $fileMarker->getAdditionalImprovisation();
-        $tradition = $fileMarker->getAdditionalValue(FileMarkerAdditional::TRADITION);
-        $ritual = $fileMarker->getAdditionalValue(FileMarkerAdditional::RITUAL);
         $dateActionNotes = $fileMarker->getAdditionalValue(FileMarkerAdditional::DATE_ACTION_NOTES);
         $tmkb = $fileMarker->getAdditionalValue(FileMarkerAdditional::TMKB);
 
         $parts = [];
 
-        if ($fileMarker->isCategoryDance() || $fileMarker->isCategoryQuadrille()) {
-            $danceTypeOneWord = mb_substr($danceType, 1, 1) !== ' ' && mb_substr($danceType, 2, 1) !== ' ';
-            $texts = [];
-            $tradition_text = FileMarkerAdditional::getTradition($tradition);
-            if (!empty($tradition_text)) {
-                $texts[] = $tradition_text;
-            }
-            if (empty($ritual) && !$fileMarker->isCategoryQuadrille()) {
-                $texts[] = 'пазаабрадавы';
-            }
-            if ($danceTypeOneWord && $improvisation === FileMarkerAdditional::IMPROVISATION_VALUE) {
-                $texts[] = FileMarkerAdditional::IMPROVISATION_VALUE;
-            }
-            if ($danceType !== '' && $danceTypeOneWord) {
-                $texts[] = $danceType;
-            }
-            $texts[] = $fileMarker->isCategoryDance()
-                ? mb_strtolower($fileMarker->getCategoryName())
-                : mb_strtolower(CategoryType::getSingleName(CategoryType::DANCE)) .  ' тыпу кадрылі';
-            if (!$danceTypeOneWord) {
-                $texts[] = $danceType;
-            }
-            if (!empty($localName)) {
-                $texts[] = '"' . $localName . '"';
-            }
-            if ($improvisation === FileMarkerAdditional::IMPROVISATION_MIKITA_CASE && $localName !== 'Мікіта') {
-                $texts[] = FileMarkerAdditional::IMPROVISATION_MIKITA_CASE;
-            }
-            if ($improvisation !== FileMarkerAdditional::IMPROVISATION_MIKITA_CASE && $improvisation !== FileMarkerAdditional::IMPROVISATION_VALUE && !empty($improvisation)) {
-                $texts[] = $improvisation;
-            }
-            if (empty($improvisation)) {
-                $texts[] = 'з устойлівай кампазіцыяй';
-            }
-
-            $text = implode(' ', $texts);
-            $parts[] = mb_strtoupper(mb_substr($text, 0, 1)) . mb_substr($text, 1) . '.';
-        } elseif ($fileMarker->isCategoryNotOther()) {
-            $texts = [];
-            $tradition_text = FileMarkerAdditional::getTradition($tradition);
-            if (!empty($tradition_text)) {
-                $texts[] = $tradition_text;
-            }
-            if ($danceType !== '') {
-                $texts[] = $danceType;
-            }
-            if ($fileMarker->getCategoryName()) {
-                $texts[] = $fileMarker->getCategoryName();
-            }
-            if (!empty($localName)) {
-                $texts[] = '"' . $localName . '"';
-            }
-
-            if (count($texts) > 1) {
-                $text = implode(' ', $texts);
-                $parts[] = mb_strtoupper(mb_substr($text, 0, 1)) . mb_substr($text, 1) . '.';
-            }
+        $markerDescription = $this->getMarkerDescription($fileMarker);
+        if (!empty($markerDescription)) {
+            $parts[] = $markerDescription . '.';
         }
 
         $notes = $fileMarker->getNotes();
@@ -216,6 +163,7 @@ class YoutubeService
         }
 
         $part = '';
+        // Date
         $date = !empty($dateActionNotes)
             ? $dateActionNotes
             : (empty($fileMarker->getReport()->getDateActionYear()) ? '' : $fileMarker->getReport()->getDateActionYear() . ' годзе.');
@@ -224,13 +172,23 @@ class YoutubeService
                 ? 'Відэа запісана Козенкам М.А. у ' . $date
                 : 'Відэа запісаны ў ' . $date;
         }
+
+        // Location
         $geoPoint = $fileMarker->getReport()->getGeoPoint();
         if (null !== $geoPoint) {
             if (!empty($part)) {
                 $part .= '<br>';
             }
-            $part .= TextHelper::lettersToUpper($geoPoint->getPrefixBe())
-                . ' ' . $geoPoint->getNameWordStressOrName() . ', ' . $geoPoint->getDistrict() . ', ' . $geoPoint->getRegion() . '.';
+            $texts = [
+                TextHelper::lettersToUpper($geoPoint->getPrefixBe()) . ' ' . $geoPoint->getNameWordStressOrName(),
+            ];
+            if ($geoPoint->getShortSubdistrict()) {
+                $texts[] = $geoPoint->getShortSubdistrict();
+            }
+            $texts[] = $geoPoint->getDistrict();
+            $texts[] = $geoPoint->getRegion();
+
+            $part .= implode(', ', $texts) . '.';
         }
         if (!empty($part)) {
             $parts[] = $part;
@@ -286,7 +244,7 @@ class YoutubeService
         $categoryNameMany = CategoryType::getManyOrSingleName($category);
 
         $tags = [];
-        if (!empty($localName) && substr_count($localName, ' ') <= 3) {
+        if (!empty($localName) && substr_count($localName, ' ') <= 3 && !$fileMarker->isCategoryStory()) {
             $tag = false !== mb_stripos($localName, $categoryName) ? $localName : $categoryName . ' ' . $localName;
             $tags[] = '#' . $this->textHelper->getTagFormat($tag);
         }
@@ -352,7 +310,7 @@ class YoutubeService
                 : '';
             $descriptionLinks .= ' "' . $linkTypeMarker->getAdditionalLocalName() . '"';
             if ($linkTypeMarker->getReport()->getId() !== $fileMarker->getReport()->getId()) {
-                $descriptionLinks .= ', ' . $linkTypeMarker->getReport()->getMiddleGeoPlace();
+                $descriptionLinks .= ', ' . $linkTypeMarker->getReport()->getMiddleGeoPlace(false);
             }
             $descriptionLinks .= ': ' . $linkTypeMarker->getAdditionalYoutubeLink();
         }
@@ -543,24 +501,168 @@ class YoutubeService
      */
     public function addMarkersInPlaylist(string $playlist, array $markers): array
     {
-        $result = [];
-
         $youtube = $this->getYoutubeService();
 
         $videoIds = [];
         foreach ($markers as $marker) {
-            $videoIds[] = $marker->getAdditionalYoutube();
+            $videoId = $marker->getAdditionalYoutube();
+            if (empty($videoId)) {
+                continue;
+            }
+
+            $videoIds[$marker->getId()] = $videoId;
         }
+
+        $result = [];
         $result['amount'] = count($videoIds);
+        $result['videoIds'] = $videoIds;
 
         $result['in_playlist'] = 0;
-        $list = $youtube->playlistItems->listPlaylistItems('snippet', ['playlistId' => $playlist]);
+        $result['deleted_from_playlist'] = 0;
+        $result['added_to_playlist'] = 0;
+
+        try {
+            $list = $youtube->playlistItems->listPlaylistItems('snippet', ['playlistId' => $playlist]);
+        } catch (Exception $e) {
+            $result['error'] = $e->getMessage();
+            $result['error_playlist'] = $playlist;
+
+            return $result;
+        }
+
         $items = $list->getItems();
         foreach ($items as $item) {
-            /** @var YouTube\PlaylistItem $item */
-            $result['in_playlist']++;
+            $videoId = $item->getSnippet()->getResourceId()->getVideoId();
+
+            $markerId = array_search($videoId, $videoIds);
+            if ($markerId !== false) {
+                $result['in_playlist']++;
+                unset($videoIds[$markerId]);
+            } else {
+                try {
+                    $youtube->playlistItems->delete($item->id);
+                } catch (\Exception $e) {
+                    $result['error'] = $e->getMessage();
+                    $result['error_video'] = $videoId;
+
+                    return $result;
+                }
+
+                $result['deleted_from_playlist']++;
+            }
+        }
+
+        foreach ($videoIds as $markerId => $videoId) {
+            $resource = new YouTube\ResourceId();
+            $resource->setVideoId($videoId);
+            $resource->setKind('youtube#video');
+
+            $snippet = new YouTube\PlaylistItemSnippet();
+            $snippet->setPlaylistId($playlist);
+            $snippet->setResourceId($resource);
+
+            $item = new YouTube\PlaylistItem();
+            $item->setSnippet($snippet);
+
+            try {
+                $youtube->playlistItems->insert('snippet', $item);
+            } catch (Exception $e) {
+                $result['error'] = $e->getMessage();
+                $result['error_video'] = $videoId;
+                $result['error_marker'] = $markerId;
+
+                break;
+            }
+            $result['added_to_playlist']++;
         }
 
         return $result;
+    }
+
+    public static function getPlaylistLink(string $playlistId): string
+    {
+        return 'https://www.youtube.com/playlist?list=' . $playlistId;
+    }
+
+    public function getMarkerDescription(FileMarker $fileMarker): string
+    {
+        $localName = $fileMarker->getAdditionalLocalName();
+        $danceType = $fileMarker->getAdditionalPack();
+        $improvisation = $fileMarker->getAdditionalImprovisation();
+        $tradition = $fileMarker->getAdditionalValue(FileMarkerAdditional::TRADITION);
+        $ritual = $fileMarker->getAdditionalValue(FileMarkerAdditional::RITUAL);
+
+        if ($fileMarker->isCategoryDance() || $fileMarker->isCategoryQuadrille()) {
+            $danceTypeOneWord = mb_substr($danceType, 1, 1) !== ' ' && mb_substr($danceType, 2, 1) !== ' ';
+            $texts = [];
+            $tradition_text = FileMarkerAdditional::getTradition($tradition);
+            if (!empty($tradition_text)) {
+                $texts[] = $tradition_text;
+            }
+            if (empty($ritual) && !$fileMarker->isCategoryQuadrille()) {
+                $texts[] = 'пазаабрадавы';
+            }
+            if ($danceTypeOneWord && $improvisation === FileMarkerAdditional::IMPROVISATION_VALUE) {
+                $texts[] = FileMarkerAdditional::IMPROVISATION_VALUE;
+            }
+            if ($danceType !== '' && $danceTypeOneWord) {
+                $texts[] = $danceType;
+            }
+            $texts[] = $fileMarker->isCategoryDance()
+                ? mb_strtolower($fileMarker->getCategoryName())
+                : mb_strtolower(CategoryType::getSingleName(CategoryType::DANCE)) .  ' тыпу кадрылі';
+            if (!$danceTypeOneWord) {
+                $texts[] = $danceType;
+            }
+            if (!empty($localName)) {
+                $texts[] = TextHelper::getTextWithQuotation($localName);
+            }
+            if ($improvisation === FileMarkerAdditional::IMPROVISATION_MIKITA_CASE && $localName !== 'Мікіта') {
+                $texts[] = FileMarkerAdditional::IMPROVISATION_MIKITA_CASE;
+            }
+            if ($improvisation !== FileMarkerAdditional::IMPROVISATION_MIKITA_CASE && $improvisation !== FileMarkerAdditional::IMPROVISATION_VALUE && !empty($improvisation)) {
+                $texts[] = $improvisation;
+            }
+            if (empty($improvisation)) {
+                $texts[] = 'з устойлівай кампазіцыяй';
+            }
+
+            $text = implode(' ', $texts);
+
+            return mb_strtoupper(mb_substr($text, 0, 1)) . mb_substr($text, 1);
+        } elseif ($fileMarker->isCategoryNotOther()) {
+            $texts = [];
+            $tradition_text = FileMarkerAdditional::getTradition($tradition);
+            if (!empty($tradition_text)) {
+                $texts[] = $tradition_text;
+            }
+            if ($danceType !== '') {
+                $texts[] = $danceType;
+            }
+            if ($improvisation !== '') {
+                $texts[] = $improvisation;
+            }
+
+            $categoryName = $fileMarker->getCategoryName();
+            $nameHasType = !empty($localName) && !empty($categoryName) && str_contains(mb_strtolower($localName), mb_strtolower($categoryName));
+            if (!empty($categoryName) && !$nameHasType) {
+                if ($fileMarker->isCategoryDanceMovements()) {
+                    $texts = [
+                        CategoryType::getDanceMovementName($texts)
+                    ];
+                } else {
+                    $texts[] = $categoryName;
+                }
+            }
+            if (!empty($localName)) {
+                $texts[] = $nameHasType ? $localName : TextHelper::getTextWithQuotation($localName);
+            }
+
+            $text = implode(' ', $texts);
+
+            return mb_strtoupper(mb_substr($text, 0, 1)) . mb_substr($text, 1);
+        }
+
+        return '';
     }
 }

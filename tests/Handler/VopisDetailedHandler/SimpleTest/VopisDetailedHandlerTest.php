@@ -22,17 +22,15 @@ use PHPUnit\Framework\TestCase;
 
 class VopisDetailedHandlerTest extends TestCase
 {
-    private readonly VopisDetailedParser $parser;
     private readonly VopisDetailedHandler $handler;
-    private readonly GeoPointRepository $geoPointRepository;
 
     public function setUp(): void
     {
         parent::setUp();
 
-        $this->geoPointRepository = $this->createMock(GeoPointRepository::class);
+        $geoPointRepository = $this->createMock(GeoPointRepository::class);
 
-        $locationService = new LocationService($this->geoPointRepository);
+        $locationService = new LocationService($geoPointRepository);
         /** @var ExpeditionRepository|MockObject $expeditionRepository */
         $expeditionRepository = $this->createMock(ExpeditionRepository::class);
         $personService = new PersonService();
@@ -43,10 +41,10 @@ class VopisDetailedHandlerTest extends TestCase
 
         $danceRepository = $this->createMock(DanceRepository::class);
         $categoryService = new CategoryService($danceRepository);
-        $this->parser = new VopisDetailedParser($locationService, $categoryService);
+        $parser = new VopisDetailedParser($locationService, $categoryService);
 
         $this->handler = new VopisDetailedHandler(
-            $this->parser,
+            $parser,
             $expeditionRepository,
             $personService,
             $userRepository,

@@ -270,4 +270,13 @@ class TextHelper
 
         return $parts;
     }
+
+    public static function getTextWithQuotation(string $text): string
+    {
+        if (!str_contains($text, '"') && !empty($text)) {
+            $text = '"' . $text . '"';
+        }
+
+        return $text;
+    }
 }

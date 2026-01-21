@@ -21,17 +21,15 @@ use PHPUnit\Framework\TestCase;
 
 class VopisDetailedHandlerTest extends TestCase
 {
-    private readonly VopisDetailedParser $parser;
     private readonly VopisDetailedHandler $handler;
-    private readonly GeoPointRepository $geoPointRepository;
 
     public function setUp(): void
     {
         parent::setUp();
 
-        $this->geoPointRepository = $this->createMock(GeoPointRepository::class);
+        $geoPointRepository = $this->createMock(GeoPointRepository::class);
 
-        $locationService = new LocationService($this->geoPointRepository);
+        $locationService = new LocationService($geoPointRepository);
         /** @var ExpeditionRepository|MockObject $expeditionRepository */
         $expeditionRepository = $this->createMock(ExpeditionRepository::class);
         $personService = new PersonService();
@@ -42,10 +40,10 @@ class VopisDetailedHandlerTest extends TestCase
 
         $danceRepository = $this->createMock(DanceRepository::class);
         $categoryService = new CategoryService($danceRepository);
-        $this->parser = new VopisDetailedParser($locationService, $categoryService);
+        $parser = new VopisDetailedParser($locationService, $categoryService);
 
         $this->handler = new VopisDetailedHandler(
-            $this->parser,
+            $parser,
             $expeditionRepository,
             $personService,
             $userRepository,
@@ -83,7 +81,7 @@ class VopisDetailedHandlerTest extends TestCase
         $this->assertCount(1, $organizations);
         $organization = $organizations[1];
         $this->assertEquals('сямейнае трыё цымбалістаў', $organization->name);
-        $this->assertEquals('в. Пожарцы, Пастаўскі р-н', $organization->place);
+        $this->assertEquals('в. Пожарцы, Пастаўскі раён', $organization->place);
         $this->assertCount(3, $organization->informants);
         $this->assertCount(3, $organization->informantKeys);
 
@@ -96,11 +94,11 @@ class VopisDetailedHandlerTest extends TestCase
         $informant = $informants[1];
         $this->assertEquals('Мацкевіч Іван Іосіфавіч', $informant->name);
         $this->assertEquals(1922, $informant->birth);
-        $this->assertEquals('в. Пожарцы, Пастаўскі р-н', $informant->place);
+        $this->assertEquals('в. Пожарцы, Пастаўскі раён', $informant->place);
         $informant = $informants[2];
         $this->assertEquals('Марыя Ігнацьеўна', $informant->name);
         $this->assertEquals(1922, $informant->birth);
-        $this->assertEquals('в. Пожарцы, Пастаўскі р-н', $informant->place);
+        $this->assertEquals('в. Пожарцы, Пастаўскі раён', $informant->place);
         // ... (only 3 from 7)
 
         /* Create reports */
@@ -114,7 +112,7 @@ class VopisDetailedHandlerTest extends TestCase
         $this->assertCount(1, $report->blocks);
 
         $report = $reportsData[1];
-        $this->assertEquals('в. Пожарцы, Пастаўскі р-н', $report->place);
+        $this->assertEquals('в. Пожарцы, Пастаўскі раён', $report->place);
         $this->assertEquals('01/01/1971', $report->dateAction->format('d/m/Y'));
         $this->assertCount(2, $report->blocks);
 
