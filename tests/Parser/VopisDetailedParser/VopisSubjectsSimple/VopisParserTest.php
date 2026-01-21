@@ -11,7 +11,6 @@ use App\Repository\DanceRepository;
 use App\Repository\GeoPointRepository;
 use App\Service\CategoryService;
 use App\Service\LocationService;
-use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
 class VopisParserTest extends TestCase

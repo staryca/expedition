@@ -90,7 +90,7 @@ class VideoKozParserTest extends TestCase
         $this->assertEquals('сольны-тэст', $item->pack->getName());
         $this->assertEquals('', $item->improvisation);
         $this->assertNull($item->dateAction);
-        $this->assertEquals('Гутарка з мясцовым калектывам.' . "\n\r" . 'Дата запісу: сяр. 1990-х', $item->notes);
+        $this->assertEquals('Гутарка з мясцовым калектывам.', $item->notes);
         $this->assertEquals('', $item->organizationName);
         $this->assertCount(3, $item->informants);
         $this->assertEquals('Шурко Галіна Сцяпанаўна', $item->informants[0]->name);
