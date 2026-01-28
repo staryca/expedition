@@ -9,6 +9,7 @@ use App\Dto\EpisodeDto;
 use App\Entity\Additional\FileMarkerAdditional;
 use App\Entity\Type\CategoryType;
 use App\Repository\FileMarkerRepository;
+use Carbon\Carbon;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -65,6 +66,9 @@ class FileMarker
 
     #[ORM\Column(nullable: true)]
     private ?array $additional = null;
+
+    #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
+    private ?\DateTime $publish = null;
 
     public function __construct()
     {
@@ -303,5 +307,27 @@ class FileMarker
         }
 
         return $this->file?->getReportBlock()?->getReport();
+    }
+
+    public function getPublish(): ?\DateTime
+    {
+        return $this->publish;
+    }
+
+    public function getPublishDate(): ?Carbon
+    {
+        return $this->publish ? Carbon::parse($this->publish) : null;
+    }
+
+    public function getPublishDateText(): string
+    {
+        return $this->publish ? $this->publish->format('d.m.Y'): 'manual';
+    }
+
+    public function setPublish(?\DateTime $publish): static
+    {
+        $this->publish = $publish;
+
+        return $this;
     }
 }

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use App\Dto\PlaylistInfoDto;
 use App\Entity\Additional\Artist;
 use App\Entity\Additional\FileMarkerAdditional;
 use App\Entity\Category;
@@ -151,6 +150,7 @@ class ImportVideoKozController extends AbstractController
                 'Actions',
                 'Status',
                 VideoKozColumns::FILENAME,
+                'Publish',
                 'Youtube',
                 'Youtube title',
                 'Youtube description',
@@ -175,6 +175,18 @@ class ImportVideoKozController extends AbstractController
                 'app_import_video_koz_update_item' => 'bi-arrow-clockwise',
                 'app_import_video_koz_show_item' => 'bi-eye-fill',
             ],
+        ]);
+    }
+
+    #[Route('/import/video_koz/update/publish', name: 'app_import_video_koz_update_publish_date')]
+    public function setPublishDate(): Response
+    {
+        $result = $this->videoKozHandler->setPublishDate(self::EXPEDITION_ID);
+
+        $this->entityManager->flush();
+
+        return $this->render('import/show.json.result.html.twig', [
+            'data' => $result,
         ]);
     }
 

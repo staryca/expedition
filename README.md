@@ -13,6 +13,7 @@ Application for importing, viewing and changing of the expedition data.
 ## Updating Entities 
 
 - Run `bin/console make:migration`
+- Create migration `bin/console doctrine:migrations:diff`
 
 ## Run messengers
 - For IMEF-data run `bin/console messenger:consume imef -vv`

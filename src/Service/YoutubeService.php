@@ -9,6 +9,7 @@ use App\Entity\FileMarker;
 use App\Entity\Type\CategoryType;
 use App\Helper\TextHelper;
 use App\Repository\FileMarkerRepository;
+use Carbon\Carbon;
 use Google\Client;
 use Google\Service\Exception;
 use Google\Service\YouTube;
@@ -314,7 +315,7 @@ class YoutubeService
         // Other YouTube link by place
         $linkKey = $fileMarker->getReport()->getMiddleGeoPlace();
         $linkPlaceMarker = isset($this->markersByPlace[$linkKey])
-            ? self::getRandomMarker($this->markersByPlace[$linkKey], $fileMarker->getId())
+            ? self::getRandomMarker($this->markersByPlace[$linkKey], $fileMarker->getId(), $fileMarker->getPublishDate())
             : null;
         if ($linkPlaceMarker && !empty($linkPlaceMarker->getAdditionalYoutubeLink())) {
             $descriptionLinks .= 'Глядзіце яшчэ ' . mb_strtolower($linkPlaceMarker->getCategoryName());
@@ -326,7 +327,7 @@ class YoutubeService
         // Other YouTube link by type
         $linkKey = self::getLinkKey($fileMarker);
         $linkTypeMarker = isset($this->markersByType[$linkKey])
-            ? self::getRandomMarker($this->markersByType[$linkKey], $fileMarker->getId())
+            ? self::getRandomMarker($this->markersByType[$linkKey], $fileMarker->getId(), $fileMarker->getPublishDate())
             : null;
         if ($linkTypeMarker && !empty($linkTypeMarker->getAdditionalYoutubeLink())) {
             if (!empty($descriptionLinks)) {
@@ -494,13 +495,21 @@ class YoutubeService
     /**
      * @param array<FileMarker> $array
      * @param int $exceptId
+     * @param Carbon|null $publishDate
      * @return FileMarker|null
      */
-    private static function getRandomMarker(array $array, int $exceptId): ?FileMarker
+    private static function getRandomMarker(array $array, int $exceptId, ?Carbon $publishDate): ?FileMarker
     {
         shuffle($array);
 
         foreach ($array as $marker) {
+            if (!$publishDate && $marker->getPublish()) {
+                continue;
+            }
+            if ($publishDate && $marker->getPublish() > $publishDate) {
+                continue;
+            }
+
             if ($marker->getId() !== $exceptId && !empty($marker->getAdditionalYoutube())) {
                 return $marker;
             }

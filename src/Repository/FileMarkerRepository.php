@@ -82,9 +82,10 @@ class FileMarkerRepository extends ServiceEntityRepository
     /**
      * @param Expedition $expedition
      * @param array<string, bool> $filterMarkerAdditional
+     * @param bool $random
      * @return array<FileMarker>
      */
-    public function getMarkersWithFullObjects(Expedition $expedition, array $filterMarkerAdditional = []): array
+    public function getMarkersWithFullObjects(Expedition $expedition, array $filterMarkerAdditional = [], bool $random = false): array
     {
         $qb = $this->createQueryBuilder('fm')
             ->addSelect('f')
@@ -104,6 +105,12 @@ class FileMarkerRepository extends ServiceEntityRepository
         foreach ($filterMarkerAdditional as $field => $value) {
             $sign = $value ? '> 0' : 'IS NULL';
             $qb->andWhere("JSON_GET_FIELD_AS_INTEGER(fm.additional, '" . $field . "') " . $sign);
+        }
+
+        if ($random) {
+            $qb->orderBy('RANDOM()');
+        } else {
+            $qb->orderBy('fm.publish', 'ASC');
         }
 
         return $qb
