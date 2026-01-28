@@ -96,7 +96,7 @@ class YoutubeService
             }
             $text = implode(' ', $texts);
             $parts[] = mb_strtoupper(mb_substr($text, 0, 1)) . mb_substr($text, 1);
-        } else {
+        } elseif ($fileMarker->isCategoryNotOther()) {
             $parts[] = $fileMarker->getCategoryName();
         }
 
@@ -204,8 +204,10 @@ class YoutubeService
                 $texts[] = '"' . $localName . '"';
             }
 
-            $text = implode(' ', $texts);
-            $parts[] = mb_strtoupper(mb_substr($text, 0, 1)) . mb_substr($text, 1) . '.';
+            if (count($texts) > 1) {
+                $text = implode(' ', $texts);
+                $parts[] = mb_strtoupper(mb_substr($text, 0, 1)) . mb_substr($text, 1) . '.';
+            }
         }
 
         $notes = $fileMarker->getNotes();
@@ -234,16 +236,24 @@ class YoutubeService
             $parts[] = $part;
         }
 
+        $partPersons = '';
+        $organization = $fileMarker->getReportBlock()?->getOrganization();
+        if ($organization) {
+            $partPersons .= $organization->getName() . '.';
+        }
+
         $informants = $fileMarker->getReportBlock()->getInformantsWithoutMusicians();
         $persons = [];
-        $partPersons = '';
         foreach ($informants as $informant) {
             $persons[] = $informant->getFirstName()
                 . (null !== $informant->getYearBirth() ? ', ' . $informant->getYearBirth() . ' г.н.' : '')
                 . (!empty($informant->getNotes()) ? ' (' . $informant->getNotes() . ')' : '');
         }
         if (!empty($persons)) {
-            $partPersons = 'Выконваюць: ' . implode('; ', $persons); // todo
+            if (!empty($partPersons)) {
+                $partPersons .= '<br>';
+            }
+            $partPersons = 'Выконва' . (count($persons) === 1 ? 'е' : 'юць') . ': ' . implode('; ', $persons) . '.'; // todo
         }
 
         // Musicians
@@ -258,7 +268,7 @@ class YoutubeService
             if (!empty($partPersons)) {
                 $partPersons .= '<br>';
             }
-            $partPersons .= 'Музык' . (count($persons) === 1 ? 'а' : 'і') . ': ' . implode('; ', $persons); // todo
+            $partPersons .= 'Музык' . (count($persons) === 1 ? 'а' : 'і') . ': ' . implode('; ', $persons) . '.'; // todo
         }
         if (!empty($partPersons)) {
             $parts[] = $partPersons;
@@ -318,7 +328,10 @@ class YoutubeService
             ? self::getRandomMarker($this->markersByPlace[$linkKey], $fileMarker->getId(), $fileMarker->getPublishDate())
             : null;
         if ($linkPlaceMarker && !empty($linkPlaceMarker->getAdditionalYoutubeLink())) {
-            $descriptionLinks .= 'Глядзіце яшчэ ' . mb_strtolower($linkPlaceMarker->getCategoryName());
+            $descriptionLinks .= 'Глядзіце яшчэ ';
+            $descriptionLinks .= $linkPlaceMarker->isCategoryNotOther()
+                ? mb_strtolower($linkPlaceMarker->getCategoryName())
+                : '';
             $descriptionLinks .= ' "' . $linkPlaceMarker->getAdditionalLocalName() . '"';
             $descriptionLinks .= ' адсюль жа (' . $linkPlaceMarker->getReport()->getShortGeoPlace(true) . ')';
             $descriptionLinks .= ': ' . $linkPlaceMarker->getAdditionalYoutubeLink();
@@ -333,7 +346,10 @@ class YoutubeService
             if (!empty($descriptionLinks)) {
                 $descriptionLinks .= '<br>';
             }
-            $descriptionLinks .= 'Глядзіце яшчэ ' . mb_strtolower($linkTypeMarker->getCategoryName());
+            $descriptionLinks .= 'Глядзіце яшчэ ';
+            $descriptionLinks .= $linkTypeMarker->isCategoryNotOther()
+                ? mb_strtolower($linkTypeMarker->getCategoryName())
+                : '';
             $descriptionLinks .= ' "' . $linkTypeMarker->getAdditionalLocalName() . '"';
             if ($linkTypeMarker->getReport()->getId() !== $fileMarker->getReport()->getId()) {
                 $descriptionLinks .= ', ' . $linkTypeMarker->getReport()->getMiddleGeoPlace();

@@ -195,4 +195,41 @@ class ExpeditionController extends AbstractController
             'data' => $listTags,
         ]);
     }
+
+    #[Route('/expedition/{id}/organizations', name: 'expedition_organizations', methods: ['GET'])]
+    public function organizations(int $id): Response
+    {
+        /** @var Expedition|null $expedition */
+        $expedition = $this->expeditionRepository->find($id);
+        if (!$expedition) {
+            throw $this->createNotFoundException('The expedition does not exist');
+        }
+
+        $organizations = [];
+        $markerGroups = [];
+        foreach ($expedition->getReports() as $report) {
+            foreach ($report->getBlocks() as $block) {
+                if ($block->getOrganization()) {
+                    $organization = $block->getOrganization();
+                    if (!isset($markerGroups[$organization->getId()])) {
+                        $organizations[$organization->getId()] = $organization->getName();
+                        $markerGroups[$organization->getId()] = [];
+                    }
+                    $markerGroups[$organization->getId()] = [
+                        ...$markerGroups[$organization->getId()],
+                        ...$block->getFileMarkers()->toArray(),
+                    ];
+                }
+            }
+        }
+
+        $geoMapData = $this->geoMapManager->getGeoMapDataForOrganizations($expedition);
+
+        return $this->render('expedition/organizations.html.twig', [
+            'expedition' => $expedition,
+            'geoMapData' => $geoMapData,
+            'markerGroups' => $markerGroups,
+            'organizations' => $organizations,
+        ]);
+    }
 }

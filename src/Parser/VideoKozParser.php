@@ -134,9 +134,6 @@ readonly class VideoKozParser
                 if ($dateAction[0] === '(') {
                     $dateActionNotes = trim(str_replace(['(', ')'], '', $dateAction));
                     $videoDto->dateActionNotes = $dateActionNotes;
-                    $videoDto->notes .=
-                        (empty($videoDto->notes) ? '' : "\n\r")
-                        . 'Дата запісу: ' . $dateActionNotes;
                 } elseif (strlen($dateAction) < 5) {
                     $videoDto->dateAction = Carbon::createFromDate((int) $dateAction, 1, 1);
                 } else {

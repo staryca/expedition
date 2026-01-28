@@ -321,7 +321,7 @@ class FileMarker
 
     public function getPublishDateText(): string
     {
-        return $this->publish ? $this->publish->format('d.m.Y'): 'manual';
+        return $this->publish ? $this->publish->format('d.m.Y') : 'manual';
     }
 
     public function setPublish(?\DateTime $publish): static
