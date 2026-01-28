@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\Entity\Additional\FileMarkerAdditional;
-use App\Entity\Category;
 use App\Entity\FileMarker;
 use App\Entity\Type\CategoryType;
 use App\Helper\TextHelper;
@@ -16,15 +15,14 @@ use Google\Service\Exception;
 use Google\Service\YouTube;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-
 use function Symfony\Component\String\u;
 
 class YoutubeService
 {
-    private const LANG_BE = 'be';
-    public const MAX_LENGTH_TITLE = 100;
-    public const MAX_LENGTH_DESCRIPTION = 5000;
-    private const SHORTENER_TRUNCATE = 3;
+    private const string LANG_BE = 'be';
+    public const int MAX_LENGTH_TITLE = 100;
+    public const int MAX_LENGTH_DESCRIPTION = 5000;
+    private const int SHORTENER_TRUNCATE = 3;
 
     /**
      * Only from 1 expedition!
