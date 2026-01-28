@@ -15,6 +15,7 @@ use Google\Service\Exception;
 use Google\Service\YouTube;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+
 use function Symfony\Component\String\u;
 
 class YoutubeService
@@ -209,7 +210,8 @@ class YoutubeService
             if (!empty($partPersons)) {
                 $partPersons .= '<br>';
             }
-            $partPersons = 'Выконва' . (count($persons) === 1 ? 'е' : 'юць') . ': ' . implode('; ', $persons) . '.'; // todo
+            $text = $fileMarker->isCategoryStory() ? 'Расказва' : 'Выконва' . (count($persons) === 1 ? 'е' : 'юць');
+            $partPersons = $text . ': ' . implode('; ', $persons); // todo
         }
 
         // Musicians
@@ -302,10 +304,7 @@ class YoutubeService
             if (!empty($descriptionLinks)) {
                 $descriptionLinks .= '<br>';
             }
-            $descriptionLinks .= 'Глядзіце яшчэ ';
-            $descriptionLinks .= $linkTypeMarker->isCategoryNotOther()
-                ? mb_strtolower($linkTypeMarker->getCategoryName())
-                : '';
+            $descriptionLinks .= 'Глядзіце яшчэ ' . $linkTypeMarker->getAdditionalLocalNameWithCategory();
             $descriptionLinks .= ' "' . $linkTypeMarker->getAdditionalLocalName() . '"';
             if ($linkTypeMarker->getReport()->getId() !== $fileMarker->getReport()->getId()) {
                 $descriptionLinks .= ', ' . $linkTypeMarker->getReport()->getMiddleGeoPlace(false);
