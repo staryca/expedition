@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\Entity\Additional\FileMarkerAdditional;
+use App\Entity\Category;
 use App\Entity\FileMarker;
 use App\Entity\Type\CategoryType;
 use App\Helper\TextHelper;
@@ -286,11 +287,7 @@ class YoutubeService
             ? self::getRandomMarker($this->markersByPlace[$linkKey], $fileMarker->getId(), $fileMarker->getPublishDate())
             : null;
         if ($linkPlaceMarker && !empty($linkPlaceMarker->getAdditionalYoutubeLink())) {
-            $descriptionLinks .= 'Глядзіце яшчэ ';
-            $descriptionLinks .= $linkPlaceMarker->isCategoryNotOther()
-                ? mb_strtolower($linkPlaceMarker->getCategoryName())
-                : '';
-            $descriptionLinks .= ' "' . $linkPlaceMarker->getAdditionalLocalName() . '"';
+            $descriptionLinks .= 'Глядзіце яшчэ ' . $linkPlaceMarker->getAdditionalLocalNameWithCategory();
             $descriptionLinks .= ' адсюль жа (' . $linkPlaceMarker->getReport()->getShortGeoPlace(true) . ')';
             $descriptionLinks .= ': ' . $linkPlaceMarker->getAdditionalYoutubeLink();
         }
@@ -305,7 +302,6 @@ class YoutubeService
                 $descriptionLinks .= '<br>';
             }
             $descriptionLinks .= 'Глядзіце яшчэ ' . $linkTypeMarker->getAdditionalLocalNameWithCategory();
-            $descriptionLinks .= ' "' . $linkTypeMarker->getAdditionalLocalName() . '"';
             if ($linkTypeMarker->getReport()->getId() !== $fileMarker->getReport()->getId()) {
                 $descriptionLinks .= ', ' . $linkTypeMarker->getReport()->getMiddleGeoPlace(false);
             }
