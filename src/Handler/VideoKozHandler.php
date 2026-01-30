@@ -24,6 +24,7 @@ use App\Repository\UserRepository;
 use App\Service\PersonService;
 use App\Service\RitualService;
 use App\Service\YoutubeService;
+use Carbon\Carbon;
 use Carbon\CarbonImmutable;
 use League\Csv\Exception;
 use League\Csv\InvalidArgument;
@@ -31,6 +32,9 @@ use League\Csv\InvalidArgument;
 class VideoKozHandler
 {
     private const USER_LEADER_ID = 6; // Kozienka
+    private const AMOUNT_FIRST_VIDEOS = 100;
+    private const AMOUNT_PER_DAY = 3;
+    private const PRESENTATION_DATE = '2026-02-14';
 
     public function __construct(
         private readonly VideoKozParser $parser,
@@ -243,7 +247,10 @@ class VideoKozHandler
             foreach ($file->videoItems as $videoItem) {
                 $marker = new FileMarkerDto();
                 $marker->category = $videoItem->category;
-                $marker->name = $videoItem->localName . (empty($videoItem->baseName) ? '' : ' (' . $videoItem->baseName . ')');
+                $marker->name = $videoItem->localName;
+                if (!empty($videoItem->baseName) && $videoItem->localName !== $videoItem->baseName) {
+                    $marker->name .= ' (' . $videoItem->baseName . ')';
+                }
                 $marker->notes = empty(trim($videoItem->notes)) ? null : trim($videoItem->notes);
                 $marker->decoding = empty(trim($videoItem->texts)) ? null : trim($videoItem->texts);
 
@@ -381,6 +388,7 @@ class VideoKozHandler
             $item['id'] = $fileMarker->getId();
             $item['status'] = $status;
             $item['file'] = $fileMarker->getFile()?->getFullFileName();
+            $item['publish'] = $fileMarker->getPublishDateText();
             $item['youtube'] = $fileMarker->getAdditionalYoutube();
             $item['youtube_title'] = $titleNotes . $title;
             $item['youtube_description'] = $descriptionWarning . $description;
@@ -407,5 +415,38 @@ class VideoKozHandler
         ksort($data);
 
         return $data;
+    }
+
+    public function setPublishDate(int $expeditionId): array
+    {
+        /** @var Expedition|null $expedition */
+        $expedition = $this->expeditionRepository->find($expeditionId);
+        if (!$expedition) {
+            throw new \Exception('The expedition {$expeditionId} is not found');
+        }
+
+        $count = 0;
+        $date = Carbon::parse(self::PRESENTATION_DATE);
+        $markers = $this->fileMarkerRepository->getMarkersWithFullObjects($expedition, [], true);
+        foreach ($markers as $fileMarker) {
+            if ($count < self::AMOUNT_FIRST_VIDEOS) {
+                $fileMarker->setPublish(null);
+            } else {
+                $num = ($count - self::AMOUNT_FIRST_VIDEOS) % self::AMOUNT_PER_DAY;
+                if ($num === 0) {
+                    $date->addDay();
+                }
+                $fileMarker->setPublish($date->clone());
+            }
+            $count++;
+        }
+
+        return [
+            'amount' => $count,
+            'manual' => self::AMOUNT_FIRST_VIDEOS,
+            'per_day' => self::AMOUNT_PER_DAY,
+            'start' => self::PRESENTATION_DATE,
+            'end' => $date->format('Y-m-d'),
+        ];
     }
 }

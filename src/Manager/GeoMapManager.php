@@ -314,4 +314,27 @@ readonly class GeoMapManager
 
         return $geoMapData;
     }
+
+    public function getGeoMapDataForOrganizations(Expedition $expedition): GeoMapDto
+    {
+        $geoMapData = new GeoMapDto();
+
+        foreach ($expedition->getReports() as $report) {
+            $latLon = $report->getLatLon();
+            if ($latLon) {
+                foreach ($report->getBlocks() as $block) {
+                    $organization = $block->getOrganization();
+                    if ($organization) {
+                        $popup = $organization->getName();
+                        $geoMapData->addLatLon($latLon, $popup, GeoMapDto::TYPE_REPORT);
+                    }
+                }
+            }
+        }
+
+        // Group by location
+        $geoMapData->groupByLocation();
+
+        return $geoMapData;
+    }
 }

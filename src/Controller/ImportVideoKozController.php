@@ -149,6 +149,7 @@ class ImportVideoKozController extends AbstractController
                 'Actions',
                 'Status',
                 VideoKozColumns::FILENAME,
+                'Publish',
                 'Youtube',
                 'Youtube title',
                 'Youtube description',
@@ -185,6 +186,18 @@ class ImportVideoKozController extends AbstractController
         }
 
         return $expedition;
+    }
+
+    #[Route('/import/video_koz/update/publish', name: 'app_import_video_koz_update_publish_date')]
+    public function setPublishDate(): Response
+    {
+        $result = $this->videoKozHandler->setPublishDate(self::EXPEDITION_ID);
+
+        $this->entityManager->flush();
+
+        return $this->render('import/show.json.result.html.twig', [
+            'data' => $result,
+        ]);
     }
 
     #[Route('/import/video_koz/update/all', name: 'app_import_video_koz_update_all_items')]

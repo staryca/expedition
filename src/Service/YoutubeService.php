@@ -10,6 +10,7 @@ use App\Entity\FileMarker;
 use App\Entity\Type\CategoryType;
 use App\Helper\TextHelper;
 use App\Repository\FileMarkerRepository;
+use Carbon\Carbon;
 use Google\Client;
 use Google\Service\Exception;
 use Google\Service\YouTube;
@@ -20,10 +21,10 @@ use function Symfony\Component\String\u;
 
 class YoutubeService
 {
-    private const LANG_BE = 'be';
-    public const MAX_LENGTH_TITLE = 100;
-    public const MAX_LENGTH_DESCRIPTION = 5000;
-    private const SHORTENER_TRUNCATE = 3;
+    private const string LANG_BE = 'be';
+    public const int MAX_LENGTH_TITLE = 100;
+    public const int MAX_LENGTH_DESCRIPTION = 5000;
+    private const int SHORTENER_TRUNCATE = 3;
 
     /**
      * Only from 1 expedition!
@@ -96,7 +97,7 @@ class YoutubeService
             }
             $text = implode(' ', $texts);
             $parts[] = mb_strtoupper(mb_substr($text, 0, 1)) . mb_substr($text, 1);
-        } else {
+        } elseif ($fileMarker->isCategoryNotOther()) {
             $categoryName = $fileMarker->getCategoryName();
             $nameHasType = !empty($localName) && !empty($categoryName) && str_contains(mb_strtolower($localName), mb_strtolower($categoryName));
             if (!$nameHasType) {
@@ -193,17 +194,24 @@ class YoutubeService
             $parts[] = $part;
         }
 
-        // Informants
+        $partPersons = '';
+        $organization = $fileMarker->getReportBlock()?->getOrganization();
+        if ($organization) {
+            $partPersons .= $organization->getName() . '.';
+        }
+
         $informants = $fileMarker->getReportBlock()->getInformantsWithoutMusicians();
         $persons = [];
-        $partPersons = '';
         foreach ($informants as $informant) {
             $persons[] = $informant->getFirstName()
                 . (null !== $informant->getYearBirth() ? ', ' . $informant->getYearBirth() . ' г.н.' : '')
                 . (!empty($informant->getNotes()) ? ' (' . $informant->getNotes() . ')' : '');
         }
         if (!empty($persons)) {
-            $text = $fileMarker->isCategoryStory() ? 'Расказваюць' : 'Выконваюць';
+            if (!empty($partPersons)) {
+                $partPersons .= '<br>';
+            }
+            $text = $fileMarker->isCategoryStory() ? 'Расказва' : 'Выконва' . (count($persons) === 1 ? 'е' : 'юць');
             $partPersons = $text . ': ' . implode('; ', $persons); // todo
         }
 
@@ -219,7 +227,7 @@ class YoutubeService
             if (!empty($partPersons)) {
                 $partPersons .= '<br>';
             }
-            $partPersons .= 'Музык' . (count($persons) === 1 ? 'а' : 'і') . ': ' . implode('; ', $persons); // todo
+            $partPersons .= 'Музык' . (count($persons) === 1 ? 'а' : 'і') . ': ' . implode('; ', $persons) . '.'; // todo
         }
         if (!empty($partPersons)) {
             $parts[] = $partPersons;
@@ -276,7 +284,7 @@ class YoutubeService
         // Other YouTube link by place
         $linkKey = $fileMarker->getReport()->getMiddleGeoPlace();
         $linkPlaceMarker = isset($this->markersByPlace[$linkKey])
-            ? self::getRandomMarker($this->markersByPlace[$linkKey], $fileMarker->getId())
+            ? self::getRandomMarker($this->markersByPlace[$linkKey], $fileMarker->getId(), $fileMarker->getPublishDate())
             : null;
         if ($linkPlaceMarker && !empty($linkPlaceMarker->getAdditionalYoutubeLink())) {
             $descriptionLinks .= 'Глядзіце яшчэ ' . $linkPlaceMarker->getAdditionalLocalNameWithCategory();
@@ -287,7 +295,7 @@ class YoutubeService
         // Other YouTube link by type
         $linkKey = self::getLinkKey($fileMarker);
         $linkTypeMarker = isset($this->markersByType[$linkKey])
-            ? self::getRandomMarker($this->markersByType[$linkKey], $fileMarker->getId())
+            ? self::getRandomMarker($this->markersByType[$linkKey], $fileMarker->getId(), $fileMarker->getPublishDate())
             : null;
         if ($linkTypeMarker && !empty($linkTypeMarker->getAdditionalYoutubeLink())) {
             if (!empty($descriptionLinks)) {
@@ -454,13 +462,21 @@ class YoutubeService
     /**
      * @param array<FileMarker> $array
      * @param int $exceptId
+     * @param Carbon|null $publishDate
      * @return FileMarker|null
      */
-    private static function getRandomMarker(array $array, int $exceptId): ?FileMarker
+    private static function getRandomMarker(array $array, int $exceptId, ?Carbon $publishDate): ?FileMarker
     {
         shuffle($array);
 
         foreach ($array as $marker) {
+            if (!$publishDate && $marker->getPublish()) {
+                continue;
+            }
+            if ($publishDate && $marker->getPublish() > $publishDate) {
+                continue;
+            }
+
             if ($marker->getId() !== $exceptId && !empty($marker->getAdditionalYoutube())) {
                 return $marker;
             }
