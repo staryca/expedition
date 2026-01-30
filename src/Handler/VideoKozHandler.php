@@ -33,7 +33,7 @@ class VideoKozHandler
 {
     private const USER_LEADER_ID = 6; // Kozienka
     private const AMOUNT_FIRST_VIDEOS = 100;
-    private const AMOUNT_PER_DAY = 3;
+    private const AMOUNT_PER_DAY = 5;
     private const PRESENTATION_DATE = '2026-02-14';
 
     public function __construct(
