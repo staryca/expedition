@@ -247,7 +247,10 @@ class VideoKozHandler
             foreach ($file->videoItems as $videoItem) {
                 $marker = new FileMarkerDto();
                 $marker->category = $videoItem->category;
-                $marker->name = $videoItem->localName . (empty($videoItem->baseName) ? '' : ' (' . $videoItem->baseName . ')');
+                $marker->name = $videoItem->localName;
+                if (!empty($videoItem->baseName) && $videoItem->localName !== $videoItem->baseName) {
+                    $marker->name .= ' (' . $videoItem->baseName . ')';
+                }
                 $marker->notes = empty(trim($videoItem->notes)) ? null : trim($videoItem->notes);
                 $marker->decoding = empty(trim($videoItem->texts)) ? null : trim($videoItem->texts);
 
