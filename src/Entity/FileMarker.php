@@ -274,7 +274,7 @@ class FileMarker
 
     public function getAdditionalLocalNameWithCategory(): string
     {
-        $categoryName = mb_strtolower($this->getCategoryName());
+        $categoryName = $this->getCategoryName();
         $localName = $this->getAdditionalLocalName();
         $nameHasType = !empty($localName) && !empty($categoryName) && str_contains(mb_strtolower($localName), $categoryName);
 

@@ -245,13 +245,22 @@ class YoutubeService
         $categoryNameMany = CategoryType::getManyOrSingleName($category);
 
         $tags = [];
-        if (!empty($localName) && substr_count($localName, ' ') <= 3 && !$fileMarker->isCategoryStory()) {
-            $tag = false !== mb_stripos($localName, $categoryName) ? $localName : $categoryName . ' ' . $localName;
-            $tags[] = '#' . $this->textHelper->getTagFormat($tag);
+        $tagLocal = $this->textHelper->getTagFormat(
+            false !== mb_stripos($localName, $categoryName) ? $localName : $categoryName . ' ' . $localName
+        );
+        $tagBase = $this->textHelper->getTagFormat(
+            false !== mb_stripos($baseName, $categoryName) ? $baseName : $categoryName . ' ' . $baseName
+        );
+        if (
+            !empty($localName)
+            && mb_strtolower($tagBase) !== mb_strtolower($tagLocal)
+            && substr_count($localName, ' ') <= 3
+            && !$fileMarker->isCategoryStory()
+        ) {
+            $tags[] = '#' . $tagLocal;
         }
-        if (!empty($baseName) && $baseName !== $localName && substr_count($baseName, ' ') <= 3) {
-            $tag = false !== mb_stripos($baseName, $categoryName) ? $baseName : $categoryName . ' ' . $baseName;
-            $tags[] = '#' . $this->textHelper->getTagFormat($tag);
+        if (!empty($baseName) && substr_count($baseName, ' ') <= 3) {
+            $tags[] = '#' . $tagBase;
         }
         if (null !== $geoPoint) {
             $tags[] = '#' . $this->textHelper->getTagFormat($geoPoint->getPrefixBe() . ' ' . $geoPoint->getName());
@@ -279,7 +288,7 @@ class YoutubeService
             $this->createLinks($markers);
             $this->isSetMarkers = true;
         }
-        $descriptionLinks = '';
+        $descriptionLinks = [];
 
         // Other YouTube link by place
         $linkKey = $fileMarker->getReport()->getMiddleGeoPlace();
@@ -287,9 +296,10 @@ class YoutubeService
             ? self::getRandomMarker($this->markersByPlace[$linkKey], $fileMarker->getId(), $fileMarker->getPublishDate())
             : null;
         if ($linkPlaceMarker && !empty($linkPlaceMarker->getAdditionalYoutubeLink())) {
-            $descriptionLinks .= 'Глядзіце яшчэ ' . $linkPlaceMarker->getAdditionalLocalNameWithCategory();
-            $descriptionLinks .= ' адсюль жа (' . $linkPlaceMarker->getReport()->getShortGeoPlace(true) . ')';
-            $descriptionLinks .= ': ' . $linkPlaceMarker->getAdditionalYoutubeLink();
+            $descriptionLink = $linkPlaceMarker->getAdditionalLocalNameWithCategory();
+            $descriptionLink .= ' адсюль жа (' . $linkPlaceMarker->getReport()->getShortGeoPlace(true) . ')';
+            $descriptionLink .= ': ' . $linkPlaceMarker->getAdditionalYoutubeLink();
+            $descriptionLinks[] = $descriptionLink;
         }
 
         // Other YouTube link by type
@@ -298,17 +308,15 @@ class YoutubeService
             ? self::getRandomMarker($this->markersByType[$linkKey], $fileMarker->getId(), $fileMarker->getPublishDate())
             : null;
         if ($linkTypeMarker && !empty($linkTypeMarker->getAdditionalYoutubeLink())) {
-            if (!empty($descriptionLinks)) {
-                $descriptionLinks .= '<br>';
-            }
-            $descriptionLinks .= 'Глядзіце яшчэ ' . $linkTypeMarker->getAdditionalLocalNameWithCategory();
+            $descriptionLink = $linkTypeMarker->getAdditionalLocalNameWithCategory();
             if ($linkTypeMarker->getReport()->getId() !== $fileMarker->getReport()->getId()) {
-                $descriptionLinks .= ', ' . $linkTypeMarker->getReport()->getMiddleGeoPlace(false);
+                $descriptionLink .= ', ' . $linkTypeMarker->getReport()->getMiddleGeoPlace(false);
             }
-            $descriptionLinks .= ': ' . $linkTypeMarker->getAdditionalYoutubeLink();
+            $descriptionLink .= ': ' . $linkTypeMarker->getAdditionalYoutubeLink();
+            $descriptionLinks[] = $descriptionLink;
         }
         if (!empty($descriptionLinks)) {
-            $parts[] = $descriptionLinks;
+            $parts[] = 'Глядзіце яшчэ:<br>' . implode('<br>', $descriptionLinks);
         }
 
         $tags = [];

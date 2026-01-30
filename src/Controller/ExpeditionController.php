@@ -165,6 +165,7 @@ class ExpeditionController extends AbstractController
 
         return $this->render('expedition/markers.html.twig', [
             'expedition' => $expedition,
+            'categoryName' => CategoryType::getManyOrSingleName($category),
             'markers' => $markers,
             'playlists' => $playlists,
         ]);

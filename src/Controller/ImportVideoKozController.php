@@ -39,8 +39,8 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class ImportVideoKozController extends AbstractController
 {
-    private const EXPEDITION_ID = 994; // 9
-    private const FILENAME = '../var/data/video_koz/br-07.csv';
+    private const int EXPEDITION_ID = 994; // 9
+    private const string FILENAME = '../var/data/video_koz/br-01.csv';
 
     public function __construct(
         private readonly VideoKozHandler $videoKozHandler,
@@ -248,12 +248,11 @@ class ImportVideoKozController extends AbstractController
     {
         $expedition = $this->getExpedition();
 
-        $markers = $this->fileMarkerRepository->getMarkersWithFullObjects($expedition, [FileMarkerAdditional::STATUS_ACTIVE => false]);
+        $markers = $this->fileMarkerRepository->getMarkersForPublish($expedition, [FileMarkerAdditional::STATUS_ACTIVE => false]);
         $result = ['message' => 'ok', 'all' => 0, 'videos' => 0, 'no_found' => 0, 'showed' => 0, 'items' => []];
         foreach ($markers as $fileMarker) {
-            $additional = $fileMarker->getAdditional();
-            $videoId = $additional['youtube'] ?? null;
-            if ($videoId) {
+            $videoId = $fileMarker->getAdditionalYoutube();
+            if (!empty($videoId)) {
                 try {
                     $response = $this->youtubeService->showInYouTube($fileMarker);
                 } catch (Exception | \Google\Exception $e) {
