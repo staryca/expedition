@@ -39,7 +39,7 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class ImportVideoKozController extends AbstractController
 {
-    private const int EXPEDITION_ID = 994; // 9
+    private const int EXPEDITION_ID = 990; // 9
     private const string FILENAME = '../var/data/video_koz/br-01.csv';
 
     public function __construct(
@@ -71,6 +71,10 @@ class ImportVideoKozController extends AbstractController
         $data['errors_location'] = [];
         $data['errors_date'] = [];
         $data['date_notes'] = [];
+
+        $data['errors_numbers'] = [];
+        $numbers = [];
+
         foreach ($files as $file) {
             foreach ($file->videoItems as $videoItem) {
                 if ($videoItem->category === null) {
@@ -84,6 +88,14 @@ class ImportVideoKozController extends AbstractController
                 }
                 if (!empty($videoItem->dateActionNotes)) {
                     $data['date_notes'][] = $videoItem->dateActionNotes;
+                }
+
+                if ($videoItem->number) {
+                    if (isset($numbers[$videoItem->number])) {
+                        $data['errors_numbers'][] = $videoItem;
+                    } else {
+                        $numbers[$videoItem->number] = 1;
+                    }
                 }
             }
         }

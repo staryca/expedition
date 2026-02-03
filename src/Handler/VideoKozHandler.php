@@ -31,10 +31,10 @@ use League\Csv\InvalidArgument;
 
 class VideoKozHandler
 {
-    private const USER_LEADER_ID = 6; // Kozienka
-    private const AMOUNT_FIRST_VIDEOS = 100;
-    private const AMOUNT_PER_DAY = 5;
-    private const PRESENTATION_DATE = '2026-02-14';
+    private const int USER_LEADER_ID = 6; // Kozienka
+    private const int AMOUNT_FIRST_VIDEOS = 100;
+    private const int AMOUNT_PER_DAY = 5;
+    private const string PRESENTATION_DATE = '2026-02-14';
 
     public function __construct(
         private readonly VideoKozParser $parser,
@@ -257,6 +257,9 @@ class VideoKozHandler
                 $marker->reportKey = $videoItem->reportKey;
                 $marker->blockKey = $videoItem->blockKey;
 
+                if (!empty($videoItem->number)) {
+                    $marker->additional[FileMarkerAdditional::NUMBER] = $videoItem->number;
+                }
                 if (!empty($videoItem->localName)) {
                     $marker->additional[FileMarkerAdditional::LOCAL_NAME] = $videoItem->localName;
                 }

@@ -7,30 +7,31 @@ namespace App\Entity\Additional;
 class FileMarkerAdditional
 {
     // Columns
-    public const LOCAL_NAME = 'localName';
-    public const BASE_NAME = 'baseName';
-    public const YOUTUBE = 'youtube';
-    public const DANCE_TYPE = 'danceType';
-    public const IMPROVISATION = 'improvisation';
-    public const RITUAL = 'ritual';
-    public const TRADITION = 'tradition';
-    public const SOURCE = 'source';
-    public const DATE_ACTION_NOTES = 'dateActionNotes';
-    public const TMKB = 'tmkb';
+    public const string LOCAL_NAME = 'localName';
+    public const string BASE_NAME = 'baseName';
+    public const string YOUTUBE = 'youtube';
+    public const string DANCE_TYPE = 'danceType';
+    public const string IMPROVISATION = 'improvisation';
+    public const string RITUAL = 'ritual';
+    public const string TRADITION = 'tradition';
+    public const string SOURCE = 'source';
+    public const string DATE_ACTION_NOTES = 'dateActionNotes';
+    public const string TMKB = 'tmkb';
+    public const string NUMBER = 'number';
 
     // Values
-    public const TRADITION_LATE = 'познетрадыцыйны';
-    public const TRADITION_ARCHAIC = 'архаіка';
-    public const TRADITION_EARLY = 'раннетрадыцыйны';
+    public const string TRADITION_LATE = 'познетрадыцыйны';
+    public const string TRADITION_ARCHAIC = 'архаіка';
+    public const string TRADITION_EARLY = 'раннетрадыцыйны';
 
-    public const IMPROVISATION_VALUE = 'імправізацыйны';
-    public const IMPROVISATION_COMMANDS = 'з камандамі';
-    public const IMPROVISATION_MIKITA_CASE = 'тыпу Мікіта';
-    public const IMPROVISATION_QUADRILLE = 'кадрыльнага тыпу';
+    public const string IMPROVISATION_VALUE = 'імправізацыйны';
+    public const string IMPROVISATION_COMMANDS = 'з камандамі';
+    public const string IMPROVISATION_MIKITA_CASE = 'тыпу Мікіта';
+    public const string IMPROVISATION_QUADRILLE = 'кадрыльнага тыпу';
 
     // status fields
-    public const STATUS_UPDATED = 'statusUpdated';
-    public const STATUS_ACTIVE = 'statusActive';
+    public const string STATUS_UPDATED = 'statusUpdated';
+    public const string STATUS_ACTIVE = 'statusActive';
 
     public static function getTradition(string $value): string
     {
