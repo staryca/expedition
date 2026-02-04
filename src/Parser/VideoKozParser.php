@@ -73,6 +73,9 @@ readonly class VideoKozParser
             }
 
             $videoDto = new VideoItemDto();
+            $number = self::getValue($record, VideoKozColumns::NUMBER);
+            $videoDto->number = empty($number) ? null : (int) $number;
+
             $videoDto->category = CategoryType::findId($record[VideoKozColumns::TYPE_RECORD], '');
             $videoDto->baseName = self::getValue($record, VideoKozColumns::BASE_NAME);
             $videoDto->localName = $record[VideoKozColumns::LOCAL_NAME] ?? null;
@@ -123,8 +126,7 @@ readonly class VideoKozParser
             $videoDto->organizationName = empty($organizationName) ? null : $organizationName;
 
             if (isset($record[VideoKozColumns::INFORMANTS])) {
-                $isMusicians = $videoDto->category === CategoryType::MELODY ? true : null;
-                $videoDto->informants = $this->personService->getInformants($record[VideoKozColumns::INFORMANTS], '', $isMusicians);
+                $videoDto->informants = $this->personService->getInformants($record[VideoKozColumns::INFORMANTS], '');
             }
             if (isset($record[VideoKozColumns::MUSICIANS])) {
                 $videoDto->informants =

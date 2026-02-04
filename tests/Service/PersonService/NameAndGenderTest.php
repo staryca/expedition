@@ -84,6 +84,7 @@ class NameAndGenderTest extends TestCase
             ['Трафімаўна Марына Рыгораўна', 'Трафімаўна Марына Рыгораўна', GenderType::FEMALE, true],
             ['Клімовіч Ніна Ільінічна', 'Клімовіч Ніна Ільінічна', GenderType::FEMALE, true],
             ['Уладзіслава Пячкур', 'Пячкур Уладзіслава', GenderType::FEMALE, true],
+            ['Анісся Кірачка', 'Кірачка Анісся', GenderType::FEMALE, true],
         ];
     }
 }

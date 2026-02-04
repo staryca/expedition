@@ -1,16 +1,16 @@
 {% extends 'base.html.twig' %}
 
 {% block title %}
-    Танцы, запісаныя ў гэтай экспедыцыі
+    {{ categoryName }}, запісаныя ў гэтай экспедыцыі
 {% endblock %}
 
 {% block body %}
     <div class="container py-5">
-        <h1 class="h2">Танцы экспедыцыі <b>{{ expedition.name }}</b></h1>
+        <h1 class="h2">{{ categoryName }} экспедыцыі <b>{{ expedition.name }}</b></h1>
         <div class="row">
             <p class="text-end d-print-none"><small><a href="{{ path('expedition_show', {id: expedition.id}) }}">Справаздачы</a></small></p>
 
-            <h5>Танцы ({{ markers|length }})</h5>
+            <h5>{{ categoryName }} ({{ markers|length }})</h5>
             <table class="table">
                 <thead>
                 <tr>

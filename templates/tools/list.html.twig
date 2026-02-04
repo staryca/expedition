@@ -7,7 +7,7 @@
 {% block body %}
     <div class="container">
         <div class="row">
-            <p>
+            <div class="p-2">
                 <h3>Інфарманты</h3>
                 <ul class="list-group">
                     <li class="list-group-item">
@@ -29,18 +29,18 @@
                         </a>
                     </li>
                 </ul>
-            </p>
+            </div>
 
-            <p>
+            <div class="p-2">
                 <h3>Пошук</h3>
                 <ul class="list-group">
                     <li class="list-group-item">
                         <a href="{{ path('app_search_index') }}">Індэксацыя справаздач</a>
                     </li>
                 </ul>
-            </p>
+            </div>
 
-            <p>
+            <div class="p-2">
                 <h3>Архіў Козенкі</h3>
                 <ul class="list-group">
                     <li class="list-group-item">
@@ -60,13 +60,13 @@
 
                         <span class="badge text-bg-danger">Увага!</span>
                         <a href="{{ path('app_import_video_koz_show_all_items') }}">
-                            Адкрыць усе відыа для ўсіх
+                            Адкрыць відэа без даты публікаваньня
                         </a> <br>
                     </li>
                 </ul>
-            </p>
+            </div>
 
-            <p>
+            <div class="p-2">
                 <h3>Лакацыі</h3>
                 <ul class="list-group">
                     <li class="list-group-item">
@@ -75,9 +75,9 @@
                         <a href="{{ path('app_import_tools_detect_informant_points') }}">Знайсьці пункты для нявызначаных месц у інфармантаў</a>
                     </li>
                 </ul>
-            </p>
+            </div>
 
-            <p>
+            <div class="p-2">
                 <h3>Імпарты</h3>
                 <ul class="list-group">
                     <li class="list-group-item">
@@ -94,7 +94,7 @@
                         <a href="{{ path('app_import_map_select') }}">Загрузка данных на мапу</a> <br>
                     </li>
                 </ul>
-            </p>
+            </div>
 
         </div>
     </div>

@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace App\Entity\Type;
 
-use App\Dto\NameGenderDto;
-
 class GenderType
 {
     public const UNKNOWN = 0;
@@ -88,6 +86,7 @@ class GenderType
         'Ангеліна' => ['Ангеля', 'Гэля'],
         'Анжаліка' => ['Ліка'],
         'Анжэла' => [],
+        'Анісся' => [],
         'Антаніна' => ['Антоля'],
         'Антонія' => ['Антося'],
         'Аўдоцця' => ['Аўдоля', 'Аўдзюха', 'Аўдзюня', 'Дзюня', 'Аўдзютка', 'Дзютка', 'Аўдося', 'Дося'],

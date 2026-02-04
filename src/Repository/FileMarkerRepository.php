@@ -119,6 +119,35 @@ class FileMarkerRepository extends ServiceEntityRepository
     }
 
     /**
+     * @param Expedition $expedition
+     * @param array<string, bool> $filterMarkerAdditional
+     * @return array<FileMarker>
+     */
+    public function getMarkersForPublish(Expedition $expedition, array $filterMarkerAdditional = []): array
+    {
+        $qb = $this->createQueryBuilder('fm')
+            ->leftJoin('fm.reportBlock', 'rb')
+            ->leftJoin('fm.file', 'f')
+            ->leftJoin('f.reportBlock', 'rb2')
+            ->leftJoin('rb.report', 'r')
+            ->leftJoin('rb2.report', 'r2')
+            ->where('r.expedition = :expedition')
+            ->orWhere('r2.expedition = :expedition')
+            ->setParameter('expedition', $expedition);
+
+        foreach ($filterMarkerAdditional as $field => $value) {
+            $sign = $value ? '> 0' : 'IS NULL';
+            $qb->andWhere("JSON_GET_FIELD_AS_INTEGER(fm.additional, '" . $field . "') " . $sign);
+        }
+
+        $qb->andWhere("fm.publish IS NULL");
+
+        return $qb
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
      * @param GeoPoint $geoPoint
      * @return array<FileMarker>
      */

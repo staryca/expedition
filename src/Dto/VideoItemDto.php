@@ -19,6 +19,7 @@ class VideoItemDto extends PlaceDto
     public array $informants = [];
 
     // To fileMarker (and as additional for reportBlock)
+    public ?int $number = null;
     public ?string $notes = null;
     public ?int $category = null;
     public ?string $baseName = null;
