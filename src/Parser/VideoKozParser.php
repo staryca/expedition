@@ -74,7 +74,7 @@ readonly class VideoKozParser
 
             $videoDto = new VideoItemDto();
             $number = self::getValue($record, VideoKozColumns::NUMBER);
-            $videoDto->number = empty($number) ? null : $number;
+            $videoDto->number = empty($number) ? null : (int) $number;
 
             $videoDto->category = CategoryType::findId($record[VideoKozColumns::TYPE_RECORD], '');
             $videoDto->baseName = self::getValue($record, VideoKozColumns::BASE_NAME);
