@@ -6,35 +6,35 @@ namespace App\Entity\Type;
 
 class CategoryType
 {
-    public const KARAHOD = 10;
-    public const DANCE = 20;
-    public const QUADRILLE = 21;
-    public const DANCE_GAME = 25;
-    public const CHORUSES = 26;
-    public const MELODY = 27;
-    public const DANCE_MOVEMENTS = 28;
-    public const SONGS = 30;
-    public const POEMS = 31;
-    public const CEREMONY = 40;
-    public const GAME = 50;
-    public const STORY = 80;
-    public const ABOUT_DANCES = 81;
-    public const PAREMIA = 82;
-    public const FAIRY_TALE = 83;
-    public const LULLABY = 84;
-    public const RIDDLE = 85;
-    public const PARABLE = 86;
-    public const SPELL = 87;
-    public const ABOUT_RECORD = 90;
-    public const ABOUT_INFORMANT = 91;
-    public const ABOUT_OTHER_INFORMANTS = 92;
-    public const CHANGE_INFORMANTS = 93;
-    public const STAGE_ACTION = 97;
-    public const FILM = 98;
-    public const OTHER = 99;
+    public const int KARAHOD = 10;
+    public const int DANCE = 20;
+    public const int QUADRILLE = 21;
+    public const int DANCE_GAME = 25;
+    public const int CHORUSES = 26;
+    public const int MELODY = 27;
+    public const int DANCE_MOVEMENTS = 28;
+    public const int SONGS = 30;
+    public const int POEMS = 31;
+    public const int CEREMONY = 40;
+    public const int GAME = 50;
+    public const int STORY = 80;
+    public const int ABOUT_DANCES = 81;
+    public const int PAREMIA = 82;
+    public const int FAIRY_TALE = 83;
+    public const int LULLABY = 84;
+    public const int RIDDLE = 85;
+    public const int PARABLE = 86;
+    public const int SPELL = 87;
+    public const int ABOUT_RECORD = 90;
+    public const int ABOUT_INFORMANT = 91;
+    public const int ABOUT_OTHER_INFORMANTS = 92;
+    public const int CHANGE_INFORMANTS = 93;
+    public const int STAGE_ACTION = 97;
+    public const int FILM = 98;
+    public const int OTHER = 99;
     // new types need add to database
 
-    public const TYPES = [
+    public const array TYPES = [
         self::KARAHOD => 'карагод',
         self::DANCE => 'танец',
         self::QUADRILLE => 'кадрыля',
@@ -63,11 +63,11 @@ class CategoryType
         self::OTHER => 'іншае',
     ];
 
-    public const TYPES_MANY = [
+    public const array TYPES_MANY = [
         self::KARAHOD => 'карагоды',
         self::DANCE => 'танцы',
         self::QUADRILLE => 'кадрылі',
-        self::DANCE_GAME => 'танец-гульні',
+        self::DANCE_GAME => 'танцы-гульні',
         self::CHORUSES => null,
         self::MELODY => 'найгрышы',
         self::DANCE_MOVEMENTS => null,
@@ -92,7 +92,7 @@ class CategoryType
         self::OTHER => null,
     ];
 
-    private const VARIANTS_SAME = [
+    private const array VARIANTS_SAME = [
         self::DANCE_MOVEMENTS => ['рух танца', 'рухі танцаў'],
         self::QUADRILLE => ['кадрыль'],
         self::CHORUSES => ['прыпеўка'],
@@ -127,7 +127,7 @@ class CategoryType
         self::CHANGE_INFORMANTS => ['змена інфарманта', 'зьмена інфарманта', 'зьмена інфармантаў', 'змена інфарматара'],
     ];
 
-    private const VARIANTS_OTHER = [
+    private const array VARIANTS_OTHER = [
         self::SONGS => [
             'сьпявае', 'спявае', 'напеў', 'пятроўская', 'валачобная', 'восеньская', 'купальская', 'масленкавая',
             'сьпявалі', 'масьленіца', 'бяседная', 'масьленка', 'жніўная', 'любоўная', 'вясельная',
@@ -143,15 +143,15 @@ class CategoryType
         ]
     ];
 
-    private const VARIANTS_SONG_CEREMONY = [
+    private const array VARIANTS_SONG_CEREMONY = [
         'каляды', 'хрэсьбіны', 'жніво', 'вяселле', 'вясельле', 'купальле', 'юр\'я', 'дажынкі',
     ];
 
-    public const TEXT_JOIN = [
+    public const array TEXT_JOIN = [
         self::OTHER => ['цікавыя словы, дыялекты', 'дыялекты', 'цікавыя выразы'],
     ];
 
-    private const VARIANTS_GROUPED = [
+    private const array VARIANTS_GROUPED = [
         self::STORY => [
             ['што', 'такое'],
             ['як', 'гралі'],
@@ -169,14 +169,14 @@ class CategoryType
         ],
     ];
 
-    public const SYSTEM_TYPES = [
+    public const array SYSTEM_TYPES = [
         self::ABOUT_RECORD,
         self::ABOUT_INFORMANT,
         self::ABOUT_OTHER_INFORMANTS,
         self::CHANGE_INFORMANTS,
     ];
 
-    private const NOT_IMPORTANT_TYPES = [
+    private const array NOT_IMPORTANT_TYPES = [
         self::POEMS,
         self::PAREMIA,
         self::FAIRY_TALE,
@@ -188,7 +188,7 @@ class CategoryType
         self::OTHER,
     ];
 
-    public const TYPES_BY_TAGS = [
+    public const array TYPES_BY_TAGS = [
         self::KARAHOD => ['карагоды', 'веснавыя карагоды'],
         self::DANCE => ['танцы'],
         self::QUADRILLE =>  ['кадрыля'],
@@ -221,7 +221,7 @@ class CategoryType
         self::OTHER => [],
     ];
 
-    private const DANCE_TYPES = [
+    private const array DANCE_TYPES = [
         self::KARAHOD,
         self::DANCE,
         self::QUADRILLE,

@@ -736,7 +736,7 @@ class PersonService
                 if (mb_substr($part, -2) === ' .') {
                     $part = substr($part, 0, -2);
                 }
-                $part = trim($part, " ;\t\n\r\0\x0B");
+                $part = trim($part, " ;-\t\n\r\0\x0B");
                 if ($part === '') {
                     unset($parts[$key]);
                 } else {

@@ -717,6 +717,32 @@ class InformantTest extends TestCase
         $this->assertEquals('бубен', $informant->notes);
     }
 
+    public function testInformantWithNotesAndYear(): void
+    {
+        $content = 'Булыга Васіль (1958 г.н.) - гармонік;
+Булыга Васіль (1958 г.н.), скрыпка;
+Гарагляд Васіль (1976 г.н.), бубен';
+
+        $informants = $this->personService->getInformants($content);
+        # !!! 2 persons were united
+        $this->assertCount(2, $informants);
+
+        $informant = $informants[0];
+        $this->assertEquals('Булыга Васіль', $informant->name);
+        $this->assertEquals(1958, $informant->birth);
+        $this->assertEquals(GenderType::MALE, $informant->gender);
+        # !!! Notes were united
+        $this->assertEquals('гармонік. скрыпка', $informant->notes);
+        $this->assertTrue($informant->isMusician);
+
+        $informant = $informants[1];
+        $this->assertEquals('Гарагляд Васіль', $informant->name);
+        $this->assertEquals(1976, $informant->birth);
+        $this->assertEquals(GenderType::MALE, $informant->gender);
+        $this->assertEquals('бубен', $informant->notes);
+        $this->assertTrue($informant->isMusician);
+    }
+
     public function testInformantWithBirthAndPlace(): void
     {
         $content = 'Клеўжыц (Хурсевіч) Галіна Клеменцеўна, 1947 г.н., в. Мокрава';

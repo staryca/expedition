@@ -173,6 +173,7 @@ class ReportManager
                 $informantDb->setPlaceBirth($informant->birthPlace->place);
             }
             $informantDb->setIsMusician($informant->isMusician);
+            $informantDb->setNotes($informant->notes);
 
             $this->entityManager->persist($informantDb);
             $informantsDb[$key] = $informantDb;

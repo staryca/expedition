@@ -340,6 +340,7 @@ class VideoKozHandler
 
         $updated = 0;
         $active = 0;
+        $sheduled = 0;
         $all = 0;
         foreach ($markers as $fileMarker) {
             $all++;
@@ -349,12 +350,15 @@ class VideoKozHandler
             if ((int)$fileMarker->getAdditionalValue(FileMarkerAdditional::STATUS_ACTIVE) > 0) {
                 $active++;
             }
+            if ((int)$fileMarker->getAdditionalValue(FileMarkerAdditional::STATUS_SHEDULED) > 0) {
+                $sheduled++;
+            }
         }
 
         $item = ['id' => ''];
         $item['status'] = '';
-        $item['file'] = '<i class="bi bi-arrow-clockwise"></i> / <i class="bi bi-eye-fill"></i> / all<br>'
-            . $updated . ' / ' . $active . ' / ' . $all;
+        $item['file'] = '<i class="bi bi-arrow-clockwise"></i> / <i class="bi bi-eye-fill"></i> / <i class="bi bi-stopwatch"></i> / all<br>'
+            . $updated . ' / ' . $active . ' / ' . $sheduled . ' / ' . $all;
         $item['youtube'] = '';
         $item['youtube_title'] = '';
         $item['youtube_description'] = '';
@@ -385,6 +389,9 @@ class VideoKozHandler
             }
             if ((int) $fileMarker->getAdditionalValue(FileMarkerAdditional::STATUS_ACTIVE) > 0) {
                 $status .= '<i class="bi bi-eye-fill"></i> ';
+            }
+            if ((int) $fileMarker->getAdditionalValue(FileMarkerAdditional::STATUS_SHEDULED) > 0) {
+                $status .= '<i class="bi bi-stopwatch"></i> ';
             }
 
             $item = [];
