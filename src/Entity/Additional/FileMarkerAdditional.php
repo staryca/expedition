@@ -32,6 +32,7 @@ class FileMarkerAdditional
     // status fields
     public const string STATUS_UPDATED = 'statusUpdated';
     public const string STATUS_ACTIVE = 'statusActive';
+    public const string STATUS_SHEDULED = 'statusScheduled';
 
     public static function getTradition(string $value): string
     {

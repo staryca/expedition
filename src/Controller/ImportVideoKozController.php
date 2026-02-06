@@ -185,6 +185,7 @@ class ImportVideoKozController extends AbstractController
             'actions' => [
                 'app_import_video_koz_update_item' => 'bi-arrow-clockwise',
                 'app_import_video_koz_show_item' => 'bi-eye-fill',
+                'app_import_video_koz_sheduled_item' => 'bi-stopwatch',
             ],
         ]);
     }
@@ -336,6 +337,40 @@ class ImportVideoKozController extends AbstractController
         $data['id'] = $fileMarker->getAdditionalYoutube();
         try {
             $response = $this->youtubeService->showInYouTube($fileMarker);
+        } catch (Exception | \Google\Exception $e) {
+            $data['error'] = $e->getMessage();
+        }
+
+        if (isset($response)) {
+            if (is_string($response)) {
+                $data = ['error' => $response];
+            } else {
+                $data = get_object_vars($response);
+                $data['link'] = $fileMarker->getAdditionalYoutubeLink();
+            }
+
+            $this->entityManager->flush();
+        }
+
+        return $this->render('import/show.json.result.html.twig', [
+            'data' => $data,
+        ]);
+    }
+
+
+    #[Route('/import/video_koz/sheduled/video/{id}', name: 'app_import_video_koz_sheduled_item')]
+    public function sheduledItem(int $id): Response
+    {
+        /** @var FileMarker|null $fileMarker */
+        $fileMarker = $this->fileMarkerRepository->find($id);
+        if (!$fileMarker) {
+            throw $this->createNotFoundException('The fileMarker does not exist');
+        }
+
+        $data = [];
+        $data['id'] = $fileMarker->getAdditionalYoutube();
+        try {
+            $response = $this->youtubeService->sheduledInYouTube($fileMarker);
         } catch (Exception | \Google\Exception $e) {
             $data['error'] = $e->getMessage();
         }

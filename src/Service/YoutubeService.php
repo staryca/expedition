@@ -211,7 +211,7 @@ class YoutubeService
                 $partPersons .= '<br>';
             }
             $text = $fileMarker->isCategoryStory() ? 'Расказва' : 'Выконва' . (count($persons) === 1 ? 'е' : 'юць');
-            $partPersons = $text . ': ' . implode('; ', $persons); // todo
+            $partPersons = $text . ': ' . implode('; ', $persons);
         }
 
         // Musicians
@@ -226,7 +226,7 @@ class YoutubeService
             if (!empty($partPersons)) {
                 $partPersons .= '<br>';
             }
-            $partPersons .= 'Музык' . (count($persons) === 1 ? 'а' : 'і') . ': ' . implode('; ', $persons) . '.'; // todo
+            $partPersons .= 'Музы́к' . (count($persons) === 1 ? 'а' : 'і') . ': ' . implode('; ', $persons) . '.';
         }
         if (!empty($partPersons)) {
             $parts[] = $partPersons;
@@ -236,7 +236,7 @@ class YoutubeService
         if (!empty($texts)) {
             $parts[] = ($fileMarker->getCategory() === CategoryType::DANCE ? 'Прыпеўкі:' : 'Словы:')
                 . (str_contains($texts, "\n") ? '<br>' : ' ')
-                . str_replace("\n", '<br>', $texts); // todo
+                . str_replace("\n", '<br>', $texts);
         }
 
         $category = $fileMarker->getCategory();
@@ -279,7 +279,7 @@ class YoutubeService
         $notes .= '<br><br>';
         $notes .= 'Праект па апрацоўцы архіва – некамерцыйная валанцёрская ініцыятыва.';
         $notes .= '<br><br>';
-        $notes .= 'Калі ласка, будзьце тактычныя і ўважлівыя пры стварэнні допісаў да відэа. Дапамажыце дапоўніць інфармацыю, падзяліцеся дадатковымі звесткамі пра людзей, калі вы іх ведаеце. Публікацыя паведамленняў, якія парушаюць закон, змяшчаюць пагрозы, абразы, непрыстойнасці, не дапускаецца.';
+        $notes .= 'Калі ласка, будзьце тактоўныя і ўважлівыя пры стварэнні допісаў да відэа. Дапамажыце дапоўніць інфармацыю, падзяліцеся дадатковымі звесткамі пра людзей, калі вы іх ведаеце. Публікацыя паведамленняў, якія парушаюць закон, змяшчаюць пагрозы, абразы, непрыстойнасці, не дапускаецца.';
         $parts[] = $notes;
 
         if (!$this->isSetMarkers) {
@@ -408,6 +408,42 @@ class YoutubeService
 
         if (!is_string($result)) {
             $fileMarker->addAdditional(FileMarkerAdditional::STATUS_UPDATED, '1');
+        }
+
+        return $result;
+    }
+
+    /**
+     * @throws Exception
+     * @throws \Google\Exception
+     */
+    public function sheduledInYouTube(FileMarker $fileMarker): mixed
+    {
+        $youtube = $this->getYoutubeService();
+
+        $videoId = $fileMarker->getAdditionalYoutube();
+        if (empty($videoId)) {
+            return 'No video item';
+        }
+
+        $listResponse = $youtube->videos->listVideos("status", ['id' => $videoId]);
+        if ($listResponse === null) {
+            return null;
+        }
+        if (0 === count($listResponse->getItems())) {
+            return 'No videos found. Check out the list of available videos.';
+        }
+
+        $video = $listResponse->getItems()[0];
+        $status = $video->getStatus();
+        $publishAt = $fileMarker->getPublishDate();
+        $status->setPublishAt($publishAt?->addHours(3)->format('Y-m-d\TH:i:s.v\Z'));
+        $status->setPrivacyStatus($publishAt ? 'private' : 'unlisted');
+
+        $result = $youtube->videos->update('status', $video);
+
+        if (!is_string($result)) {
+            $fileMarker->addAdditional(FileMarkerAdditional::STATUS_SHEDULED, '1');
         }
 
         return $result;
