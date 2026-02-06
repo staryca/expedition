@@ -293,6 +293,9 @@ class VideoKozHandler
                 if (!empty($videoItem->tmkb)) {
                     $marker->additional[FileMarkerAdditional::TMKB] = $videoItem->tmkb;
                 }
+                if (!empty($videoItem->informantsText)) {
+                    $marker->additional[FileMarkerAdditional::INFORMANTS_TEXT] = $videoItem->informantsText;
+                }
 
                 $file->markers[] = $marker;
             }

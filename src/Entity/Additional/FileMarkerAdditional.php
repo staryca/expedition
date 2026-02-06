@@ -19,6 +19,9 @@ class FileMarkerAdditional
     public const string TMKB = 'tmkb';
     public const string NUMBER = 'number';
 
+    // Temp
+    public const string INFORMANTS_TEXT = 'informantsText';
+
     // Values
     public const string TRADITION_LATE = 'познетрадыцыйны';
     public const string TRADITION_ARCHAIC = 'архаіка';

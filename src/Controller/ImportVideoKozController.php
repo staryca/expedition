@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use ApiPlatform\Metadata\UrlGeneratorInterface;
 use App\Entity\Additional\Artist;
 use App\Entity\Additional\FileMarkerAdditional;
 use App\Entity\Category;
@@ -125,6 +126,8 @@ class ImportVideoKozController extends AbstractController
 
         $this->videoKozHandler->convertVideoItemsToFileMarkers($files);
         $data['files'] = $files;
+
+        $data['save'] = $this->generateUrl('app_import_video_koz_save', [], UrlGeneratorInterface::ABS_URL);
 
         return $this->render('import/show.json.result.html.twig', [
             'data' => $data,

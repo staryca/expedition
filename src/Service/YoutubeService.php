@@ -193,10 +193,10 @@ class YoutubeService
             $parts[] = $part;
         }
 
-        $partPersons = '';
+        $partPersons = [];
         $organization = $fileMarker->getReportBlock()?->getOrganization();
         if ($organization) {
-            $partPersons .= $organization->getName() . '.';
+            $partPersons[] = $organization->getName() . '.';
         }
 
         $informants = $fileMarker->getReportBlock()->getInformantsWithoutMusicians();
@@ -207,11 +207,12 @@ class YoutubeService
                 . (!empty($informant->getNotes()) ? ' (' . $informant->getNotes() . ')' : '');
         }
         if (!empty($persons)) {
-            if (!empty($partPersons)) {
-                $partPersons .= '<br>';
-            }
-            $text = $fileMarker->isCategoryStory() ? 'Расказва' : 'Выконва' . (count($persons) === 1 ? 'е' : 'юць');
-            $partPersons = $text . ': ' . implode('; ', $persons);
+            $text = ($fileMarker->isCategoryStory() ? 'Расказва' : 'Выконва') . (count($persons) === 1 ? 'е' : 'юць');
+            $partPersons[] = $text . ': ' . implode('; ', $persons);
+            $partPersons[] = $text
+                . ': '
+                . trim($fileMarker->getAdditionalValue(FileMarkerAdditional::INFORMANTS_TEXT), '.')
+                . '.';
         }
 
         // Musicians
@@ -223,13 +224,10 @@ class YoutubeService
                 . (!empty($informant->getNotes()) ? ' (' . $informant->getNotes() . ')' : '');
         }
         if (!empty($persons)) {
-            if (!empty($partPersons)) {
-                $partPersons .= '<br>';
-            }
-            $partPersons .= 'Музы́к' . (count($persons) === 1 ? 'а' : 'і') . ': ' . implode('; ', $persons) . '.';
+            $partPersons[] = 'Музы́к' . (count($persons) === 1 ? 'а' : 'і') . ': ' . implode('; ', $persons) . '.';
         }
         if (!empty($partPersons)) {
-            $parts[] = $partPersons;
+            $parts[] = implode('<br>', $partPersons);
         }
 
         $texts = $fileMarker->getDecoding();
