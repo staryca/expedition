@@ -34,6 +34,9 @@ class VideoItemDto extends PlaceDto
     public ?string $texts = null;
     public ?string $tmkb = null;
 
+    // Temp
+    public ?string $informantsText = null;
+
     // To reportBlock
     /** @var array<int> $informantKeys */
     public array $informantKeys = [];
@@ -48,6 +51,9 @@ class VideoItemDto extends PlaceDto
 
         foreach ($this->informants as $informant) {
             $key .= $informant->name;
+        }
+        foreach ($this->informantKeys as $informantKey) {
+            $key .= $informantKey . '/';
         }
 
         return hash('sha256', $key);

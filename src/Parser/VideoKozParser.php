@@ -125,8 +125,9 @@ readonly class VideoKozParser
             $organizationName = self::getValue($record, VideoKozColumns::ORGANIZATION);
             $videoDto->organizationName = empty($organizationName) ? null : $organizationName;
 
-            if (isset($record[VideoKozColumns::INFORMANTS])) {
-                $videoDto->informants = $this->personService->getInformants($record[VideoKozColumns::INFORMANTS], '');
+            $videoDto->informantsText = self::getValue($record, VideoKozColumns::INFORMANTS);
+            if (!empty($videoDto->informantsText)) {
+                $videoDto->informants = $this->personService->getInformants($videoDto->informantsText, '');
             }
             if (isset($record[VideoKozColumns::MUSICIANS])) {
                 $videoDto->informants =
