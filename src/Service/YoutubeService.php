@@ -208,11 +208,16 @@ class YoutubeService
         }
         if (!empty($persons)) {
             $text = ($fileMarker->isCategoryStory() ? 'Расказва' : 'Выконва') . (count($persons) === 1 ? 'е' : 'юць');
-            $partPersons[] = $text . ': ' . implode('; ', $persons);
-            $partPersons[] = $text
-                . ': '
-                . trim($fileMarker->getAdditionalValue(FileMarkerAdditional::INFORMANTS_TEXT), '.')
-                . '.';
+            $personText = implode('; ', $persons);
+            $warning = '';
+
+            // For debug of informants list
+            $personTextOrigin = trim($fileMarker->getAdditionalValue(FileMarkerAdditional::INFORMANTS_TEXT), '.');
+            $warning = mb_strlen($personTextOrigin) > (mb_strlen($personText) + 2)
+                ? '<br><i class="bi bi-exclamation-diamond-fill text-danger"></i>Origin:' . (mb_strlen($personTextOrigin) - mb_strlen($personText)) . ':: ' . $personTextOrigin
+                : '';
+
+            $partPersons[] = $text . ': ' . $personText . $warning;
         }
 
         // Musicians
@@ -318,14 +323,7 @@ class YoutubeService
             $parts[] = 'Глядзіце яшчэ:<br>' . implode('<br>', $descriptionLinks);
         }
 
-        $tags = [];
-        if (CategoryType::asDanceType($fileMarker->getCategory())) {
-            $texts = ['традыцыйны танец', 'беларускі народны танец', 'побытавы танец', 'фальклор Беларусі',
-                'традиционный танец', 'бытовой танец', 'фольклор Беларуси', 'traditional dance', 'folklore Belarus'];
-            foreach ($texts as $text) {
-                $tags[] = '#' . $this->textHelper->getTagFormat($text);
-            }
-        }
+        $tags = CategoryType::getTags($fileMarker->getCategory());
         if (!empty($tags)) {
             $parts[] = implode(' ', $tags);
         }
