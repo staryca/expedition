@@ -123,5 +123,23 @@ class VideoKozHandlerTest extends TestCase
         $this->assertNotEquals($hash0, $hash1);
         $this->assertNotEquals($hash1, $hash2);
         $this->assertNotEquals($hash0, $hash2);
+
+        $orgs = $this->handler->getOrganizations($files);
+        $this->assertCount(1, $orgs);
+        $org = $orgs[0];
+        $this->assertEquals('Фальклорны калектыў Беразлянскага СДК', $org->name);
+        $this->assertCount(7, $org->informantKeys);
+
+        $reports = $this->handler->createReportsData($files);
+        $this->assertCount(1, $reports);
+        $report = $reports[0];
+        $this->assertEquals('Беразляны, Іванаўскі раён', $report->place);
+        $this->assertCount(3, $report->blocks);
+        $this->assertCount(2, $report->blocks[0]->informantKeys);
+        $this->assertCount(3, $report->blocks[1]->informantKeys);
+        $this->assertCount(7, $report->blocks[2]->informantKeys);
+
+        $this->handler->convertVideoItemsToFileMarkers($files);
+        $this->assertCount(3, $files);
     }
 }

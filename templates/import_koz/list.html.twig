@@ -1,0 +1,71 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+    Сьпіс відэа
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <table class="table table-striped table-hover">
+        <thead>
+        <tr>
+            <th scope="col">Інфа</th>
+            <th scope="col">Youtube</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr class="table-primary">
+            <td>{{ stat|raw }}</td>
+            <td></td>
+        </tr>
+        {% for row in data %}
+        <tr>
+            <td>
+                ID: <b>{{ row.id }}</b>
+                <br><br>
+
+                Status: <b>{{ row.status }}</b>
+                <br><br>
+
+                File: <b>{{ row.file }}</b>
+                <br><br>
+
+                Publish: <b>{{ row.publish }}</b>
+                <br><br>
+
+                Video:
+                {% if row.youtube is not empty %}
+                    <a href="https://www.youtube.com/watch?v={{ row.youtube }}" target="_blank">{{ row.youtube }}</a>
+                {% else %}
+                    <i class="bi bi-exclamation-diamond-fill text-danger"></i> Відэа няма
+                {% endif %}
+                <br><br>
+
+                {% if is_granted('ROLE_USER') %}
+                    <a class="btn btn-primary" href="{{ path('app_import_video_koz_update_item', {id: row.id}) }}" role="button">
+                        <i class="bi bi-arrow-clockwise"> Абнавіць апісаньне</i>
+                    </a>
+                    <br><br>
+                    <a class="btn btn-primary" href="{{ path('app_import_video_koz_show_item', {id: row.id}) }}" role="button">
+                        <i class="bi bi-eye-fill"> Зрабіць агульнадасяжным</i>
+                    </a>
+                    <br><br>
+                    <a class="btn btn-primary" href="{{ path('app_import_video_koz_sheduled_item', {id: row.id}) }}" role="button">
+                        <i class="bi bi-stopwatch"> Схаваць і задаць дату публікацыі</i>
+                    </a>
+                {% endif %}
+            </td>
+
+            <td>
+                {{ row.youtube_title }}
+                <br>----------------------------------------------------------------------<br>
+
+                {{ row.youtube_description|raw }}
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

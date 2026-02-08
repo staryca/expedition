@@ -29,6 +29,7 @@ class InformantTest extends TestCase
         $informant = $informants[0];
         $this->assertEquals('Марозаў Анатолій Уладзіміравіч', $informant->name);
         $this->assertEquals(1958, $informant->birth);
+        $this->assertNull($informant->died);
         $this->assertEquals(GenderType::MALE, $informant->gender);
         $this->assertCount(1, $informant->locations);
         $this->assertEquals('в. Якубава', $informant->locations[0]);
@@ -76,6 +77,7 @@ class InformantTest extends TestCase
         $informant = $informants[0];
         $this->assertEquals('Фядзькова (Кавалёва) Ніна Іванаўна', $informant->name);
         $this->assertEquals(1939, $informant->birth);
+        $this->assertNull($informant->died);
         $this->assertCount(0, $informant->locations);
         $this->assertEquals('жонка Федзькоў Уладзімір Іванавіч', $informant->notes);
     }
@@ -151,6 +153,7 @@ class InformantTest extends TestCase
         $informant = $informants[0];
         $this->assertEquals('Пышная Уляна Рыгораўна', $informant->name);
         $this->assertEquals(1917, $informant->birth);
+        $this->assertNull($informant->died);
         $this->assertEquals(GenderType::FEMALE, $informant->gender);
         $this->assertEquals('', $informant->notes);
         $this->assertCount(0, $informant->locations);
@@ -182,6 +185,7 @@ class InformantTest extends TestCase
         $informant = $informants[0];
         $this->assertEquals('Тагай Вольга Астапаўна', $informant->name);
         $this->assertEquals(1914, $informant->birth);
+        $this->assertNull($informant->died);
         $this->assertEquals(GenderType::FEMALE, $informant->gender);
         $this->assertEquals('пенсіянерка', $informant->notes);
         $this->assertCount(1, $informant->locations);
@@ -293,6 +297,7 @@ class InformantTest extends TestCase
         $informant = $informants[0];
         $this->assertEquals('Кандрацьеў Франц Францавіч', $informant->name);
         $this->assertEquals(1928, $informant->birth);
+        $this->assertNull($informant->died);
         $this->assertEquals(GenderType::MALE, $informant->gender);
         $this->assertEquals('1928-04-28', $informant->birthDay->format('Y-m-d'));
         $this->assertEquals('', $informant->notes);
@@ -340,6 +345,7 @@ class InformantTest extends TestCase
         $informant = $informants[0];
         $this->assertEquals('Буцэнка', $informant->name);
         $this->assertEquals(1916, $informant->birth);
+        $this->assertNull($informant->died);
         $this->assertEquals(GenderType::UNKNOWN, $informant->gender);
         $this->assertEquals('', $informant->notes);
         $this->assertCount(0, $informant->locations);
@@ -355,6 +361,7 @@ class InformantTest extends TestCase
         $informant = $informants[0];
         $this->assertEquals('Віцчанка Ніна', $informant->name);
         $this->assertEquals(1950, $informant->birth);
+        $this->assertNull($informant->died);
         $this->assertEquals(GenderType::FEMALE, $informant->gender);
         $this->assertEquals('', $informant->notes);
         $this->assertCount(0, $informant->locations);
@@ -370,6 +377,7 @@ class InformantTest extends TestCase
         $informant = $informants[0];
         $this->assertEquals('Вяркеева С.П.', $informant->name);
         $this->assertEquals(1898, $informant->birth);
+        $this->assertNull($informant->died);
         $this->assertEquals(GenderType::FEMALE, $informant->gender);
         $this->assertEquals('', $informant->notes);
         $this->assertCount(0, $informant->locations);
@@ -415,6 +423,7 @@ class InformantTest extends TestCase
         $informant = $informants[0];
         $this->assertEquals('Плотка Марыя Якаўлеўна', $informant->name);
         $this->assertEquals(1885, $informant->birth);
+        $this->assertNull($informant->died);
         $this->assertEquals(GenderType::FEMALE, $informant->gender);
         $this->assertEquals('61 г.', $informant->notes);
         $this->assertCount(0, $informant->locations);
@@ -431,6 +440,7 @@ class InformantTest extends TestCase
         $informant = $informants[0];
         $this->assertEquals('Сцешыч Мар\'я Іллюн (?)', $informant->name);
         $this->assertEquals(1940, $informant->birth);
+        $this->assertNull($informant->died);
         $this->assertEquals(GenderType::FEMALE, $informant->gender);
         $this->assertEquals('', $informant->notes);
         $this->assertCount(0, $informant->locations);
@@ -438,6 +448,7 @@ class InformantTest extends TestCase
         $informant = $informants[1];
         $this->assertEquals('Пляшкевіч Алеся Паўл.', $informant->name);
         $this->assertEquals(1948, $informant->birth);
+        $this->assertNull($informant->died);
         $this->assertEquals(GenderType::FEMALE, $informant->gender);
         $this->assertEquals('не гр.', $informant->notes);
         $this->assertCount(0, $informant->locations);
@@ -445,6 +456,7 @@ class InformantTest extends TestCase
         $informant = $informants[2];
         $this->assertEquals('Рудзеня Мар\'я Васіл.', $informant->name);
         $this->assertEquals(1952, $informant->birth);
+        $this->assertNull($informant->died);
         $this->assertEquals(GenderType::FEMALE, $informant->gender);
         $this->assertEquals('', $informant->notes);
         $this->assertCount(0, $informant->locations);
@@ -544,12 +556,14 @@ class InformantTest extends TestCase
         $informant = $informants[0];
         $this->assertEquals('Кавалевіч Васіль', $informant->name);
         $this->assertEquals(1920, $informant->birth);
+        $this->assertNull($informant->died);
         $this->assertEquals(GenderType::MALE, $informant->gender);
         $this->assertEquals('музыкі', $informant->notes);
 
         $informant = $informants[1];
         $this->assertEquals('Карагода Вольга', $informant->name);
         $this->assertEquals(1927, $informant->birth);
+        $this->assertNull($informant->died);
         $this->assertEquals(GenderType::FEMALE, $informant->gender);
         $this->assertEquals('музыкі, баян', $informant->notes);
     }
@@ -584,6 +598,7 @@ class InformantTest extends TestCase
         $informant = $informants[0];
         $this->assertEquals('Мазько Кацярына Мікалаеўна', $informant->name);
         $this->assertNull($informant->birth);
+        $this->assertNull($informant->died);
 
         $this->assertEquals(GenderType::FEMALE, $informant->gender);
         $this->assertEquals('19.. г.н.', $informant->notes);
@@ -625,6 +640,7 @@ class InformantTest extends TestCase
         $informant = $informants[0];
         $this->assertEquals('Федар', $informant->name);
         $this->assertEquals(1896, $informant->birth);
+        $this->assertNull($informant->died);
 
         $this->assertEquals(GenderType::UNKNOWN, $informant->gender);
         $this->assertEquals('50 г.', $informant->notes);
@@ -640,6 +656,7 @@ class InformantTest extends TestCase
         $informant = $informants[0];
         $this->assertEquals('Жэня Міх. Макарэвіч', $informant->name);
         $this->assertEquals(1928, $informant->birth);
+        $this->assertNull($informant->died);
 
         $this->assertEquals(GenderType::MALE, $informant->gender);
         $this->assertEquals('18 г.', $informant->notes);
@@ -675,6 +692,7 @@ class InformantTest extends TestCase
         $informant = $informants[0];
         $this->assertEquals('Куляшова Ніна Іванаўна', $informant->name);
         $this->assertEquals(1939, $informant->birth);
+        $this->assertNull($informant->died);
         $this->assertEquals(GenderType::FEMALE, $informant->gender);
         $this->assertEquals('', $informant->notes);
         $this->assertCount(1, $informant->locations);
@@ -691,6 +709,7 @@ class InformantTest extends TestCase
         $informant = $informants[0];
         $this->assertEquals('Гарохава Ніна Іванаўна', $informant->name);
         $this->assertNull($informant->birth);
+        $this->assertNull($informant->died);
         $this->assertEquals(GenderType::FEMALE, $informant->gender);
         $this->assertEquals('спявачка', $informant->notes);
         $this->assertCount(1, $informant->locations);
@@ -707,12 +726,14 @@ class InformantTest extends TestCase
         $informant = $informants[0];
         $this->assertEquals('Дарошка Аляксей Іванавіч', $informant->name);
         $this->assertEquals(1944, $informant->birth);
+        $this->assertNull($informant->died);
         $this->assertEquals(GenderType::MALE, $informant->gender);
         $this->assertEquals('баян', $informant->notes);
 
         $informant = $informants[1];
         $this->assertEquals('Крук Аляксей Аляксандравіч', $informant->name);
         $this->assertEquals(1959, $informant->birth);
+        $this->assertNull($informant->died);
         $this->assertEquals(GenderType::MALE, $informant->gender);
         $this->assertEquals('бубен', $informant->notes);
     }
@@ -730,6 +751,7 @@ class InformantTest extends TestCase
         $informant = $informants[0];
         $this->assertEquals('Булыга Васіль', $informant->name);
         $this->assertEquals(1958, $informant->birth);
+        $this->assertNull($informant->died);
         $this->assertEquals(GenderType::MALE, $informant->gender);
         # !!! Notes were united
         $this->assertEquals('гармонік. скрыпка', $informant->notes);
@@ -753,9 +775,42 @@ class InformantTest extends TestCase
         $informant = $informants[0];
         $this->assertEquals('Клеўжыц (Хурсевіч) Галіна Клеменцеўна', $informant->name);
         $this->assertEquals(1947, $informant->birth);
+        $this->assertNull($informant->died);
         $this->assertEquals(GenderType::FEMALE, $informant->gender);
         $this->assertEquals('', $informant->notes);
         $this->assertCount(1, $informant->locations);
         $this->assertEquals('в. Мокрава', $informant->locations[0]);
+    }
+
+    public function testInformantWithBirthAndDeath(): void
+    {
+        $content = 'Еўдакія Раманаўна Жураўлёва (1928—2012), Ганна Іванаўна Метлянок (1928-2015), Раіса Кубарская (1929)';
+
+        $informants = $this->personService->getInformants($content);
+        $this->assertCount(3, $informants);
+
+        $informant = $informants[0];
+        $this->assertEquals('Жураўлёва Еўдакія Раманаўна', $informant->name);
+        $this->assertEquals(1928, $informant->birth);
+        $this->assertEquals(2012, $informant->died);
+        $this->assertEquals(GenderType::FEMALE, $informant->gender);
+        $this->assertEquals('', $informant->notes);
+        $this->assertCount(0, $informant->locations);
+
+        $informant = $informants[1];
+        $this->assertEquals('Метлянок Ганна Іванаўна', $informant->name);
+        $this->assertEquals(1928, $informant->birth);
+        $this->assertEquals(2015, $informant->died);
+        $this->assertEquals(GenderType::FEMALE, $informant->gender);
+        $this->assertEquals('', $informant->notes);
+        $this->assertCount(0, $informant->locations);
+
+        $informant = $informants[2];
+        $this->assertEquals('Кубарская Раіса', $informant->name);
+        $this->assertEquals(1929, $informant->birth);
+        $this->assertNull($informant->died);
+        $this->assertEquals(GenderType::FEMALE, $informant->gender);
+        $this->assertEquals('', $informant->notes);
+        $this->assertCount(0, $informant->locations);
     }
 }

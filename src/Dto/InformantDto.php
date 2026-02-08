@@ -13,6 +13,7 @@ class InformantDto extends StudentDto
 {
     public ?int $birth = null;
     public ?Carbon $birthDay = null;
+    public ?int $died = null;
     public array $codeReports = [];
     public ?string $notes = null;
     public int $gender = GenderType::UNKNOWN;
