@@ -11,6 +11,7 @@ use App\Dto\InformantDto;
 use App\Dto\OrganizationDto;
 use App\Dto\ReportDataDto;
 use App\Dto\SubjectDto;
+use App\Dto\YearsDto;
 use App\Entity\Expedition;
 use App\Entity\File;
 use App\Entity\FileMarker;
@@ -163,6 +164,13 @@ class ReportManager
             $informantDb->setDateCreated(new \DateTime());
             $informantDb->setFirstName($informant->name);
             $informantDb->setYearBirth($informant->birth);
+            $informantDb->setDayBirth($informant->birthDay);
+            if ($informant->died === YearsDto::DIED_IS_UNKNOWN) {
+                $informantDb->setDied(true);
+            } else {
+                $informantDb->setYearDied($informant->died);
+            }
+
             $informantDb->setGeoPointCurrent($informant->geoPoint);
             $informantDb->setGender($informant->gender);
             if (count($informant->locations) < 2) {

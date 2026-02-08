@@ -266,7 +266,7 @@ class VideoKozHandler
                 if (!empty($videoItem->baseName)) {
                     $marker->additional[FileMarkerAdditional::BASE_NAME] = $videoItem->baseName;
                 }
-                if (!empty($videoItem->localName)) {
+                if (!empty($videoItem->youTube)) {
                     $marker->additional[FileMarkerAdditional::YOUTUBE] = $videoItem->youTube;
                 }
                 if (!empty($videoItem->pack)) {
@@ -293,6 +293,7 @@ class VideoKozHandler
                 if (!empty($videoItem->tmkb)) {
                     $marker->additional[FileMarkerAdditional::TMKB] = $videoItem->tmkb;
                 }
+                // Temp
                 if (!empty($videoItem->informantsText)) {
                     $marker->additional[FileMarkerAdditional::INFORMANTS_TEXT] = $videoItem->informantsText;
                 }
@@ -362,6 +363,7 @@ class VideoKozHandler
         $item['status'] = '';
         $item['file'] = '<i class="bi bi-arrow-clockwise"></i> / <i class="bi bi-eye-fill"></i> / <i class="bi bi-stopwatch"></i> / all<br>'
             . $updated . ' / ' . $active . ' / ' . $sheduled . ' / ' . $all;
+        $item['publish'] = '';
         $item['youtube'] = '';
         $item['youtube_title'] = '';
         $item['youtube_description'] = '';
@@ -386,20 +388,20 @@ class VideoKozHandler
                 default => YoutubeService::MAX_LENGTH_DESCRIPTION + $keyOk++,
             };
 
-            $status = '';
-            if ((int) $fileMarker->getAdditionalValue(FileMarkerAdditional::STATUS_UPDATED) > 0) {
-                $status .= '<i class="bi bi-arrow-clockwise"></i> ';
-            }
-            if ((int) $fileMarker->getAdditionalValue(FileMarkerAdditional::STATUS_ACTIVE) > 0) {
-                $status .= '<i class="bi bi-eye-fill"></i> ';
-            }
-            if ((int) $fileMarker->getAdditionalValue(FileMarkerAdditional::STATUS_SHEDULED) > 0) {
-                $status .= '<i class="bi bi-stopwatch"></i> ';
-            }
+            $statuses = [];
+            $statuses[] = (int)$fileMarker->getAdditionalValue(FileMarkerAdditional::STATUS_UPDATED) > 0
+                ? '<i class="bi bi-arrow-clockwise"></i>'
+                : '-';
+            $statuses[] = (int)$fileMarker->getAdditionalValue(FileMarkerAdditional::STATUS_ACTIVE) > 0
+                ? '<i class="bi bi-eye-fill"></i>'
+                : '-';
+            $statuses[] = (int)$fileMarker->getAdditionalValue(FileMarkerAdditional::STATUS_SHEDULED) > 0
+                ? '<i class="bi bi-stopwatch"></i>'
+                : '-';
 
             $item = [];
             $item['id'] = $fileMarker->getId();
-            $item['status'] = $status;
+            $item['status'] = implode(' / ', $statuses);
             $item['file'] = $fileMarker->getFile()?->getFullFileName();
             $item['publish'] = $fileMarker->getPublishDateText();
             $item['youtube'] = $fileMarker->getAdditionalYoutube();

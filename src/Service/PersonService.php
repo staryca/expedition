@@ -9,6 +9,7 @@ use App\Dto\NameGenderDto;
 use App\Dto\OrganizationDto;
 use App\Dto\PersonBsuDto;
 use App\Dto\StudentDto;
+use App\Dto\YearsDto;
 use App\Entity\Informant;
 use App\Entity\Type\GenderType;
 use App\Helper\TextHelper;
@@ -199,7 +200,8 @@ class PersonService
         if (count($parts) < $amount) {
             return null;
         }
-        $birth = self::getBirthYearFromNotes($parts, $yearReport);
+        $years = self::getYearsFromNotes($parts, $yearReport);
+        $birth = $years->birth;
 
         $partsName = [];
         $partsNote = [];
@@ -288,6 +290,7 @@ class PersonService
             }
             if ($birth) {
                 $informant->birth = $birth;
+                $informant->died = $years->died;
             }
             if (!empty($parts)) {
                 $notes = trim(implode(' ', $parts), " .;,\t\n\r\0\x0B");
@@ -677,7 +680,7 @@ class PersonService
             $parts = TextHelper::explodeWithBrackets([','], $partBase);
             $name = '';
             foreach ($parts as $part) {
-                [$text, $notes] = TextHelper::getNotes($part);
+                [$text] = TextHelper::getNotes($part);
                 $isLocation = LocationService::isLocation($part);
                 if (!$isLocation && ($this->isPersonName($text) || null !== $this->getPersonByFullName($text, $yearReport, true))) {
                     if ($name !== '') {
@@ -745,15 +748,19 @@ class PersonService
             }
 
             $birth = null;
+            $died = null;
             $date = self::getBirthDayFromNotes($parts);
             if ($date) {
                 $informant->birthDay = $date;
                 $informant->birth = $date->year;
             } else {
-                $birth = self::getBirthYearFromNotes($parts, $yearReport);
+                $years = self::getYearsFromNotes($parts, $yearReport);
+                $birth = $years->birth;
+                $died = $years->died;
             }
             if (!$informant->birth && is_numeric($birth)) {
                 $informant->birth = $birth;
+                $informant->died = $died;
             }
             $location = LocationService::getLocationFromNotes($parts);
             if ($location) {
@@ -788,12 +795,12 @@ class PersonService
         return $informants;
     }
 
-    private static function getBirthYearFromNotes(array &$notes, ?int $yearReport = null): ?int
+    private static function getYearsFromNotes(array &$notes, ?int $yearReport = null): YearsDto
     {
         $borderLetters = ['', ' ', ',', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
 
         $ages = ['min' => 4, 'max' => 120];
-        $years = ['min' => 1800, 'max' => 2020];
+        $years = ['min' => 1800, 'max' => Carbon::now()->year];
 
         foreach ($notes as $key => $note) {
             //  25г => 25г.
@@ -823,12 +830,12 @@ class PersonService
                     if (isset($notes[$key + 1]) && $notes[$key + 1] === 'н.') {
                         unset($notes[$key + 1]);
                     }
-                    return $age;
+                    return new YearsDto($age);
                 }
                 if ($age > $ages['min'] && $age < $ages['max']) {
                     if ($yearReport) {
                         unset($notes[$key]);
-                        return $yearReport - $age;
+                        return new YearsDto($yearReport - $age);
                     }
                     continue;
                 }
@@ -841,14 +848,14 @@ class PersonService
                     if (isset($notes[$key + 1]) && $notes[$key + 1] === 'н.') {
                         unset($notes[$key + 1]);
                     }
-                    return $age;
+                    return new YearsDto($age);
                 }
                 if ($age > $ages['min'] && $age < $ages['max'] && null !== $yearReport) {
                     if ($key >= 2 && $notes[$key - 2] === 'каля') {
                         unset($notes[$key - 2]);
                     }
                     unset($notes[$key - 1], $notes[$key]);
-                    return $yearReport - $age;
+                    return new YearsDto($yearReport - $age);
                 }
                 if ($age > 0) {
                     $notes[$key - 1] .= ' ' . $note;
@@ -860,13 +867,13 @@ class PersonService
                 $year = (int) $note;
                 if ($year > $years['min'] && $year < $years['max']) {
                     unset($notes[$key]);
-                    return $year;
+                    return new YearsDto($year);
                 }
 
                 $year = (int) $notes[$key - 1];
                 if ($year > $years['min'] && $year < $years['max']) {
                     unset($notes[$key - 1], $notes[$key]);
-                    return $year;
+                    return new YearsDto($year);
                 }
                 if ($year > 0) {
                     $notes[$key - 1] .= ' ' . $note;
@@ -876,14 +883,23 @@ class PersonService
         }
 
         foreach ($notes as $key => $note) {
+            $note = str_replace('—', '-', $note);
+            $pos = mb_strpos($note, '-');
+            $died = (false !== $pos) ? (int) mb_substr($note, $pos + 1) : null;
+
             $year = (int) $note;
             if ($year > $years['min'] && $year < $years['max']) {
                 unset($notes[$key]);
-                return $year;
+
+                if ($died < $years['min'] || $died > $years['max']) {
+                    $died = null;
+                }
+
+                return new YearsDto($year, $died);
             }
         }
 
-        return null;
+        return new YearsDto();
     }
 
     private static function getBirthDayFromNotes(array &$notes): ?Carbon

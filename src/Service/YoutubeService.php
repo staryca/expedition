@@ -163,11 +163,12 @@ class YoutubeService
 
         $part = '';
         // Date
+        $year = $fileMarker->getReport()->getDateActionYear();
         $date = !empty($dateActionNotes)
             ? $dateActionNotes
-            : (empty($fileMarker->getReport()->getDateActionYear()) ? '' : $fileMarker->getReport()->getDateActionYear() . ' годзе.');
+            : (empty($year) ? '' : $year . ' годзе.');
         if (!empty($date)) {
-            $part .= $fileMarker->getCategory() !== CategoryType::FILM
+            $part .= $fileMarker->getCategory() !== CategoryType::FILM && ($year > 1998 || null === $year)
                 ? 'Відэа запісана Козенкам М.А. у ' . $date
                 : 'Відэа запісаны ў ' . $date;
         }
@@ -217,7 +218,7 @@ class YoutubeService
                 ? '<br><i class="bi bi-exclamation-diamond-fill text-danger"></i>Origin:' . (mb_strlen($personTextOrigin) - mb_strlen($personText)) . ':: ' . $personTextOrigin
                 : '';
 
-            $partPersons[] = $text . ': ' . $personText . $warning;
+            $partPersons[] = $text . ': ' . $personText . '.' . $warning;
         }
 
         // Musicians
@@ -247,9 +248,9 @@ class YoutubeService
         $categoryNameMany = CategoryType::getManyOrSingleName($category);
 
         $tags = [];
-        $tagLocal = $this->textHelper->getTagFormat(
-            false !== mb_stripos($localName, $categoryName) ? $localName : $categoryName . ' ' . $localName
-        );
+        $textLocal = false !== mb_stripos($localName, $categoryName) ? $localName : $categoryName . ' ' . $localName;
+        [$textLocal] = TextHelper::getNotes($textLocal);
+        $tagLocal = $this->textHelper->getTagFormat($textLocal);
         $tagBase = $this->textHelper->getTagFormat(
             false !== mb_stripos($baseName, $categoryName) ? $baseName : $categoryName . ' ' . $baseName
         );
