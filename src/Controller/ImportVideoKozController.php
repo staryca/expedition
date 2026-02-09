@@ -18,7 +18,6 @@ use App\Entity\Ritual;
 use App\Entity\Type\CategoryType;
 use App\Entity\Type\GenderType;
 use App\Handler\VideoKozHandler;
-use App\Parser\Columns\VideoKozColumns;
 use App\Repository\CategoryRepository;
 use App\Repository\DanceRepository;
 use App\Repository\ExpeditionRepository;
@@ -159,37 +158,12 @@ class ImportVideoKozController extends AbstractController
             throw $this->createNotFoundException($exception->getMessage());
         }
 
-        return $this->render('import/show.table.result.html.twig', [
-            'headers' => [
-                'Actions',
-                'Status',
-                VideoKozColumns::FILENAME,
-                'Publish',
-                'Youtube',
-                'Youtube title',
-                'Youtube description',
-//                VideoKozColumns::TYPE_RECORD,
-//                VideoKozColumns::BASE_NAME,
-//                VideoKozColumns::LOCAL_NAME,
-//                VideoKozColumns::TYPE_DANCE,
-//                VideoKozColumns::IMPROVISATION,
-//                VideoKozColumns::RITUAL,
-//                VideoKozColumns::TRADITION,
-//                VideoKozColumns::VILLAGE,
-//                VideoKozColumns::DATE_RECORD,
-//                VideoKozColumns::DESCRIPTION,
-//                VideoKozColumns::ORGANIZATION,
-//                VideoKozColumns::INFORMANTS,
-//                VideoKozColumns::TEXTS,
-//                VideoKozColumns::TMKB,
-//                'Additional',
-            ],
+        $stat = $data[0]['stat'];
+        unset($data[0]);
+
+        return $this->render('import_koz/list.html.twig', [
+            'stat' => $stat,
             'data' => $data,
-            'actions' => [
-                'app_import_video_koz_update_item' => 'bi-arrow-clockwise',
-                'app_import_video_koz_show_item' => 'bi-eye-fill',
-                'app_import_video_koz_sheduled_item' => 'bi-stopwatch',
-            ],
         ]);
     }
 
@@ -760,6 +734,11 @@ class ImportVideoKozController extends AbstractController
     private function updateCategoryItem(Expedition $expedition, Category $category): array
     {
         $markers = $this->fileMarkerRepository->getMarkersByExpedition($expedition, $category->getId());
+        foreach ($markers as $key => $marker) {
+            if ($marker->getPublish()) {
+                unset($markers[$key]);
+            }
+        }
         $playlist = $category->getPlaylist();
 
         return $this->youtubeService->addMarkersInPlaylist($playlist, $markers);
@@ -787,6 +766,9 @@ class ImportVideoKozController extends AbstractController
         $markers = $this->fileMarkerRepository->getMarkersByExpedition($expedition, CategoryType::DANCE);
         foreach ($markers as $key => $marker) {
             if ($marker->getAdditionalDance() !== $dance->getName()) {
+                unset($markers[$key]);
+            }
+            if ($marker->getPublish()) {
                 unset($markers[$key]);
             }
         }
@@ -819,6 +801,9 @@ class ImportVideoKozController extends AbstractController
             if ($marker->getAdditionalImprovisation() !== $improvisation->getName()) {
                 unset($markers[$key]);
             }
+            if ($marker->getPublish()) {
+                unset($markers[$key]);
+            }
         }
         $playlist = $improvisation->getPlaylist();
 
@@ -849,6 +834,9 @@ class ImportVideoKozController extends AbstractController
             if ($marker->getAdditionalPack() !== $pack->getName()) {
                 unset($markers[$key]);
             }
+            if ($marker->getPublish()) {
+                unset($markers[$key]);
+            }
         }
         $playlist = $pack->getPlaylist();
 
@@ -877,6 +865,9 @@ class ImportVideoKozController extends AbstractController
         $markers = $this->fileMarkerRepository->getMarkersByExpedition($expedition);
         foreach ($markers as $key => $marker) {
             if (!$marker->getRitual() || $marker->getRitual()->getId() !== $ritual->getId()) {
+                unset($markers[$key]);
+            }
+            if ($marker->getPublish()) {
                 unset($markers[$key]);
             }
         }
@@ -917,6 +908,11 @@ class ImportVideoKozController extends AbstractController
                 ];
             }
         }
+        foreach ($markers as $key => $marker) {
+            if ($marker->getPublish()) {
+                unset($markers[$key]);
+            }
+        }
         $playlist = $district->getPlaylist();
 
         return $this->youtubeService->addMarkersInPlaylist($playlist, $markers);
@@ -941,6 +937,9 @@ class ImportVideoKozController extends AbstractController
             $additional = $marker->getAdditional();
             $children = $additional[FileMarkerAdditional::SOURCE] ?? null;
             if (!Artist::isChildren($children)) {
+                unset($markers[$key]);
+            }
+            if ($marker->getPublish()) {
                 unset($markers[$key]);
             }
         }

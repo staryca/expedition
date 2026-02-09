@@ -359,14 +359,8 @@ class VideoKozHandler
             }
         }
 
-        $item = ['id' => ''];
-        $item['status'] = '';
-        $item['file'] = '<i class="bi bi-arrow-clockwise"></i> / <i class="bi bi-eye-fill"></i> / <i class="bi bi-stopwatch"></i> / all<br>'
+        $item['stat'] = '<i class="bi bi-arrow-clockwise"></i> / <i class="bi bi-eye-fill"></i> / <i class="bi bi-stopwatch"></i> / all<br>'
             . $updated . ' / ' . $active . ' / ' . $sheduled . ' / ' . $all;
-        $item['publish'] = '';
-        $item['youtube'] = '';
-        $item['youtube_title'] = '';
-        $item['youtube_description'] = '';
         $data[0] = $item;
 
         $keyWarningDesc = $keyWarningTitle = $keyOk = 1;
@@ -402,28 +396,12 @@ class VideoKozHandler
             $item = [];
             $item['id'] = $fileMarker->getId();
             $item['status'] = implode(' / ', $statuses);
+            $item['number'] = $fileMarker->getAdditionalNumber();
             $item['file'] = $fileMarker->getFile()?->getFullFileName();
             $item['publish'] = $fileMarker->getPublishDateText();
             $item['youtube'] = $fileMarker->getAdditionalYoutube();
             $item['youtube_title'] = $titleNotes . $title;
             $item['youtube_description'] = $descriptionWarning . $description;
-//                    $item['category'] = $fileMarker->getCategoryName();
-//                    $item['name'] = $fileMarker->getAdditionalValue('baseName');
-//                    $item['name_local'] = $fileMarker->getAdditionalValue('localName');
-//                    $item['dance_type'] = $fileMarker->getAdditionalValue('danceType');
-//                    $item['improvisation'] = $fileMarker->getAdditionalValue('improvisation');
-//                    $item['ritual'] = $fileMarker->getAdditionalValue('ritual');
-//                    $item['tradition'] = $fileMarker->getAdditionalValue('tradition');
-//                    $item['location'] = $report->getGeoPlace();
-//                    $item['date'] = $report->getTextDateAction();
-//                    $item['description'] = $fileMarker->getNotes();
-//                    $item['org'] = $block->getOrganization()?->getName();
-//                    $item['informants'] = $block->getInformants()->count() . ' persons';
-//
-//                    $text = (string) $fileMarker->getDecoding();
-//                    $item['texts'] = mb_strlen($text) > 100 ? mb_substr($text, 0, 100) . '...' : $text;
-//                    $item['tmkb'] = $fileMarker->getAdditionalValue('tmkb');
-//                    $item['additional'] = var_export($fileMarker->getAdditional(), true);
 
             $data[$key] = $item;
         }

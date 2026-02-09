@@ -716,6 +716,22 @@ class InformantTest extends TestCase
         $this->assertEquals('в. Зацесце Клетнянскі р-н Бранская вобласць', $informant->locations[0]);
     }
 
+    public function testInformantAndOther(): void
+    {
+        $content = 'Бакала Валянціна Іванаўна і інш.';
+
+        $informants = $this->personService->getInformants($content);
+        $this->assertCount(1, $informants);
+
+        $informant = $informants[0];
+        $this->assertEquals('Бакала Валянціна Іванаўна', $informant->name);
+        $this->assertNull($informant->birth);
+        $this->assertNull($informant->died);
+        $this->assertEquals(GenderType::FEMALE, $informant->gender);
+        $this->assertEquals('', $informant->notes);
+        $this->assertCount(0, $informant->locations);
+    }
+
     public function testInformantWithEachNotes(): void
     {
         $content = 'Дарошка Аляксей Іванавіч,1944 г.н. (баян), Крук Аляксей Аляксандравіч, 1959 г.н. (бубен) ';

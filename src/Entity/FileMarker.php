@@ -308,6 +308,11 @@ class FileMarker
         return empty($id) ? '' : 'https://www.youtube.com/watch?v=' . $id;
     }
 
+    public function getAdditionalNumber(): ?int
+    {
+        return $this->additional[FileMarkerAdditional::NUMBER] ?? null;
+    }
+
     public function addAdditional(string $key, string $value): void
     {
         $this->additional[$key] = $value;
