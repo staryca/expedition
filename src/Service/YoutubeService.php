@@ -24,6 +24,7 @@ class YoutubeService
     public const int MAX_LENGTH_TITLE = 100;
     public const int MAX_LENGTH_DESCRIPTION = 5000;
     private const int SHORTENER_TRUNCATE = 3;
+    private const int YEAR_START_KOZENKA = 1998;
 
     /**
      * Only from 1 expedition!
@@ -168,7 +169,7 @@ class YoutubeService
             ? $dateActionNotes
             : (empty($year) ? '' : $year . ' годзе.');
         if (!empty($date)) {
-            $part .= $fileMarker->getCategory() !== CategoryType::FILM && ($year > 1998 || null === $year)
+            $part .= $fileMarker->getCategory() !== CategoryType::FILM && ($year > self::YEAR_START_KOZENKA || null === $year)
                 ? 'Відэа запісана Козенкам М.А. у ' . $date
                 : 'Відэа запісаны ў ' . $date;
         }
@@ -213,10 +214,10 @@ class YoutubeService
             $warning = '';
 
             // For debug of informants list
-            $personTextOrigin = trim($fileMarker->getAdditionalValue(FileMarkerAdditional::INFORMANTS_TEXT), '.');
-            $warning = mb_strlen($personTextOrigin) > (mb_strlen($personText) + 2)
-                ? '<br><i class="bi bi-exclamation-diamond-fill text-danger"></i>Origin:' . (mb_strlen($personTextOrigin) - mb_strlen($personText)) . ':: ' . $personTextOrigin
-                : '';
+//            $personTextOrigin = trim($fileMarker->getAdditionalValue(FileMarkerAdditional::INFORMANTS_TEXT), '.');
+//            $warning = mb_strlen($personTextOrigin) > (mb_strlen($personText) + 2)
+//                ? '<br><i class="bi bi-exclamation-diamond-fill text-danger"></i>Origin:' . (mb_strlen($personTextOrigin) - mb_strlen($personText)) . ':: ' . $personTextOrigin
+//                : '';
 
             $partPersons[] = $text . ': ' . $personText . '.' . $warning;
         }

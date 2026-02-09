@@ -659,6 +659,9 @@ class PersonService
      */
     public function getInformants(string $content, string $additionalNotes = '', $isMusician = null, ?int $yearReport = null): array
     {
+        // todo: Add to youtube
+        $content = str_replace(['і іншыя', 'і інш.', 'і інш'], '', $content);
+
         $informants = [];
         $hasSemicolon = str_contains($content, ';');
 
