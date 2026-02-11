@@ -27,6 +27,7 @@ class FileMarkerAdditional
     public const string TRADITION_ARCHAIC = 'архаіка';
     public const string TRADITION_EARLY = 'раннетрадыцыйны';
 
+    public const string IMPROVISATION_REGULATED = 'рэгламентаваны';
     public const string IMPROVISATION_VALUE = 'імправізацыйны';
     public const string IMPROVISATION_COMMANDS = 'з камандамі';
     public const string IMPROVISATION_MIKITA_CASE = 'тыпу Мікіта';
@@ -54,7 +55,14 @@ class FileMarkerAdditional
 
     public static function getImprovisation(string $value): string
     {
-        return str_replace('тып ', 'тыпу ', $value);
+        $value = mb_strtolower(mb_substr($value, 0, 1)) . mb_substr($value, 1);
+        $value = str_replace(
+            ['тып ', 'рэгламентаваныя рухі'],
+            ['тыпу ', self::IMPROVISATION_REGULATED],
+            $value
+        );
+
+        return $value;
     }
 
     public static function getAllImprovisations(): array
