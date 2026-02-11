@@ -49,8 +49,11 @@ class YoutubeService
         $localName = $fileMarker->getAdditionalLocalName();
         $baseName = $fileMarker->getAdditionalDance();
         $improvisation = $fileMarker->getAdditionalImprovisation();
+        if ($improvisation === FileMarkerAdditional::IMPROVISATION_REGULATED) {
+            $improvisation = ''; // Do not show 'рэгламентаваны' in title
+        }
         $danceType = $fileMarker->getAdditionalPack();
-        $ritual = $fileMarker->getAdditionalValue(FileMarkerAdditional::RITUAL);
+        $ritual = $fileMarker->getRitual();
         $dateActionNotes = $fileMarker->getAdditionalValue(FileMarkerAdditional::DATE_ACTION_NOTES);
 
         $parts = [];
@@ -80,7 +83,7 @@ class YoutubeService
             $danceTypeOneWord = mb_substr($danceType, 1, 1) !== ' ' && mb_substr($danceType, 2, 1) !== ' ';
             $texts = [];
             if ($improvisation === FileMarkerAdditional::IMPROVISATION_VALUE) {
-                $texts[] = $fileMarker->getCategory() === CategoryType::QUADRILLE ? mb_substr($improvisation, 0, -1) . 'ая' : $improvisation;
+                $texts[] = $fileMarker->isCategoryQuadrille() ? mb_substr($improvisation, 0, -1) . 'ая' : $improvisation;
             }
             if ($danceType !== '' && $danceTypeOneWord) {
                 $texts[] = $danceType;
@@ -106,15 +109,8 @@ class YoutubeService
         }
 
         // 2nd shortener: hide the ritual
-        if (!empty($ritual) && $shortener < 2) {
-            $partsRitual = explode('#', $ritual);
-            if (count($partsRitual) > 4) {
-                $_last = array_pop($partsRitual);
-                $ritual = array_pop($partsRitual) . ' (' . $_last . ')';
-            } else {
-                $ritual = array_pop($partsRitual);
-            }
-            $parts[] = $ritual;
+        if ($ritual && $shortener < 2) {
+            $parts[] = $ritual->getName();
         }
 
         $report = $fileMarker->getReport();
@@ -149,6 +145,7 @@ class YoutubeService
         $baseName = $fileMarker->getAdditionalDance();
         $dateActionNotes = $fileMarker->getAdditionalValue(FileMarkerAdditional::DATE_ACTION_NOTES);
         $tmkb = $fileMarker->getAdditionalValue(FileMarkerAdditional::TMKB);
+        $ritual = $fileMarker->getRitual();
 
         $parts = [];
 
@@ -171,7 +168,7 @@ class YoutubeService
         if (!empty($date)) {
             $part .= $fileMarker->getCategory() !== CategoryType::FILM && ($year > self::YEAR_START_KOZENKA || null === $year)
                 ? 'Відэа запісана Козенкам М.А. у ' . $date
-                : 'Відэа запісаны ў ' . $date;
+                : 'Відэа запісана ў ' . $date;
         }
 
         // Location
@@ -266,6 +263,9 @@ class YoutubeService
         if (!empty($baseName) && substr_count($baseName, ' ') <= 3) {
             $tags[] = '#' . $tagBase;
         }
+        if ($ritual) {
+            $tags[] = '#' . $this->textHelper->getTagFormat($ritual->getName());
+        }
         if (null !== $geoPoint) {
             $tags[] = '#' . $this->textHelper->getTagFormat($geoPoint->getPrefixBe() . ' ' . $geoPoint->getName());
             $tags[] = '#' . $this->textHelper->getTagFormat($geoPoint->getDistrict(), true);
@@ -299,7 +299,7 @@ class YoutubeService
         // Other YouTube link by place
         $linkKey = $fileMarker->getReport()->getMiddleGeoPlace();
         $linkPlaceMarker = isset($this->markersByPlace[$linkKey])
-            ? self::getRandomMarker($this->markersByPlace[$linkKey], $fileMarker->getId(), $fileMarker->getPublishDate())
+            ? self::getRandomMarker($this->markersByPlace[$linkKey], [$fileMarker->getId()], $fileMarker->getPublishDate())
             : null;
         if ($linkPlaceMarker && !empty($linkPlaceMarker->getAdditionalYoutubeLink())) {
             $descriptionLink = $linkPlaceMarker->getAdditionalLocalNameWithCategory();
@@ -311,7 +311,11 @@ class YoutubeService
         // Other YouTube link by type
         $linkKey = self::getLinkKey($fileMarker);
         $linkTypeMarker = isset($this->markersByType[$linkKey])
-            ? self::getRandomMarker($this->markersByType[$linkKey], $fileMarker->getId(), $fileMarker->getPublishDate())
+            ? self::getRandomMarker(
+                $this->markersByType[$linkKey],
+                [$fileMarker->getId(), $linkPlaceMarker?->getId()],
+                $fileMarker->getPublishDate()
+            )
             : null;
         if ($linkTypeMarker && !empty($linkTypeMarker->getAdditionalYoutubeLink())) {
             $descriptionLink = $linkTypeMarker->getAdditionalLocalNameWithCategory();
@@ -504,11 +508,11 @@ class YoutubeService
 
     /**
      * @param array<FileMarker> $array
-     * @param int $exceptId
+     * @param array<int> $exceptIds
      * @param Carbon|null $publishDate
      * @return FileMarker|null
      */
-    private static function getRandomMarker(array $array, int $exceptId, ?Carbon $publishDate): ?FileMarker
+    private static function getRandomMarker(array $array, array $exceptIds, ?Carbon $publishDate): ?FileMarker
     {
         shuffle($array);
 
@@ -519,8 +523,11 @@ class YoutubeService
             if ($publishDate && $marker->getPublish() > $publishDate) {
                 continue;
             }
+            if (in_array($marker->getId(), $exceptIds)) {
+                continue;
+            }
 
-            if ($marker->getId() !== $exceptId && !empty($marker->getAdditionalYoutube())) {
+            if (!empty($marker->getAdditionalYoutube())) {
                 return $marker;
             }
         }
@@ -623,19 +630,31 @@ class YoutubeService
     public function getMarkerDescription(FileMarker $fileMarker): string
     {
         $localName = $fileMarker->getAdditionalLocalName();
+        $baseName = $fileMarker->getAdditionalDance();
         $danceType = $fileMarker->getAdditionalPack();
         $improvisation = $fileMarker->getAdditionalImprovisation();
         $tradition = $fileMarker->getAdditionalValue(FileMarkerAdditional::TRADITION);
-        $ritual = $fileMarker->getAdditionalValue(FileMarkerAdditional::RITUAL);
+
+        $ritual = $fileMarker->getRitual();
+        $ritualText = '';
+        if ($ritual) {
+            $ritualPrev = $ritual->getParent();
+            $ritualText = '(' . ($ritualPrev ? ($ritualPrev->getName() . ' -> ') : '') . $ritual->getName() . ')';
+        }
 
         if ($fileMarker->isCategoryDance() || $fileMarker->isCategoryQuadrille()) {
+            if (empty($improvisation) && !in_array($baseName, ['Полька', 'Вальс', 'Абэрак', 'Сербіянка'])) {
+                $improvisation = FileMarkerAdditional::IMPROVISATION_REGULATED;
+            }
+
             $danceTypeOneWord = mb_substr($danceType, 1, 1) !== ' ' && mb_substr($danceType, 2, 1) !== ' ';
+
             $texts = [];
             $tradition_text = FileMarkerAdditional::getTradition($tradition);
             if (!empty($tradition_text)) {
                 $texts[] = $tradition_text;
             }
-            if (empty($ritual) && !$fileMarker->isCategoryQuadrille()) {
+            if (null === $ritual && !$fileMarker->isCategoryQuadrille()) {
                 $texts[] = 'пазаабрадавы';
             }
             if ($danceTypeOneWord && $improvisation === FileMarkerAdditional::IMPROVISATION_VALUE) {
@@ -656,11 +675,16 @@ class YoutubeService
             if ($improvisation === FileMarkerAdditional::IMPROVISATION_MIKITA_CASE && $localName !== 'Мікіта') {
                 $texts[] = FileMarkerAdditional::IMPROVISATION_MIKITA_CASE;
             }
-            if ($improvisation !== FileMarkerAdditional::IMPROVISATION_MIKITA_CASE && $improvisation !== FileMarkerAdditional::IMPROVISATION_VALUE && !empty($improvisation)) {
+            if ($improvisation === FileMarkerAdditional::IMPROVISATION_REGULATED) {
+                $texts[] = 'з устойлівай кампазіцыяй';
+            } elseif ($improvisation !== FileMarkerAdditional::IMPROVISATION_MIKITA_CASE
+                && $improvisation !== FileMarkerAdditional::IMPROVISATION_VALUE
+                && !empty($improvisation)
+            ) {
                 $texts[] = $improvisation;
             }
-            if (empty($improvisation)) {
-                $texts[] = 'з устойлівай кампазіцыяй';
+            if (!empty($ritualText)) {
+                $texts[] = $ritualText;
             }
 
             $text = implode(' ', $texts);
@@ -687,11 +711,14 @@ class YoutubeService
                         CategoryType::getDanceMovementName($texts)
                     ];
                 } else {
-                    $texts[] = $categoryName;
+                    $texts[] = empty($texts) ? $categoryName : mb_strtolower($categoryName);
                 }
             }
             if (!empty($localName)) {
                 $texts[] = $nameHasType ? $localName : TextHelper::getTextWithQuotation($localName);
+            }
+            if (!empty($ritualText)) {
+                $texts[] = $ritualText;
             }
 
             $text = implode(' ', $texts);
