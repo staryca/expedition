@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App\Repository;
 
 use App\Dto\LatLonDto;
-use App\Entity\Additional\FileMarkerAdditional;
 use App\Entity\Expedition;
 use App\Entity\FileMarker;
 use App\Entity\GeoPoint;
 use App\Entity\Type\CategoryType;
 use App\Service\LocationService;
+use Carbon\Carbon;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -55,9 +55,10 @@ class FileMarkerRepository extends ServiceEntityRepository
     /**
      * @param Expedition $expedition
      * @param int|null $category
+     * @param Carbon|null $tillDate
      * @return array<FileMarker>
      */
-    public function getMarkersByExpedition(Expedition $expedition, ?int $category = null): array
+    public function getMarkersByExpedition(Expedition $expedition, ?int $category = null, ?Carbon $tillDate = null): array
     {
         $qb = $this->createQueryBuilder('fm')
             ->leftJoin('fm.reportBlock', 'rb')
@@ -72,6 +73,11 @@ class FileMarkerRepository extends ServiceEntityRepository
         if ($category) {
             $qb->andWhere('fm.category = :category')
                 ->setParameter('category', $category);
+        }
+
+        if ($tillDate) {
+            $qb->andWhere('fm.publish <= :tillDate')
+                ->setParameter('tillDate', $tillDate);
         }
 
         return $qb

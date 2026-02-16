@@ -31,6 +31,7 @@ use App\Repository\TraditionRepository;
 use App\Service\MarkerService;
 use App\Service\PlaylistService;
 use App\Service\YoutubeService;
+use Carbon\Carbon;
 use Doctrine\ORM\EntityManagerInterface;
 use Google\Service\Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -39,7 +40,7 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class ImportVideoKozController extends AbstractController
 {
-    private const int EXPEDITION_ID = 990; // 9
+    private const int EXPEDITION_ID = 9; // 9
     private const string FILENAME = '../var/data/video_koz/br-01.csv';
 
     public function __construct(
@@ -199,8 +200,7 @@ class ImportVideoKozController extends AbstractController
         $result = ['message' => 'ok', 'all' => 0, 'videos' => 0, 'no_found' => 0, 'updated' => 0, 'items' => []];
         foreach ($markers as $fileMarker) {
             $result['all']++;
-            $additional = $fileMarker->getAdditional();
-            $videoId = $additional['youtube'] ?? null;
+            $videoId = $fileMarker->getAdditionalYoutube();
             if (empty($videoId)) {
                 continue;
             }
@@ -733,12 +733,7 @@ class ImportVideoKozController extends AbstractController
 
     private function updateCategoryItem(Expedition $expedition, Category $category): array
     {
-        $markers = $this->fileMarkerRepository->getMarkersByExpedition($expedition, $category->getId());
-        foreach ($markers as $key => $marker) {
-            if ($marker->getPublish()) {
-                unset($markers[$key]);
-            }
-        }
+        $markers = $this->fileMarkerRepository->getMarkersByExpedition($expedition, $category->getId(), Carbon::now());
         $playlist = $category->getPlaylist();
 
         return $this->youtubeService->addMarkersInPlaylist($playlist, $markers);
@@ -763,12 +758,9 @@ class ImportVideoKozController extends AbstractController
 
     private function updateDanceItem(Expedition $expedition, Dance $dance): array
     {
-        $markers = $this->fileMarkerRepository->getMarkersByExpedition($expedition, CategoryType::DANCE);
+        $markers = $this->fileMarkerRepository->getMarkersByExpedition($expedition, CategoryType::DANCE, Carbon::now());
         foreach ($markers as $key => $marker) {
             if ($marker->getAdditionalDance() !== $dance->getName()) {
-                unset($markers[$key]);
-            }
-            if ($marker->getPublish()) {
                 unset($markers[$key]);
             }
         }
@@ -796,12 +788,9 @@ class ImportVideoKozController extends AbstractController
 
     private function updateImprovisationItem(Expedition $expedition, Improvisation $improvisation): array
     {
-        $markers = $this->fileMarkerRepository->getMarkersByExpedition($expedition, CategoryType::DANCE);
+        $markers = $this->fileMarkerRepository->getMarkersByExpedition($expedition, CategoryType::DANCE, Carbon::now());
         foreach ($markers as $key => $marker) {
             if ($marker->getAdditionalImprovisation() !== $improvisation->getName()) {
-                unset($markers[$key]);
-            }
-            if ($marker->getPublish()) {
                 unset($markers[$key]);
             }
         }
@@ -829,12 +818,9 @@ class ImportVideoKozController extends AbstractController
 
     private function updatePackItem(Expedition $expedition, Pack $pack): array
     {
-        $markers = $this->fileMarkerRepository->getMarkersByExpedition($expedition, CategoryType::DANCE);
+        $markers = $this->fileMarkerRepository->getMarkersByExpedition($expedition, CategoryType::DANCE, Carbon::now());
         foreach ($markers as $key => $marker) {
             if ($marker->getAdditionalPack() !== $pack->getName()) {
-                unset($markers[$key]);
-            }
-            if ($marker->getPublish()) {
                 unset($markers[$key]);
             }
         }
@@ -862,12 +848,9 @@ class ImportVideoKozController extends AbstractController
 
     private function updateRitualItem(Expedition $expedition, Ritual $ritual): array
     {
-        $markers = $this->fileMarkerRepository->getMarkersByExpedition($expedition);
+        $markers = $this->fileMarkerRepository->getMarkersByExpedition($expedition, null, Carbon::now());
         foreach ($markers as $key => $marker) {
             if (!$marker->getRitual() || $marker->getRitual()->getId() !== $ritual->getId()) {
-                unset($markers[$key]);
-            }
-            if ($marker->getPublish()) {
                 unset($markers[$key]);
             }
         }
@@ -909,7 +892,8 @@ class ImportVideoKozController extends AbstractController
             }
         }
         foreach ($markers as $key => $marker) {
-            if ($marker->getPublish()) {
+            /** @var FileMarker $marker */
+            if ($marker->getPublish() && Carbon::now()->isBefore($marker->getPublish())) {
                 unset($markers[$key]);
             }
         }
@@ -932,14 +916,11 @@ class ImportVideoKozController extends AbstractController
 
     private function updateChildrenItem(Expedition $expedition): array
     {
-        $markers = $this->fileMarkerRepository->getMarkersByExpedition($expedition);
+        $markers = $this->fileMarkerRepository->getMarkersByExpedition($expedition, null, Carbon::now());
         foreach ($markers as $key => $marker) {
             $additional = $marker->getAdditional();
             $children = $additional[FileMarkerAdditional::SOURCE] ?? null;
             if (!Artist::isChildren($children)) {
-                unset($markers[$key]);
-            }
-            if ($marker->getPublish()) {
                 unset($markers[$key]);
             }
         }

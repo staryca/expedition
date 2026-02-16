@@ -17,11 +17,11 @@ use Carbon\Carbon;
 
 class PersonService
 {
-    private const NUM_UNDEFINED = 0;
-    private const NUM_LAST = 1;
-    private const NUM_FIRST = 2;
-    private const NUM_MIDDLE = 3;
-    private const NUM_FIRST_MIDDLE = 4;
+    private const int NUM_UNDEFINED = 0;
+    private const int NUM_LAST = 1;
+    private const int NUM_FIRST = 2;
+    private const int NUM_MIDDLE = 3;
+    private const int NUM_FIRST_MIDDLE = 4;
 
     public function parseOrganization(OrganizationDto $dto): void
     {
