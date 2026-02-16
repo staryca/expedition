@@ -113,4 +113,9 @@ class Task
     {
         return $this->report ?? $this->reportBlock->getReport();
     }
+
+    public function __toString(): string
+    {
+        return trim('#' . $this->id . ' ' . $this->getContent());
+    }
 }

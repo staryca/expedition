@@ -19,6 +19,7 @@ class TextHelper
         return trim($string);
     }
 
+    /* Replace "abc def" to "Abc Def" */
     public static function lettersToUpper(string $text): string
     {
         $result = [];
@@ -31,10 +32,16 @@ class TextHelper
         return implode(' ', $result);
     }
 
+    /* Replace "aBc DeF" to "Abc def" */
+    public static function letterToUpper(string $text): string
+    {
+        return mb_strtoupper(mb_substr($text, 0, 1)) . mb_strtolower(mb_substr($text, 1));
+    }
+
     /* Replace AbcdeF to Abcdef */
     public static function fixName(string $text): string
     {
-        $name = mb_strtoupper(mb_substr($text, 0, 1)) . mb_strtolower(mb_substr($text, 1));
+        $name = self::letterToUpper($text);
         $nameWithLast = mb_substr($name, 0, -1) . mb_strtoupper(mb_substr($name, -1));
 
         return $nameWithLast === $text ? $name : $text;

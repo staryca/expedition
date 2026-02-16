@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use ApiPlatform\Metadata\UrlGeneratorInterface;
 use App\Entity\Additional\Musician;
 use App\Entity\Type\CategoryType;
 use App\Entity\Type\GenderType;
 use App\Handler\GeoPointHandler;
+use App\Manager\PersonManager;
 use App\Parser\VopisDetailedParser;
 use App\Repository\InformantRepository;
 use App\Repository\ReportRepository;
@@ -32,6 +34,7 @@ class ToolsController extends AbstractController
         private readonly RitualService $ritualService,
         private readonly MarkerService $markerService,
         private readonly CategoryService $categoryService,
+        private readonly PersonManager $personManager,
         private readonly EntityManagerInterface $entityManager,
     ) {
     }
@@ -160,25 +163,64 @@ class ToolsController extends AbstractController
 
         foreach ($duplicates as $informants) {
             $informant = $informants[0];
-            $item['name1'] = $informant->getFirstName()
-                . ' (' . GenderType::TYPES_MIDDLE[$informant->getGender()] . ')'
-                . ($informant->getYearBirth() ? ', ' . $informant->getYearBirth() . ' г.н.' : '');
-            $item['birth1'] = $informant->getBirthPlaceBe();
-            $item['current1'] = $informant->getCurrentPlaceBe();
+            $item['name1'] = $this->renderView('part/informant.full.html.twig', ['informant' => $informant]);
 
             $informant = $informants[1];
-            $item['name2'] = $informant->getFirstName()
-                . ' (' . GenderType::TYPES_MIDDLE[$informant->getGender()] . ')'
-                . ($informant->getYearBirth() ? ', ' . $informant->getYearBirth() . ' г.н.' : '');
-            $item['birth2'] = $informant->getBirthPlaceBe();
-            $item['current2'] = $informant->getCurrentPlaceBe();
+            $item['name2'] = $this->renderView('part/informant.full.html.twig', ['informant' => $informant]);
+
+            $hasShortName = str_contains($informant->getFirstName(), '.');
+            $item['duplicate'] = ($item['name1'] === $item['name2'] && !$hasShortName) ? 'yes' : 'no';
+
+            $link = $this->generateUrl(
+                'app_import_tools_merge_informants',
+                ['id1' => $informants[0]->getId(), 'id2' => $informants[1]->getId()],
+                UrlGeneratorInterface::ABS_URL
+            );
+            $item['merge'] = '<a target="_blank" href="' . $link . '">Аб\'яднаць</a>';
 
             $data[] = $item;
         }
 
         return $this->render('import/show.table.result.html.twig', [
-            'headers' => ['Імя 1', 'Нараджэньне 1', 'Зараз 1', 'Імя 2', 'Нараджэньне 2', 'Зараз 2'],
+            'headers' => ['Інфармант 1', 'Інфармант 2', '=', "Аб'яднаць"],
             'data' => $data,
+        ]);
+    }
+
+    #[Route('/import/tools/merge_duplicate_informants', name: 'app_import_tools_merge_duplicate_informants')]
+    public function mergeDuplicateInformants(): Response
+    {
+        $result = [];
+
+        $informants = $this->informantRepository->findSortedByName();
+        $duplicates = $this->personService->getDuplicates($informants);
+
+        foreach ($duplicates as $informants) {
+            $informant1 = $informants[0];
+            $html1 = $this->renderView('part/informant.full.html.twig', ['informant' => $informant1]);
+
+            $informant2 = $informants[1];
+            $html2 = $this->renderView('part/informant.full.html.twig', ['informant' => $informant2]);
+
+            if ($html1 === $html2) {
+                $result[] = $this->personManager->mergeDuplicates($informant1, $informant2);
+            }
+        }
+
+        return $this->render('import/show.json.result.html.twig', [
+            'data' => $result,
+        ]);
+    }
+
+    #[Route('/import/tools/merge_informants/{id1}/{id2}', name: 'app_import_tools_merge_informants')]
+    public function mergeTwoInformants(int $id1, int $id2): Response
+    {
+        $informant1 = $this->informantRepository->find($id1);
+        $informant2 = $this->informantRepository->find($id2);
+        $result = $this->personManager->mergeDuplicates($informant1, $informant2);
+
+        return $this->render('import/show.json.result.html.twig', [
+            'data' => $result,
         ]);
     }
 
@@ -357,6 +399,70 @@ class ToolsController extends AbstractController
 
         return $this->render('import/show.table.result.html.twig', [
             'headers' => ['Id', 'Тып', 'Назва', 'Заўвагі', 'Жанр', 'Тып 2'],
+            'data' => $data,
+        ]);
+    }
+
+    #[Route('/import/tools/correct_informant_places', name: 'app_import_tools_correct_informant_places')]
+    public function correctInformantPlaces(): Response
+    {
+        $data = [];
+
+        $informants = $this->informantRepository->findNotDetectedPoints();
+        foreach ($informants as $informant) {
+            $place = (string) $informant->getPlaceBirth();
+            if (!empty($place) && $informant->getGeoPointBirth()) {
+                $point = $this->locationService->detectLocationByFullPlace($place);
+                if ($point !== null && $informant->getGeoPointBirth()->getId() === $point->getId()) {
+                    $item = [
+                        'id' => $informant->getId(),
+                        'name' => $informant->getFirstName(),
+                        'status' => 'ok',
+                        'place' => $place,
+                        'point' => $informant->getGeoPointBirth()->getFullBeName(true),
+                    ];
+                    $informant->setPlaceBirth(null);
+                } else {
+                    $item = [
+                        'id' => $informant->getId(),
+                        'name' => $informant->getFirstName(),
+                        'status' => 'no',
+                        'place' => $place,
+                        'point' => $informant->getGeoPointBirth()->getFullBeName(true),
+                    ];
+                }
+                $data[] = $item;
+
+                $place = (string) $informant->getPlaceCurrent();
+                if (!empty($place) && $informant->getGeoPointCurrent()) {
+                    $point = $this->locationService->detectLocationByFullPlace($place);
+                    if ($point !== null && $informant->getGeoPointCurrent()->getId() === $point->getId()) {
+                        $item = [
+                            'id' => $informant->getId(),
+                            'name' => $informant->getFirstName(),
+                            'status' => 'ok',
+                            'place' => $place,
+                            'point' => $informant->getGeoPointCurrent()->getFullBeName(true),
+                        ];
+                        $informant->setPlaceCurrent(null);
+                    } else {
+                        $item = [
+                            'id' => $informant->getId(),
+                            'name' => $informant->getFirstName(),
+                            'status' => 'no',
+                            'place' => $place,
+                            'point' => $informant->getGeoPointCurrent()->getFullBeName(true),
+                        ];
+                    }
+                    $data[] = $item;
+                }
+            }
+        }
+
+        $this->entityManager->flush();
+
+        return $this->render('import/show.table.result.html.twig', [
+            'headers' => ['ID', 'Інфармант', 'Status', 'Place', 'Point'],
             'data' => $data,
         ]);
     }
