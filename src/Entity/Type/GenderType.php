@@ -6,28 +6,28 @@ namespace App\Entity\Type;
 
 class GenderType
 {
-    public const UNKNOWN = 0;
-    public const MALE = 1;
-    public const FEMALE = 2;
+    public const int UNKNOWN = 0;
+    public const int MALE = 1;
+    public const int FEMALE = 2;
 
-    public const TYPES = [
+    public const array TYPES = [
         self::UNKNOWN => '?',
         self::MALE => 'м',
         self::FEMALE => 'ж',
     ];
 
-    public const TYPES_MIDDLE = [
+    public const array TYPES_MIDDLE = [
         self::UNKNOWN => '?',
         self::MALE => 'муж',
         self::FEMALE => 'жан',
     ];
 
-    public const MIDDLE_3_LAST_FEMALE = ['ўна', 'вна', 'чна'];
-    public const LAST_3_LAST_FEMALE = ['ёва', 'ова', 'ева', 'іна', 'ава', 'ына']; // todo: may be male
-    public const LAST_3_LAST_MALE = ['скі', 'коў', 'хаў'];
-    public const LAST_4_LAST_FEMALE = ['ская', 'цкая'];
+    public const array MIDDLE_3_LAST_FEMALE = ['ўна', 'вна', 'чна'];
+    public const array LAST_3_LAST_FEMALE = ['ёва', 'ова', 'ева', 'іна', 'ава', 'ына']; // todo: may be male
+    public const array LAST_3_LAST_MALE = ['скі', 'коў', 'хаў', 'маў'];
+    public const array LAST_4_LAST_FEMALE = ['ская', 'цкая'];
 
-    public const REPLACE_NAMES = [
+    public const array REPLACE_NAMES = [
         'Алла' => 'Ала',
         'Любовь' => 'Любоў',
         'Іріна' => 'Ірына',
@@ -54,7 +54,7 @@ class GenderType
         'Паўла' => 'Павел',
     ];
 
-    public const REPLACE_RIGHT_PARTS = [
+    public const array REPLACE_RIGHT_PARTS = [
         'віч' => ['вічам', 'вічем', 'вічу', 'віча'],
         'скі' => ['скага', 'скім', 'скаму'],
         'коў' => ['кага', 'кога'],
@@ -72,7 +72,7 @@ class GenderType
         'ыва' => ['ывы', 'ыву'],
     ];
 
-    public const FEMALE_NAMES = [
+    public const array FEMALE_NAMES = [
         'Агапія' => ['Агата', 'Гана'],
         'Агрыпіна' => ['Грыпіна', 'Агруся', 'Груня', 'Рыпіна'],
         'Адэлаіда' => ['Адэля', 'Адзька', 'Адэлька', 'Адэльця'],
@@ -174,7 +174,7 @@ class GenderType
         'Яніна' => [],
     ];
 
-    public const MALE_NAMES = [
+    public const array MALE_NAMES = [
         'Адам' => ['Адась'],
         'Акім' => ['Якім', 'Юктук', 'Юхім', 'Юхша'],
         'Алег' => ['Алік', 'Лёка', 'Алежка'],
@@ -305,11 +305,11 @@ class GenderType
         'Яфім' => ['Яўхім', 'Яхімка'],
     ];
 
-    public const FEMALE_OTHERS = ['Ніка', 'Ліна', 'Анэта', 'Анця', 'Рэня', 'Міла', 'Эля'];
-    public const MALE_OTHERS = ['Богуш', 'Будзя', 'Валік', 'Ладысь', 'Уладысь'];
-    public const ANY_OTHERS = ['Валерка', 'Саша'];
+    public const array FEMALE_OTHERS = ['Ніка', 'Ліна', 'Анэта', 'Анця', 'Рэня', 'Міла', 'Эля'];
+    public const array MALE_OTHERS = ['Богуш', 'Будзя', 'Валік', 'Ладысь', 'Уладысь'];
+    public const array ANY_OTHERS = ['Валерка', 'Саша'];
 
-    public const MIDDLE_NAMES = [
+    public const array MIDDLE_NAMES = [
         'Адамавіч' => [],
         'Акімавіч' => [],
         'Алегавіч' => [],

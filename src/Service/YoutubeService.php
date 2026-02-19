@@ -567,6 +567,7 @@ class YoutubeService
         $result = [];
         $result['amount'] = count($videoIds);
         $result['videoIds'] = $videoIds;
+        $result['videos_in_playlist'] = [];
 
         $result['in_playlist'] = 0;
         $result['deleted_from_playlist'] = 0;
@@ -584,6 +585,7 @@ class YoutubeService
         $items = $list->getItems();
         foreach ($items as $item) {
             $videoId = $item->getSnippet()->getResourceId()->getVideoId();
+            $result['videos_in_playlist'][] = $videoId;
 
             $markerId = array_search($videoId, $videoIds);
             if ($markerId !== false) {
@@ -616,7 +618,7 @@ class YoutubeService
             $item->setSnippet($snippet);
 
             try {
-                $youtube->playlistItems->insert('snippet', $item);
+                //$youtube->playlistItems->insert('snippet', $item);
             } catch (Exception $e) {
                 $result['error'] = $e->getMessage();
                 $result['error_video'] = $videoId;

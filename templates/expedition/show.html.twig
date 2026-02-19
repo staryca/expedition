@@ -126,7 +126,7 @@
                                     <span class="text-danger-emphasis" title="Недакладная лакацыя!"><i class="bi bi-exclamation-triangle"></i> Лок.</span>
                                 {% endif %}
                             {% endif %}
-                            {% if not report.getLeader() %}
+                            {% if not report.getLeader() and isMustHaveReportCode %}
                                 <span class="text-danger" title="Няма кіраўніка!"><i class="bi bi-exclamation-triangle"></i> Кір.</span>
                             {% endif %}
                             {% if report.notes is not empty %}

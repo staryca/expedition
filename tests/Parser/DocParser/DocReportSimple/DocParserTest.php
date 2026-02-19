@@ -6,7 +6,6 @@ namespace App\Tests\Parser\DocParser\DocReportSimple;
 
 use App\Entity\GeoPoint;
 use App\Entity\Type\ReportBlockType;
-use App\Helper\TextHelper;
 use App\Parser\DocParser;
 use App\Repository\GeoPointRepository;
 use App\Repository\UserRepository;
@@ -29,12 +28,11 @@ class DocParserTest extends TestCase
 
         $this->geoPointRepository = $this->createMock(GeoPointRepository::class);
 
-        $textHelper = new TextHelper();
         $locationService = new LocationService($this->geoPointRepository);
         $personService = new PersonService();
         $userService = new UserService(
             $this->createMock(UserRepository::class),
-            $textHelper,
+            $personService,
             $this->createMock(EntityManager::class),
         );
         $reportService = new ReportService();
