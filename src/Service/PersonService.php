@@ -655,38 +655,65 @@ class PersonService
      * @param string $additionalNotes
      * @param null $isMusician
      * @param int|null $yearReport
+     * @param string|null $separator
      * @return array<InformantDto>
      */
-    public function getInformants(string $content, string $additionalNotes = '', $isMusician = null, ?int $yearReport = null): array
-    {
+    public function getInformants(
+        string $content,
+        string $additionalNotes = '',
+        $isMusician = null,
+        ?int $yearReport = null,
+        ?string $separator = null,
+    ): array {
         // todo: Add to youtube
         $content = str_replace(['і іншыя', 'і інш.', 'і інш'], '', $content);
 
         $informants = [];
-        $hasSemicolon = str_contains($content, ';');
+        $texts = TextHelper::explodeWithBrackets([' + ', ' і '], $content);
+        if (count($texts) > 1) {
+            foreach ($texts as $text) {
+                $informants = array_merge(
+                    $informants,
+                    $this->getInformants($text, $additionalNotes, $isMusician, $yearReport),
+                );
+            }
 
-        $char = $hasSemicolon ? ';' : ',';
-        // A, b  +  C, d => A, b, C, d
-        if (str_contains($content, ' + ')) {
-            $content = str_replace(' + ', $char, $content);
+            return $informants;
         }
+        $content = current($texts);
+        $content = preg_replace('/([А-Я])([а-я]+)19(\d)(\d)/iu', '$1$2 19$3$4', $content);
+        $content = preg_replace('/ з( *)19(\d)(\d)/iu', ' 19$2$3', $content);
 
-        // A, b  і  C, d => A, b, C, d
-        if (str_contains($content, ' і ')) {
-            $content = str_replace(' і ', $char, $content);
+        if (!$separator) {
+            $separator = ';';
+        } elseif ($separator !== ';') {
+            $content = str_replace(';', ',', $content);
         }
 
         $persons = [];
-        $partsBase = explode(';', $content);
+        $partsBase = explode($separator, $content);
         foreach ($partsBase as $partBase) {
+            // Remove 1)  2) ...
+            $num = (count($persons) + 1) . ')';
+            if (str_starts_with($partBase, $num)) {
+                $partBase = trim(substr($partBase, strlen($num)));
+            }
+
             // A, b, c, A, c (text K), A, c   as   A, b, c; A, c (text K); A, c
             $parts = TextHelper::explodeWithBrackets([','], $partBase);
             $name = '';
             foreach ($parts as $part) {
                 [$text] = TextHelper::getNotes($part);
                 $isLocation = LocationService::isLocation($part);
-                if (!$isLocation && ($this->isPersonName($text) || null !== $this->getPersonByFullName($text, $yearReport, true))) {
+                if (
+                    !$isLocation
+                    && ($this->isPersonName($text) || null !== $this->getPersonByFullName($text, $yearReport, true))
+                ) {
                     if ($name !== '') {
+                        if (TextHelper::isShortNames($text) && !str_contains($name, ' ')) { // Name, N.N.
+                            $name .= ' ' . $text;
+                            continue;
+                        }
                         $persons[] = $name;
                     }
                     $name = $part;
@@ -711,8 +738,6 @@ class PersonService
                 $text = mb_substr($text, $pos + 1);
             } else {
                 [$name, $text] = TextHelper::getNotes($text);
-                //$name = trim($text);
-                //$text = '';
             }
             $informant = $this->getPersonByFullName($name, $yearReport, true);
             if (null === $informant) {

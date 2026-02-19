@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Service;
 
+use App\Dto\NameGenderDto;
 use App\Dto\UserRolesDto;
 use App\Entity\Type\UserRoleType;
 use App\Entity\User;
@@ -12,12 +13,12 @@ use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
-class UserService
+readonly class UserService
 {
     public function __construct(
-        private readonly UserRepository $userRepository,
-        private readonly TextHelper $textHelper,
-        private readonly EntityManagerInterface $entityManager,
+        private UserRepository $userRepository,
+        private PersonService $personService,
+        private EntityManagerInterface $entityManager,
     ) {
     }
 
@@ -112,6 +113,40 @@ class UserService
         }
 
         return null;
+    }
+
+    public function createUser(string $fullName): User
+    {
+        [$lastName, $firstName] = $this->getLastAndFirstNames($fullName);
+
+        $user = new User();
+        $user->setFirstName($firstName);
+        $user->setLastName($lastName);
+        $user->setDateJoined(new \DateTime());
+        $user->setActive(false);
+        $user->setRoles('');
+
+        return $user;
+    }
+
+    private function getLastAndFirstNames(string $fullName): array
+    {
+        $dto = new NameGenderDto($fullName);
+        $this->personService->fixNameAndGender($dto);
+
+        [$lastName, $firstName, $secondName] = explode(' ', $dto->getName() . '  ');
+        if (!empty($secondName)) {
+            $firstName .= ' ' . $secondName;
+        }
+
+        return [$lastName, $firstName];
+    }
+
+    public function findByOnlyName(string $fullName): ?User
+    {
+        [$lastname, $firstName] = $this->getLastAndFirstNames($fullName);
+
+        return $this->userRepository->findOneBy(['lastName' => $lastname, 'firstName' => $firstName]);
     }
 
     public function onUserLogged(UserInterface $user): void

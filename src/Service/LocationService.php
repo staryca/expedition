@@ -142,7 +142,6 @@ class LocationService
         return $this->getSearchDto($place, $district, $subDistrict, $region);
     }
 
-    // todo: Add param region
     public function getSearchDto(
         string $place,
         ?string $district = null,
@@ -177,8 +176,8 @@ class LocationService
         }
 
         $place = str_replace(
-            array('и', 'Дя', 'тё', 'Бальшая ', ' е', '  ', "'", '`'),
-            array('і', 'Дзя', 'цё', 'Вялікая ', ' Е', ' ', '’', ''),
+            array('и', 'Дя', 'тё', 'Бальшая ', ' е', '  ', "'", '`', 'ёв'),
+            array('і', 'Дзя', 'цё', 'Вялікая ', ' Е', ' ', '’', '', 'оў'),
             $place
         );
         [$place, $place2] = TextHelper::getNames($place);

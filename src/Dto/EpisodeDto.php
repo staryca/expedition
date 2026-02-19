@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace App\Dto;
 
+use App\Entity\Ritual;
+
 class EpisodeDto
 {
     private int $category;
     private string $text;
     /** @var array<string> $tags */
     public array $tags = [];
+    public ?Ritual $ritual = null;
 
     public function __construct(int $category, string $text)
     {
@@ -37,6 +40,7 @@ class EpisodeDto
         return [
             'category' => $this->category,
             'text' => $this->text,
+            'ritual' => $this->ritual->getName(),
             'tags' => $this->tags,
         ];
     }

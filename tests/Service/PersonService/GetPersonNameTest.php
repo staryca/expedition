@@ -126,7 +126,6 @@ class GetPersonNameTest extends TestCase
         $this->assertEquals(GenderType::MALE, $informant->gender);
         $this->assertEquals('', $informant->notes);
     }
-
     public function testSuccessWithMaybeBirth(): void
     {
         $name = 'Савасцееў Івана Еўдакімавіча каля 100 гадоў';
