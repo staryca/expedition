@@ -144,9 +144,9 @@ readonly class UserService
 
     public function findByOnlyName(string $fullName): ?User
     {
-        [$lastname, $firstName] = $this->getLastAndFirstNames($fullName);
+        [$lastName, $firstName] = $this->getLastAndFirstNames($fullName);
 
-        return $this->userRepository->findOneBy(['lastName' => $lastname, 'firstName' => $firstName]);
+        return $this->userRepository->findOneBy(['lastName' => $lastName, 'firstName' => $firstName]);
     }
 
     public function onUserLogged(UserInterface $user): void
