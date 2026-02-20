@@ -12,6 +12,7 @@ use App\Handler\GeoPointHandler;
 use App\Manager\PersonManager;
 use App\Parser\VopisDetailedParser;
 use App\Repository\InformantRepository;
+use App\Repository\ReportBlockRepository;
 use App\Repository\ReportRepository;
 use App\Service\CategoryService;
 use App\Service\LocationService;
@@ -28,6 +29,7 @@ class ToolsController extends AbstractController
     public function __construct(
         private readonly InformantRepository $informantRepository,
         private readonly ReportRepository $reportRepository,
+        private readonly ReportBlockRepository $reportBlockRepository,
         private readonly GeoPointHandler $geoPointHandler,
         private readonly PersonService $personService,
         private readonly LocationService $locationService,
@@ -162,6 +164,13 @@ class ToolsController extends AbstractController
         $duplicates = $this->personService->getDuplicates($informants);
 
         foreach ($duplicates as $informants) {
+            $linkCompare = $this->generateUrl(
+                'app_import_tools_compare_informants',
+                ['id1' => $informants[0]->getId(), 'id2' => $informants[1]->getId()],
+                UrlGeneratorInterface::ABS_URL
+            );
+            $item['compare'] = '<a target="_blank" href="' . $linkCompare . '">Параўнаць</a>';
+
             $informant = $informants[0];
             $item['name1'] = $this->renderView('part/informant.full.html.twig', ['informant' => $informant]);
 
@@ -171,18 +180,18 @@ class ToolsController extends AbstractController
             $hasShortName = str_contains($informant->getFirstName(), '.');
             $item['duplicate'] = ($item['name1'] === $item['name2'] && !$hasShortName) ? 'yes' : 'no';
 
-            $link = $this->generateUrl(
+            $linkMerge = $this->generateUrl(
                 'app_import_tools_merge_informants',
-                ['id1' => $informants[0]->getId(), 'id2' => $informants[1]->getId()],
+                ['id1' => $informants[0]->getId(), 'id2' => $informants[1]->getId(), 'full' => 0],
                 UrlGeneratorInterface::ABS_URL
             );
-            $item['merge'] = '<a target="_blank" href="' . $link . '">Аб\'яднаць</a>';
+            $item['merge'] = '<a target="_blank" href="' . $linkMerge . '">Аб\'яднаць</a>';
 
             $data[] = $item;
         }
 
         return $this->render('import/show.table.result.html.twig', [
-            'headers' => ['Інфармант 1', 'Інфармант 2', '=', "Аб'яднаць"],
+            'headers' => ['Параўнаць', 'Інфармант 1', 'Інфармант 2', '=', "Аб'яднаць"],
             'data' => $data,
         ]);
     }
@@ -203,24 +212,46 @@ class ToolsController extends AbstractController
             $html2 = $this->renderView('part/informant.full.html.twig', ['informant' => $informant2]);
 
             if ($html1 === $html2) {
-                $result[] = $this->personManager->mergeDuplicates($informant1, $informant2);
+                $result[] = $this->personManager->mergeDuplicates($informant1, $informant2, false);
             }
         }
+
+        $this->entityManager->flush();
 
         return $this->render('import/show.json.result.html.twig', [
             'data' => $result,
         ]);
     }
 
-    #[Route('/import/tools/merge_informants/{id1}/{id2}', name: 'app_import_tools_merge_informants')]
-    public function mergeTwoInformants(int $id1, int $id2): Response
+    #[Route('/import/tools/merge_informants/{id1}/{id2}/{full}', name: 'app_import_tools_merge_informants')]
+    public function mergeTwoInformants(int $id1, int $id2, string $full): Response
     {
         $informant1 = $this->informantRepository->find($id1);
         $informant2 = $this->informantRepository->find($id2);
-        $result = $this->personManager->mergeDuplicates($informant1, $informant2);
+        $isFull = !empty($full);
+        $result = $this->personManager->mergeDuplicates($informant1, $informant2, $isFull);
+
+        $this->entityManager->flush();
 
         return $this->render('import/show.json.result.html.twig', [
             'data' => $result,
+        ]);
+    }
+
+    #[Route('/import/tools/compare_informants/{id1}/{id2}', name: 'app_import_tools_compare_informants')]
+    public function compareTwoInformants(int $id1, int $id2): Response
+    {
+        $informant1 = $this->informantRepository->find($id1);
+        $informant2 = $this->informantRepository->find($id2);
+
+        $blocks1 = $this->reportBlockRepository->findByInformant($informant1);
+        $blocks2 = $this->reportBlockRepository->findByInformant($informant2);
+
+        return $this->render('tools/compare.informants.html.twig', [
+            'informant1' => $informant1,
+            'informant2' => $informant2,
+            'blocks1' => $blocks1,
+            'blocks2' => $blocks2,
         ]);
     }
 

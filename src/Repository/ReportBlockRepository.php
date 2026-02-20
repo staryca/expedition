@@ -83,7 +83,6 @@ class ReportBlockRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('rb')
             ->where(':informant MEMBER OF rb.informants')
             ->setParameter('informant', $informant)
-            ->setMaxResults(1)
             ->getQuery()
             ->getResult()
         ;

@@ -21,9 +21,9 @@ readonly class PersonManager
     ) {
     }
 
-    public function mergeDuplicates(Informant $informant1, Informant $informant2): array
+    public function mergeDuplicates(Informant $informant1, Informant $informant2, bool $isFull): array
     {
-        $changed = $this->mergeInformants($informant1, $informant2);
+        $changed = $this->mergeInformants($informant1, $informant2, $isFull);
         $changed['#id'] = $informant1->getId();
         $changed['organizations'] = [];
         $changed['reports'] = [];
@@ -71,15 +71,13 @@ readonly class PersonManager
 
         $this->entityManager->remove($informant2);
 
-        $this->entityManager->flush();
-
         return $changed;
     }
 
-    public function mergeInformants(Informant &$informant1, Informant $informant2): array
+    public function mergeInformants(Informant &$informant1, Informant $informant2, bool $isFull): array
     {
         try {
-            $result = $this->mergeFullInformants($informant1, $informant2);
+            $result = $this->mergeFullInformants($informant1, $informant2, $isFull);
         } catch (\Exception $e) {
             throw new \Exception(
                 $e->getMessage() . ': #' . $informant1->getId() . ' -> #' . $informant2->getId(),
@@ -90,15 +88,16 @@ readonly class PersonManager
 
         return $result;
     }
-    private function mergeFullInformants(Informant &$informant1, Informant $informant2): array
+    private function mergeFullInformants(Informant &$informant1, Informant $informant2, bool $isFull): array
     {
         $result = [];
 
         if (
             $informant2->getGeoPointBirth()
+            && (!$informant1->getGeoPointBirth() || !$isFull)
             && $informant1->getGeoPointBirth() !== $informant2->getGeoPointBirth()
         ) {
-            if ($informant1->getGeoPointBirth()) {
+            if ($informant1->getGeoPointBirth() && !$isFull) {
                 throw new \Exception('Bad geoPointBirth');
             }
 
@@ -109,9 +108,10 @@ readonly class PersonManager
 
         if (
             $informant2->getGeoPointCurrent()
+            && (!$informant1->getGeoPointCurrent() || !$isFull)
             && $informant1->getGeoPointCurrent() !== $informant2->getGeoPointCurrent()
         ) {
-            if ($informant1->getGeoPointCurrent()) {
+            if ($informant1->getGeoPointCurrent() && !$isFull) {
                 throw new \Exception('Bad getGeoPointCurrent');
             }
 
@@ -124,11 +124,11 @@ readonly class PersonManager
         $name2 = $informant2->getFirstName();
         if ($name1 !== $name2 && mb_strlen($name1) < mb_strlen($name2)) {
             $result['name'] = $name1 . ' -> ' . $name2;
-            $informant1->setFirstName($name1);
+            $informant1->setFirstName($name2);
         }
 
         if ($informant2->hasGender() && $informant1->getGender() !== $informant2->getGender()) {
-            if ($informant1->hasGender()) {
+            if ($informant1->hasGender() && !$isFull) {
                 throw new \Exception('Bad getGender');
             }
 
@@ -136,14 +136,14 @@ readonly class PersonManager
             $informant1->setGender($informant2->getGender());
         }
 
-        $newValue = $this->checkInt($informant1->getYearBirth(), $informant2->getYearBirth(), 'getYearBirth');
+        $newValue = $this->checkInt($informant1->getYearBirth(), $informant2->getYearBirth(), 'getYearBirth', $isFull);
         if (null !== $newValue) {
             $result['yearBirth'] = ($informant1->getYearBirth() ?? '?') . ' -> ' . $newValue;
             $informant1->setYearBirth($newValue);
         }
 
         if ($informant2->getDayBirth() && $informant1->getDayBirth() !== $informant2->getDayBirth()) {
-            if ($informant1->getDayBirth()) {
+            if ($informant1->getDayBirth() && !$isFull) {
                 throw new \Exception('Bad getDayBirth');
             }
 
@@ -152,7 +152,7 @@ readonly class PersonManager
             $informant1->setDayBirth($informant2->getDayBirth());
         }
 
-        $newValue = $this->checkInt($informant1->getYearDied(), $informant2->getYearDied(), 'getYearDied');
+        $newValue = $this->checkInt($informant1->getYearDied(), $informant2->getYearDied(), 'getYearDied', $isFull);
         if (null !== $newValue) {
             $result['yearDied'] = ($informant1->getYearDied() ?? '?') . ' -> ' . $newValue;
             $informant1->setYearDied($newValue);
@@ -166,7 +166,7 @@ readonly class PersonManager
         if (
             !empty($informant2->getNotes())
             && $informant1->getNotes() !== $informant2->getNotes()
-            && !str_contains($informant1->getNotes(), $informant2->getNotes())
+            && !str_contains((string) $informant1->getNotes(), $informant2->getNotes())
         ) {
             $notes = $informant1->getNotes();
             if (empty($notes) || str_contains($informant2->getNotes(), $notes)) {
@@ -178,55 +178,55 @@ readonly class PersonManager
             $informant1->setNotes($notes);
         }
 
-        $newValue = $this->checkInt($informant1->getYearDied(), $informant2->getYearDied(), 'getYearDied');
+        $newValue = $this->checkInt($informant1->getYearDied(), $informant2->getYearDied(), 'getYearDied', $isFull);
         if (null !== $newValue) {
             $result['yearDied'] = ($informant1->getYearDied() ?? '?') . ' -> ' . $newValue;
             $informant1->setYearDied($newValue);
         }
 
-        $newValue = $this->checkString($informant1->getPlaceBirth(), $informant2->getPlaceBirth(), 'getPlaceBirth');
-        if (null !== $newValue) {
+        $newValue = $this->checkString($informant1->getPlaceBirth(), $informant2->getPlaceBirth(), 'getPlaceBirth', $isFull);
+        if (null !== $newValue && null === $informant1->getGeoPointBirth()) {
             $result['placeBirth'] = $informant1->getPlaceBirth() . ' -> ' . $newValue;
             $informant1->setPlaceBirth($newValue);
         }
 
-        $newValue = $this->checkString($informant1->getPlaceCurrent(), $informant2->getPlaceCurrent(), 'getPlaceCurrent');
-        if (null !== $newValue) {
+        $newValue = $this->checkString($informant1->getPlaceCurrent(), $informant2->getPlaceCurrent(), 'getPlaceCurrent', $isFull);
+        if (null !== $newValue && null === $informant1->getGeoPointCurrent()) {
             $result['placeCurrent'] = $informant1->getPlaceCurrent() . ' -> ' . $newValue;
             $informant1->setPlaceCurrent($newValue);
         }
 
-        $newValue = $this->checkString($informant1->getPhone(), $informant2->getPhone(), 'getPhone');
+        $newValue = $this->checkString($informant1->getPhone(), $informant2->getPhone(), 'getPhone', $isFull);
         if (null !== $newValue) {
             $result['phone'] = $informant1->getPhone() . ' -> ' . $newValue;
             $informant1->setPhone($newValue);
         }
 
-        $newValue = $this->checkString($informant1->getAddress(), $informant2->getAddress(), 'getAddress');
+        $newValue = $this->checkString($informant1->getAddress(), $informant2->getAddress(), 'getAddress', $isFull);
         if (null !== $newValue) {
             $result['address'] = $informant1->getAddress() . ' -> ' . $newValue;
             $informant1->setAddress($newValue);
         }
 
-        $newValue = $this->checkInt($informant1->getYearTransfer(), $informant2->getYearTransfer(), 'getYearTransfer');
+        $newValue = $this->checkInt($informant1->getYearTransfer(), $informant2->getYearTransfer(), 'getYearTransfer', $isFull);
         if (null !== $newValue) {
             $result['yearTransfer'] = ($informant1->getYearTransfer() ?? '?') . ' -> ' . $newValue;
             $informant1->setYearTransfer($newValue);
         }
 
-        $newValue = $this->checkString($informant1->getConfession(), $informant2->getConfession(), 'getConfession');
+        $newValue = $this->checkString($informant1->getConfession(), $informant2->getConfession(), 'getConfession', $isFull);
         if (null !== $newValue) {
             $result['confession'] = $informant1->getConfession() . ' -> ' . $newValue;
             $informant1->setConfession($newValue);
         }
 
-        $newValue = $this->checkString($informant1->getPathPhoto(), $informant2->getPathPhoto(), 'getPathPhoto');
+        $newValue = $this->checkString($informant1->getPathPhoto(), $informant2->getPathPhoto(), 'getPathPhoto', $isFull);
         if (null !== $newValue) {
             $result['pathPhoto'] = $informant1->getPathPhoto() . ' -> ' . $newValue;
             $informant1->setPathPhoto($newValue);
         }
 
-        $newValue = $this->checkString($informant1->getUrlPhoto(), $informant2->getUrlPhoto(), 'getUrlPhoto');
+        $newValue = $this->checkString($informant1->getUrlPhoto(), $informant2->getUrlPhoto(), 'getUrlPhoto', $isFull);
         if (null !== $newValue) {
             $result['urlPhoto'] = $informant1->getUrlPhoto() . ' -> ' . $newValue;
             $informant1->setUrlPhoto($newValue);
@@ -236,6 +236,7 @@ readonly class PersonManager
             null !== $informant1->isMusician()
             && null !== $informant2->isMusician()
             && $informant1->isMusician() !== $informant2->isMusician()
+            && !$isFull
         ) {
             throw new \Exception('Bad isMusician');
         }
@@ -247,7 +248,7 @@ readonly class PersonManager
         return $result;
     }
 
-    private function checkString(?string $text1, ?string $text2, string $name): ?string
+    private function checkString(?string $text1, ?string $text2, string $name, bool $isFull): ?string
     {
         if (empty($text2) || $text1 === $text2 || str_contains((string) $text1, $text2)) {
             return null;
@@ -255,12 +256,14 @@ readonly class PersonManager
 
         if (empty($text1) || str_contains($text2, $text1)) {
             return $text2;
-        } else {
+        } elseif (!$isFull) {
             throw new \Exception('Bad ' . $name . ' (' . $text1 . ' -> ' . $text2 . ')');
         }
+
+        return null;
     }
 
-    private function checkInt(?int $value1, ?int $value2, string $name): ?int
+    private function checkInt(?int $value1, ?int $value2, string $name, bool $isFull): ?int
     {
         if (null === $value2 || $value1 === $value2) {
             return null;
@@ -268,12 +271,14 @@ readonly class PersonManager
 
         if (null === $value1) {
             return $value2;
-        } else {
+        } elseif (!$isFull) {
             throw new \Exception('Bad ' . $name . ' (' . $value1 . ' -> ' . $value2 . ')');
         }
+
+        return null;
     }
 
-    private function checkGeoPoint(?GeoPoint $geoPoint1, ?GeoPoint $geoPoint2, string $name): ?GeoPoint
+    private function checkGeoPoint(?GeoPoint $geoPoint1, ?GeoPoint $geoPoint2, string $name, bool $isFull): ?GeoPoint
     {
         if (null === $geoPoint2 || $geoPoint1?->getId() === $geoPoint2->getId()) {
             return null;
@@ -281,10 +286,12 @@ readonly class PersonManager
 
         if (null === $geoPoint1) {
             return $geoPoint2;
-        } else {
+        } elseif (!$isFull) {
             throw new \Exception(
                 'Bad ' . $name . ' (' . $geoPoint1->getMiddleBeName() . ' -> ' . $geoPoint2->getMiddleBeName() . ')'
             );
         }
+
+        return null;
     }
 }
