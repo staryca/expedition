@@ -9,22 +9,22 @@ use App\Entity\Additional\Artist;
 use App\Entity\Additional\FileMarkerAdditional;
 use App\Entity\Category;
 use App\Entity\Dance;
+use App\Entity\District;
 use App\Entity\Expedition;
 use App\Entity\FileMarker;
 use App\Entity\Improvisation;
 use App\Entity\Pack;
-use App\Entity\Region;
 use App\Entity\Ritual;
 use App\Entity\Type\CategoryType;
 use App\Entity\Type\GenderType;
 use App\Handler\VideoKozHandler;
 use App\Repository\CategoryRepository;
 use App\Repository\DanceRepository;
+use App\Repository\DistrictRepository;
 use App\Repository\ExpeditionRepository;
 use App\Repository\FileMarkerRepository;
 use App\Repository\ImprovisationRepository;
 use App\Repository\PackRepository;
-use App\Repository\RegionRepository;
 use App\Repository\ReportRepository;
 use App\Repository\RitualRepository;
 use App\Repository\TraditionRepository;
@@ -54,7 +54,7 @@ class ImportVideoKozController extends AbstractController
         private readonly DanceRepository $danceRepository,
         private readonly ImprovisationRepository $improvisationRepository,
         private readonly PackRepository $packRepository,
-        private readonly RegionRepository $regionRepository,
+        private readonly DistrictRepository $districtRepository,
         private readonly TraditionRepository $traditionRepository,
         private readonly RitualRepository $ritualRepository,
         private readonly MarkerService $markerService,
@@ -516,37 +516,37 @@ class ImportVideoKozController extends AbstractController
             ];
         }
 
-        // Regions
+        // Districts
         $counts = [];
         foreach ($expedition->getReports() as $report) {
             if ($report->getGeoPoint() === null || empty($report->getGeoPoint()->getDistrict())) {
                 continue;
             }
 
-            $region = $report->getGeoPoint()->getDistrict();
+            $district = $report->getGeoPoint()->getDistrict();
             $count = 0;
             foreach ($report->getBlocks() as $block) {
                 $count += $block->getFileMarkers()->count();
             }
-            $counts[$region] = isset($counts[$region]) ? $counts[$region] + $count : $count;
+            $counts[$district] = isset($counts[$district]) ? $counts[$district] + $count : $count;
         }
 
-        $regions = $this->regionRepository->findAll();
-        foreach ($regions as $region) {
-            /** @var Region $region */
-            if ($region->getPlaylist() === null && !isset($counts[$region->getName()])) {
+        $districts = $this->districtRepository->findAll();
+        foreach ($districts as $district) {
+            /** @var District $district */
+            if ($district->getPlaylist() === null && !isset($counts[$district->getName()])) {
                 continue;
             }
 
-            $count = $counts[$region->getName()] ?? 0;
+            $count = $counts[$district->getName()] ?? 0;
             $data[] = [
-                'id' => $region->getId(),
-                'name' => 'G) ' . $region->getName(),
+                'id' => $district->getId(),
+                'name' => 'G) ' . $district->getName(),
                 'count' => $count,
                 'actions' => [
                     'app_import_video_koz_district_update' => 'bi-arrow-clockwise',
                 ],
-                'playlist' => $region->getPlaylist(),
+                'playlist' => $district->getPlaylist(),
             ];
         }
 
@@ -663,14 +663,14 @@ class ImportVideoKozController extends AbstractController
             $this->updateResults($data, $result);
         }
 
-        $regions = $this->regionRepository->findAll();
-        foreach ($regions as $region) {
-            /** @var Region $region */
-            if (empty($region->getPlaylist())) {
+        $districts = $this->districtRepository->findAll();
+        foreach ($districts as $district) {
+            /** @var District $district */
+            if (empty($district->getPlaylist())) {
                 continue;
             }
 
-            $result = $this->updateDistrictItem($expedition, $region);
+            $result = $this->updateDistrictItem($expedition, $district);
             $this->updateResults($data, $result);
         }
 
@@ -864,7 +864,7 @@ class ImportVideoKozController extends AbstractController
     {
         $expedition = $this->getExpedition();
 
-        $district = $this->regionRepository->find($id);
+        $district = $this->districtRepository->find($id);
         if (!$district) {
             throw $this->createNotFoundException('District not found');
         }
@@ -876,7 +876,7 @@ class ImportVideoKozController extends AbstractController
         ]);
     }
 
-    private function updateDistrictItem(Expedition $expedition, Region $district): array
+    private function updateDistrictItem(Expedition $expedition, District $district): array
     {
         $markers = [];
         foreach ($expedition->getReports() as $report) {

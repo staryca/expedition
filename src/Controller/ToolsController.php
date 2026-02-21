@@ -11,6 +11,7 @@ use App\Entity\Type\GenderType;
 use App\Handler\GeoPointHandler;
 use App\Manager\PersonManager;
 use App\Parser\VopisDetailedParser;
+use App\Repository\GeoPointRepository;
 use App\Repository\InformantRepository;
 use App\Repository\ReportBlockRepository;
 use App\Repository\ReportRepository;
@@ -22,6 +23,7 @@ use App\Service\RitualService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 
 class ToolsController extends AbstractController
@@ -30,6 +32,7 @@ class ToolsController extends AbstractController
         private readonly InformantRepository $informantRepository,
         private readonly ReportRepository $reportRepository,
         private readonly ReportBlockRepository $reportBlockRepository,
+        private readonly GeoPointRepository $geoPointRepository,
         private readonly GeoPointHandler $geoPointHandler,
         private readonly PersonService $personService,
         private readonly LocationService $locationService,
@@ -312,10 +315,23 @@ class ToolsController extends AbstractController
 
             $item = [
                 'id' => $report->getId(),
-                'was' => $reportPlace,
-                'now' => $reportPoint?->getFullBeName(true),
+                'was' => $reportPlace . '<br>' . $report->getTextDateAction(),
+                'district' => $dto->district,
             ];
 
+            $variants = [];
+            $geoPoints = $this->locationService->findVariantsBySearchDto($dto);
+            foreach ($geoPoints as $index => $geoPoint) {
+                $html = $this->renderView('tools/part/geopoint.compare.item.html.twig', [
+                    'index' => $index,
+                    'geoPoint' => $geoPoint,
+                    'place' => $reportPlace,
+                ]);
+                $variants[] = $html;
+            }
+            $item['variants'] = implode('<br>', $variants);
+
+            $item['found'] = $reportPoint?->getFullBeName(true);
             if ($reportPoint !== null) {
                 $report->setGeoPoint($reportPoint);
                 $report->setGeoNotes(null);
@@ -329,7 +345,7 @@ class ToolsController extends AbstractController
         $this->entityManager->flush();
 
         return $this->render('import/show.table.result.html.twig', [
-            'headers' => ['Справаздача', 'Лакацыя', 'Знойдзена'],
+            'headers' => ['Справаздача', 'Лакацыя', 'Раён', 'Варыянты', 'Знойдзена'],
             'data' => $data,
         ]);
     }
@@ -495,6 +511,40 @@ class ToolsController extends AbstractController
         return $this->render('import/show.table.result.html.twig', [
             'headers' => ['ID', 'Інфармант', 'Status', 'Place', 'Point'],
             'data' => $data,
+        ]);
+    }
+
+    #[Route('/import/tools/replace_place/{id}/{place}', name: 'app_import_tools_replace_place')]
+    public function replacePlace(int $id, string $place): Response
+    {
+        $place = urldecode($place);
+        if (empty($place)) {
+            throw new NotFoundHttpException('Empty place');
+        }
+
+        $geoPoint = $this->geoPointRepository->find($id);
+        if (empty($geoPoint)) {
+            throw new NotFoundHttpException('Bad geoPoint ID: ' . $id);
+        }
+
+        $reports = $this->reportRepository->findBy(['geoNotes' => $place]);
+
+        $result = ['skip' => [], 'replace' => []];
+        $result['place'] = $place;
+        foreach ($reports as $report) {
+            if ($report->getGeoPoint() && $report->getGeoPoint()->getId() !== $geoPoint->getId()) {
+                $result['skip'][$report->getId()] = $report;
+            } else {
+                $report->setGeoPoint($geoPoint);
+                $report->setGeoNotes(null);
+                $result['replace'][$report->getId()] = $report;
+            }
+        }
+
+        $this->entityManager->flush();
+
+        return $this->render('import/show.json.result.html.twig', [
+            'data' => $result,
         ]);
     }
 }

@@ -12,15 +12,15 @@ use App\Repository\GeoPointRepository;
 
 class LocationService
 {
-    public const DISTRICT = 'раён';
-    public const SUBDISTRICT = 'сельскі Савет';
-    public const SUBDISTRICT_SHORT = 'с/с';
-    public const REGION = 'вобласць';
+    public const string DISTRICT = 'раён';
+    public const string SUBDISTRICT = 'сельскі Савет';
+    public const string SUBDISTRICT_SHORT = 'с/с';
+    public const string REGION = 'вобласць';
 
-    public const POINT_RADIUS = 0.35; // 0.1 = 22km
-    public const POINT_NEIGHBOR = 0.1; // 0.1 = 22km
-    public const POINT_NEAR = 0.18; // 0.1 = 22km
-    public const LAT_LON_RATE = 1.65;
+    public const float POINT_RADIUS = 0.35; // 0.1 = 22km
+    public const float POINT_NEIGHBOR = 0.1; // 0.1 = 22km
+    public const float POINT_NEAR = 0.18; // 0.1 = 22km
+    public const float LAT_LON_RATE = 1.65;
 
     public function __construct(
         private readonly GeoPointRepository $geoPointRepository,
@@ -490,5 +490,56 @@ class LocationService
     public static function getDistance(float $radius): float
     {
         return round(22 * $radius / 0.1);
+    }
+
+    /**
+     * @param GeoPointSearchDto $dto
+     * @return array<GeoPoint>
+     */
+    public function findVariantsBySearchDto(GeoPointSearchDto $dto): array
+    {
+        $name = current($dto->names);
+        if (empty($name)) {
+            return [];
+        }
+
+        $dto->limit = 700; // max 645 in 'Браслаўскі раён'
+        $dto->names = [];
+        $dto->prefixes = [];
+        $dto->subDistrict = null;
+        $points = $this->geoPointRepository->findByNameAndDistrict($dto);
+
+        $scope = 500;
+        $variants = [];
+        foreach ($points as $point) {
+            $index = TextHelper::compareWords($name, $point->getName());
+            if ($index < $scope) {
+                continue;
+            }
+
+            while ($index >= $scope && isset($variants[$index])) {
+                if ($index === 2000) {
+                    $scope = 2000;
+                }
+                $index--;
+            }
+            $variants[$index] = $point;
+
+            if ($scope * 2 <= $index) {
+                $scope = $index / 2;
+            }
+        }
+
+        krsort($variants);
+        $variants = array_slice($variants, 0, 6, true);
+        $max = $scope < 2000 ? key($variants) : 3950;
+
+        foreach ($variants as $index => $point) {
+            if ($index * 2 < $max) {
+                unset($variants[$index]);
+            }
+        }
+
+        return $variants;
     }
 }
