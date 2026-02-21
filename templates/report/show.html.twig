@@ -59,6 +59,11 @@
             {% if report.notes %}
                 <p class="text-bg-secondary">Заметкі: {{ report.notes }}</p>
             {% endif %}
+
+            {% set folder = report.getTempValue('folder') %}
+            {% if folder is not empty %}
+                <p><a target="_blank" href="{{ imef_url }}{{ folder }}">Крыніца</a></p>
+            {% endif %}
         </div>
 
         {% if report.tasks|length %}
@@ -167,6 +172,9 @@
                                     {{ marker.getCategoryName() }}{% if marker.name %}:{% else %}.{% endif %}
                                 {% endif %}
                                 {{ marker.name }}
+                                {% if marker.ritual %}
+                                    <span class="badge text-bg-primary">{{ marker.ritual.name }}</span>
+                                {% endif %}
                                 {% for tag in marker.tags %}
                                     <span class="badge text-bg-secondary">{{ tag.name }}</span>
                                 {% endfor %}

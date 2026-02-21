@@ -16,7 +16,7 @@ use Doctrine\ORM\Mapping as ORM;
 #[ApiResource]
 class Subject
 {
-    public const IS_DIGIT = '+';
+    public const string IS_DIGIT = '+';
 
     #[ORM\Id]
     #[ORM\GeneratedValue]

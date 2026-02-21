@@ -798,6 +798,78 @@ class InformantTest extends TestCase
         $this->assertEquals('в. Мокрава', $informant->locations[0]);
     }
 
+    public function testInformantOnlyOne(): void
+    {
+        $content = 'Антух Франя Іванаўна, з 1932 г.н; 4 класы адукацыі, беларуска, калгасніца';
+
+        $informants = $this->personService->getInformants($content, '', null, null, '|');
+        $this->assertCount(1, $informants);
+
+        $informant = $informants[0];
+        $this->assertEquals('Антух Франя Іванаўна', $informant->name);
+        $this->assertEquals(1932, $informant->birth);
+        $this->assertNull($informant->died);
+        $this->assertEquals(GenderType::FEMALE, $informant->gender);
+        $this->assertEquals('4 класы адукацыі, беларуска, калгасніца', $informant->notes);
+        $this->assertCount(0, $informant->locations);
+    }
+
+    public function testInformantOnlyTwo(): void
+    {
+        $content = '1) Аніскевіч Ксеня Іванаўна, з 1961 г.н; малапісьменна, беларуска, калгасніца;|2) Токма Таццяна Осіпаўна, з 1915 г.н.;малапісьменна, беларуска, калгасніца';
+
+        $informants = $this->personService->getInformants($content, '', null, null, '|');
+        $this->assertCount(2, $informants);
+
+        $informant = $informants[0];
+        $this->assertEquals('Аніскевіч Ксеня Іванаўна', $informant->name);
+        $this->assertEquals(1961, $informant->birth);
+        $this->assertNull($informant->died);
+        $this->assertEquals(GenderType::FEMALE, $informant->gender);
+        $this->assertEquals('малапісьменна, беларуска, калгасніца', $informant->notes);
+        $this->assertCount(0, $informant->locations);
+
+        $informant = $informants[1];
+        $this->assertEquals('Токма Таццяна Осіпаўна', $informant->name);
+        $this->assertEquals(1915, $informant->birth);
+        $this->assertNull($informant->died);
+        $this->assertEquals(GenderType::FEMALE, $informant->gender);
+        $this->assertEquals('малапісьменна, беларуска, калгасніца', $informant->notes);
+        $this->assertCount(0, $informant->locations);
+    }
+
+    public function testInformantWithGluedPrepYear(): void
+    {
+        $content = 'Балаш Марыя Міхайлаўна, з1910 г., беларуска, малапісьменная, былая калгасніца';
+
+        $informants = $this->personService->getInformants($content);
+        $this->assertCount(1, $informants);
+
+        $informant = $informants[0];
+        $this->assertEquals('Балаш Марыя Міхайлаўна', $informant->name);
+        $this->assertEquals(1910, $informant->birth);
+        $this->assertNull($informant->died);
+        $this->assertEquals(GenderType::FEMALE, $informant->gender);
+        $this->assertEquals('беларуска, малапісьменная, былая калгасніца', $informant->notes);
+        $this->assertCount(0, $informant->locations);
+    }
+
+    public function testInformantWithGluedNameYear(): void
+    {
+        $content = 'Дубіна Параскоўя Кірылаўна1916 г.н.';
+
+        $informants = $this->personService->getInformants($content);
+        $this->assertCount(1, $informants);
+
+        $informant = $informants[0];
+        $this->assertEquals('Дубіна Параскоўя Кірылаўна', $informant->name);
+        $this->assertEquals(1916, $informant->birth);
+        $this->assertNull($informant->died);
+        $this->assertEquals(GenderType::FEMALE, $informant->gender);
+        $this->assertEquals('', $informant->notes);
+        $this->assertCount(0, $informant->locations);
+    }
+
     public function testInformantWithBirthAndDeath(): void
     {
         $content = 'Еўдакія Раманаўна Жураўлёва (1928—2012), Ганна Іванаўна Метлянок (1928-2015), Раіса Кубарская (1929)';
@@ -827,6 +899,62 @@ class InformantTest extends TestCase
         $this->assertNull($informant->died);
         $this->assertEquals(GenderType::FEMALE, $informant->gender);
         $this->assertEquals('', $informant->notes);
+        $this->assertCount(0, $informant->locations);
+    }
+
+    public function testInformantWithShortYear(): void
+    {
+        $content = 'Семёнавай,Д.Р., 54 г.';
+
+        $informants = $this->personService->getInformants($content, '', null, 1970);
+        $this->assertCount(1, $informants);
+
+        $informant = $informants[0];
+        $this->assertEquals('Семёнавай Д.Р.', $informant->name);
+        $this->assertEquals(1916, $informant->birth);
+        $this->assertNull($informant->died);
+        $this->assertEquals(GenderType::UNKNOWN, $informant->gender);
+        $this->assertEquals('', $informant->notes);
+        $this->assertCount(0, $informant->locations);
+    }
+
+    public function testInformantsWithShortYear(): void
+    {
+        $content = 'Ядгімава,П.Р., 50 г., і Ядгімаў,М.Я., 64 г.';
+
+        $informants = $this->personService->getInformants($content, '', null, 1980);
+        $this->assertCount(2, $informants);
+
+        $informant = $informants[0];
+        $this->assertEquals('Ядгімава П.Р.', $informant->name);
+        $this->assertEquals(1930, $informant->birth);
+        $this->assertNull($informant->died);
+        $this->assertEquals(GenderType::FEMALE, $informant->gender);
+        $this->assertEquals('', $informant->notes);
+        $this->assertCount(0, $informant->locations);
+
+        $informant = $informants[1];
+        $this->assertEquals('Ядгімаў М.Я.', $informant->name);
+        $this->assertEquals(1916, $informant->birth);
+        $this->assertNull($informant->died);
+        $this->assertEquals(GenderType::MALE, $informant->gender);
+        $this->assertEquals('', $informant->notes);
+        $this->assertCount(0, $informant->locations);
+    }
+
+    public function testInformantWithShortNamesAndNotes(): void
+    {
+        $content = 'Сямёнаў,П.С., цымбаліст.';
+
+        $informants = $this->personService->getInformants($content, '', null, 1970);
+        $this->assertCount(1, $informants);
+
+        $informant = $informants[0];
+        $this->assertEquals('Сямёнаў П.С.', $informant->name);
+        $this->assertNull($informant->birth);
+        $this->assertNull($informant->died);
+        $this->assertEquals(GenderType::UNKNOWN, $informant->gender);
+        $this->assertEquals('цымбаліст.', $informant->notes);
         $this->assertCount(0, $informant->locations);
     }
 }

@@ -81,6 +81,7 @@ class FileMarker
         $fileMarker = new self();
         $fileMarker->setNotes($episode->getText());
         $fileMarker->setCategory($episode->getCategory());
+        $fileMarker->setRitual($episode->ritual);
 
         return $fileMarker;
     }

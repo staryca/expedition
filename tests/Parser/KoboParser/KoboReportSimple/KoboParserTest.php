@@ -7,11 +7,11 @@ namespace App\Tests\Parser\KoboParser\KoboReportSimple;
 use App\Entity\Type\GenderType;
 use App\Entity\Type\InformationType;
 use App\Entity\Type\ReportBlockType;
-use App\Helper\TextHelper;
 use App\Parser\KoboParser;
 use App\Repository\GeoPointRepository;
 use App\Repository\UserRepository;
 use App\Service\LocationService;
+use App\Service\PersonService;
 use App\Service\UserService;
 use Doctrine\ORM\EntityManager;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -28,11 +28,11 @@ class KoboParserTest extends TestCase
 
         $this->geoPointRepository = $this->createMock(GeoPointRepository::class);
 
-        $textHelper = new TextHelper();
         $locationService = new LocationService($this->geoPointRepository);
+        $personService = new PersonService();
         $userService = new UserService(
             $this->createMock(UserRepository::class),
-            $textHelper,
+            $personService,
             $this->createMock(EntityManager::class),
         );
         $this->koboParser = new KoboParser($locationService, $userService);

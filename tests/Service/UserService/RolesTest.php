@@ -6,8 +6,8 @@ namespace App\Tests\Service\UserService;
 
 use App\Entity\Type\UserRoleType;
 use App\Entity\User;
-use App\Helper\TextHelper;
 use App\Repository\UserRepository;
+use App\Service\PersonService;
 use App\Service\UserService;
 use Doctrine\ORM\EntityManager;
 use PHPUnit\Framework\TestCase;
@@ -22,10 +22,10 @@ class RolesTest extends TestCase
         parent::setUp();
 
         $this->userRepository = $this->createMock(UserRepository::class);
-        $textHelper = new TextHelper();
+        $personService = new PersonService();
         $this->userService = new UserService(
             $this->userRepository,
-            $textHelper,
+            $personService,
             $this->createMock(EntityManager::class),
         );
     }

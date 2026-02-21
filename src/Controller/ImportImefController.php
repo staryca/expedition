@@ -47,10 +47,10 @@ class ImportImefController extends AbstractController
     public function save(): Response
     {
         $dtos = $this->imefHandler->check();
-        $reports = $this->imefHandler->saveDtos($dtos);
+        $result = $this->imefHandler->saveDtos($dtos);
 
         return $this->render('import/show.json.result.html.twig', [
-            'data' => $reports,
+            'data' => $result,
         ]);
     }
 }

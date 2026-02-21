@@ -1,0 +1,4 @@
+{{ geoPoint.name() }} ({{ index }}),
+<a href="https://www.openstreetmap.org/node/{{ geoPoint.id }}" target="_blank">OSM</a>
+<small>{{ geoPoint.getFullBeName() }}</small>
+<a href="{{ path('app_import_tools_replace_place', {place: place|url_encode, id: geoPoint.id}) }}" target="_blank">Замяніць</a>

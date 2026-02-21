@@ -10,26 +10,34 @@ use App\Dto\InformantDto;
 use App\Dto\ReportBlockDataDto;
 use App\Dto\ReportDataDto;
 use App\Dto\UserDto;
+use App\Dto\UserRolesDto;
 use App\Entity\Expedition;
 use App\Entity\Report;
 use App\Entity\Type\CategoryType;
 use App\Entity\Type\ReportBlockType;
 use App\Entity\Type\UserRoleType;
+use App\Entity\User;
 use App\Manager\ReportManager;
 use App\Parser\ImefParser;
 use App\Repository\ExpeditionRepository;
+use App\Service\RitualService;
+use App\Service\UserService;
 use Carbon\CarbonImmutable;
 use Doctrine\DBAL\Exception;
+use Doctrine\ORM\EntityManagerInterface;
 
 class ImefHandler
 {
-    private const EXPEDITION_ID = 10; // 10
+    private const int EXPEDITION_ID = 10; // 10
     private ?Expedition $expedition = null;
 
     public function __construct(
         private readonly ImefParser $parser,
+        private readonly RitualService $ritualService,
+        private readonly UserService $userService,
         private readonly ExpeditionRepository $expeditionRepository,
         private readonly ReportManager $reportManager,
+        private readonly EntityManagerInterface $entityManager,
         private readonly string $imefUrl,
     ) {
     }
@@ -50,6 +58,7 @@ class ImefHandler
 
     /**
      * @return array<ImefDto>
+     * @throws \Exception
      */
     public function check(): array
     {
@@ -85,6 +94,9 @@ class ImefHandler
         return array_diff($folders, $importedFolders);
     }
 
+    /**
+     * @throws \Exception
+     */
     public function parsingOneFolder(bool &$previousDateDayMonth, string $folder): array
     {
         $arrContextOptions = array(
@@ -106,9 +118,11 @@ class ImefHandler
     /**
      * @param array<ImefDto> $dtos
      * @return array
+     * @throws \Exception
      */
     public function getViewData(array $dtos): array
     {
+        $folder = '';
         $tagCategory = [];
         $badCategory = [];
         $unknownCategory = [];
@@ -117,7 +131,10 @@ class ImefHandler
         $informantNotes = [];
         $emptyYears = [];
         $badLocations = [];
+        $errorRituals = [];
         foreach ($dtos as $dto) {
+            $folder = $dto->folder;
+
             $tags = implode('#', $dto->tags);
             if ($dto->category !== null) {
                 $dto->content = CategoryType::TYPES[$dto->category] . ' === ' . $dto->content;
@@ -137,6 +154,13 @@ class ImefHandler
             foreach (ImefParser::BAD_TAGS as $tag) {
                 if (str_contains($tags, $tag)) {
                     $badCategory[] = $dto->name;
+                }
+            }
+
+            if (!empty($tags)) {
+                $ritual = $this->ritualService->findRitual($tags);
+                if (!$ritual) {
+                    $errorRituals[] = $tags;
                 }
             }
 
@@ -166,6 +190,7 @@ class ImefHandler
         ksort($badLocations);
 
         $data = [
+            'url' => $this->imefUrl . $folder,
             'items' => $dtos,
             'badCategory' => $badCategory,
             'unknownCategory' => $unknownCategory,
@@ -176,8 +201,21 @@ class ImefHandler
             'badLocations' => $badLocations,
             'tagToCategory' => $tagCategory,
             'tags' => $this->getTagTree($dtos),
-            'reports' => $this->createReportsData($dtos),
+            'errorRituals' => $errorRituals,
         ];
+
+        $reportsData = $this->createReportsData($dtos);
+        $usersNotFound = [];
+        foreach ($dtos as $dto) {
+            foreach ($dto->users as $user) {
+                if ($user->found === false && !in_array($user->name, $usersNotFound, true)) {
+                    $usersNotFound[] = $user->name;
+                }
+            }
+        }
+
+        $data['usersNotFound'] = $usersNotFound;
+        $data['reports'] = $reportsData;
 
         return $data;
     }
@@ -196,6 +234,8 @@ class ImefHandler
         $reportKey = -1;
         $blockKey = -1;
         $episodeKey = -1;
+        /** @var array<string, User> $newUsers */
+        $newUsers = [];
 
         foreach ($dtos as $dto) {
             /* for Report */
@@ -223,9 +263,27 @@ class ImefHandler
                 $reports[$reportKey]->dateAction = $dto->date;
                 $reports[$reportKey]->temp['folder'] = $dto->folder;
 
-                foreach ($dto->users as $user) {
-                    $user->roles = [UserRoleType::ROLE_INTERVIEWER];
-                    $reports[$reportKey]->users[] = $user;
+                foreach ($dto->users as $userDto) {
+                    $user = $this->userService->findByFullName($userDto->name);
+                    if (null === $user) {
+                        $user = $this->userService->findByOnlyName($userDto->name);
+                    }
+                    if (null === $user) {
+                        if (isset($newUsers[$userDto->name])) {
+                            $user = $newUsers[$userDto->name];
+                        } else {
+                            $user = $this->userService->createUser($userDto->name);
+                            $this->entityManager->persist($user);
+                            $newUsers[$userDto->name] = $user;
+                        }
+                    }
+
+                    $userRole = new UserRolesDto();
+                    $userRole->user = $user;
+                    $userRole->roles = [UserRoleType::ROLE_INTERVIEWER];
+                    $reports[$reportKey]->userRoles[] = $userRole;
+
+                    $reports[$reportKey]->users[] = $userDto;
                 }
             }
             if (!isset($reports[$reportKey])) {
@@ -263,6 +321,7 @@ class ImefHandler
 
             $episode = new EpisodeDto($dto->category, $dto->name);
             $episode->tags = $dto->tags;
+            $episode->ritual = $dto->ritual;
             $reports[$reportKey]->blocks[$blockKey]->addEpisode((string) ++$episodeKey, $episode);
         }
 
@@ -278,6 +337,15 @@ class ImefHandler
     public function saveDtos(array $dtos): array
     {
         foreach ($dtos as $dto) {
+            $tags = implode('#', $dto->tags);
+            if (!empty($tags)) {
+                $ritual = $this->ritualService->findRitual($tags);
+                if ($ritual) {
+                    $dto->ritual = $ritual;
+                    $dto->tags = [];
+                }
+            }
+
             foreach ($dto->informants as $informant) {
                 if (count($informant->locations) > 0) {
                     $notes = implode(', ', $informant->locations);
@@ -288,7 +356,17 @@ class ImefHandler
 
         $reportsData = $this->createReportsData($dtos);
 
-        return $this->reportManager->saveSubjects($this->getExpedition(), [], [], $reportsData, []);
+        $reports = $this->reportManager->saveSubjects($this->getExpedition(), [], [], $reportsData, []);
+
+        $locations = [];
+        foreach ($reports as $report) {
+            $locations[] = $report->getMiddleGeoPlace();
+        }
+
+        return [
+            'locations' => $locations,
+            'reports' => $reports,
+        ];
     }
 
     private function getAllImportedFolders(): array

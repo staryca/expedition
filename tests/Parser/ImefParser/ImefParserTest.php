@@ -6,13 +6,10 @@ namespace App\Tests\Parser\ImefParser;
 
 use App\Dto\ImefDto;
 use App\Entity\Type\CategoryType;
-use App\Helper\TextHelper;
 use App\Parser\ImefParser;
 use App\Repository\GeoPointRepository;
-use App\Repository\UserRepository;
 use App\Service\LocationService;
 use App\Service\PersonService;
-use App\Service\UserService;
 use Doctrine\ORM\EntityManager;
 use PHPUnit\Framework\TestCase;
 
@@ -26,16 +23,10 @@ class ImefParserTest extends TestCase
 
         $this->geoPointRepository = $this->createMock(GeoPointRepository::class);
 
-        $textHelper = new TextHelper();
         $locationService = new LocationService($this->geoPointRepository);
         $personService = new PersonService();
-        $userService = new UserService(
-            $this->createMock(UserRepository::class),
-            $textHelper,
-            $this->createMock(EntityManager::class),
-        );
 
-        $this->parser = new ImefParser($locationService, $personService, $userService);
+        $this->parser = new ImefParser($locationService, $personService);
     }
 
     public function testParse(): void

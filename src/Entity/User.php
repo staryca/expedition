@@ -159,7 +159,7 @@ class User implements OAuthAwareUserProviderInterface, UserInterface
 
     public function __toString(): string
     {
-        return sprintf("#%d %s" . $this->id, $this->firstName);
+        return sprintf("#%d %s", $this->id, $this->firstName);
     }
 
     public function loadUserByOAuthUserResponse(UserResponseInterface $response): void
