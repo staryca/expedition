@@ -95,4 +95,19 @@ class InformantRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * @return array<Informant>
+     */
+    public function findByGeoNotes(string $place): array
+    {
+        return $this->createQueryBuilder('i')
+            ->where('i.placeBirth = :place')
+            ->orWhere('i.placeCurrent = :place')
+            ->setParameter('place', $place)
+            ->orderBy('i.firstName', 'ASC')
+            ->getQuery()
+            ->getResult()
+            ;
+    }
 }

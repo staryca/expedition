@@ -68,6 +68,9 @@ class ImefParser
                 if ($date === 'Год') {
                     return;
                 }
+                if (($pos = mb_strpos($date, '-')) !== false) { // 10-20 mmm YYYY
+                    $date = trim(mb_substr($date, $pos + 1));
+                }
                 if ((int) $date >= 1 && (int) $date <= 31) {
                     $parts = explode(' ', $date);
                     if (count($parts) >= 2) {
@@ -147,7 +150,7 @@ class ImefParser
                 $tags = $columns->eq(5)->text();
                 foreach (explode('#', $tags) as $tag) {
                     if (!empty($tag)) {
-                        $dto->tags[] = $tag;
+                        $dto->tags[] = trim($tag);
                     }
                 }
 

@@ -347,7 +347,7 @@ class ImportVideoKozController extends AbstractController
         $data = [];
         $data['id'] = $fileMarker->getAdditionalYoutube();
         try {
-            $response = $this->youtubeService->sheduledInYouTube($fileMarker);
+            $response = $this->youtubeService->scheduledInYouTube($fileMarker);
         } catch (Exception | \Google\Exception $e) {
             $data['error'] = $e->getMessage();
         }
@@ -518,6 +518,7 @@ class ImportVideoKozController extends AbstractController
 
         // Districts
         $counts = [];
+        $showns = [];
         foreach ($expedition->getReports() as $report) {
             if ($report->getGeoPoint() === null || empty($report->getGeoPoint()->getDistrict())) {
                 continue;
@@ -525,10 +526,17 @@ class ImportVideoKozController extends AbstractController
 
             $district = $report->getGeoPoint()->getDistrict();
             $count = 0;
+            $shown = 0;
             foreach ($report->getBlocks() as $block) {
                 $count += $block->getFileMarkers()->count();
+                foreach ($block->getFileMarkers() as $fileMarker) {
+                    if ($fileMarker->getPublishDate()?->isPast()) {
+                        $shown++;
+                    }
+                }
             }
             $counts[$district] = isset($counts[$district]) ? $counts[$district] + $count : $count;
+            $showns[$district] = isset($showns[$district]) ? $showns[$district] + $shown : $shown;
         }
 
         $districts = $this->districtRepository->findAll();
@@ -539,10 +547,11 @@ class ImportVideoKozController extends AbstractController
             }
 
             $count = $counts[$district->getName()] ?? 0;
+            $shown = $showns[$district->getName()] ?? 0;
             $data[] = [
                 'id' => $district->getId(),
                 'name' => 'G) ' . $district->getName(),
-                'count' => $count,
+                'count' => $shown . '/' . $count,
                 'actions' => [
                     'app_import_video_koz_district_update' => 'bi-arrow-clockwise',
                 ],

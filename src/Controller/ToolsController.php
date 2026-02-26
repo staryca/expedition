@@ -364,9 +364,22 @@ class ToolsController extends AbstractController
                 $item = [
                     'id' => $informant->getFirstName(),
                     'was' => $place,
-                    'now' => $point?->getFullBeName(true),
+                    'district' => $dto->district,
                 ];
 
+                $variants = [];
+                $geoPoints = $this->locationService->findVariantsBySearchDto($dto);
+                foreach ($geoPoints as $index => $geoPoint) {
+                    $html = $this->renderView('tools/part/geopoint.compare.item.html.twig', [
+                        'index' => $index,
+                        'geoPoint' => $geoPoint,
+                        'place' => $place,
+                    ]);
+                    $variants[] = $html;
+                }
+                $item['variants'] = implode('<br>', $variants);
+
+                $item['found'] = $point?->getFullBeName(true);
                 if ($point !== null) {
                     $informant->setGeoPointBirth($point);
                     $informant->setPlaceBirth(null);
@@ -385,9 +398,22 @@ class ToolsController extends AbstractController
                 $item = [
                     'id' => $informant->getFirstName(),
                     'was' => $place,
-                    'now' => $point?->getFullBeName(true),
+                    'district' => $dto->district,
                 ];
 
+                $variants = [];
+                $geoPoints = $this->locationService->findVariantsBySearchDto($dto);
+                foreach ($geoPoints as $index => $geoPoint) {
+                    $html = $this->renderView('tools/part/geopoint.compare.item.html.twig', [
+                        'index' => $index,
+                        'geoPoint' => $geoPoint,
+                        'place' => $place,
+                    ]);
+                    $variants[] = $html;
+                }
+                $item['variants'] = implode('<br>', $variants);
+
+                $item['found'] = $point?->getFullBeName(true);
                 if ($point !== null) {
                     $informant->setGeoPointCurrent($point);
                     $informant->setPlaceCurrent(null);
@@ -402,7 +428,7 @@ class ToolsController extends AbstractController
         $this->entityManager->flush();
 
         return $this->render('import/show.table.result.html.twig', [
-            'headers' => ['Інфармант', 'Лакацыя', 'Знойдзена'],
+            'headers' => ['Інфармант', 'Лакацыя', 'Раён', 'Варыянты', 'Знойдзена'],
             'data' => $data,
         ]);
     }
@@ -533,11 +559,33 @@ class ToolsController extends AbstractController
         $result['place'] = $place;
         foreach ($reports as $report) {
             if ($report->getGeoPoint() && $report->getGeoPoint()->getId() !== $geoPoint->getId()) {
-                $result['skip'][$report->getId()] = $report;
+                $result['skip'][] = 'Report #' . $report->getId();
             } else {
                 $report->setGeoPoint($geoPoint);
                 $report->setGeoNotes(null);
-                $result['replace'][$report->getId()] = $report;
+                $result['replace'][] = 'Report #' . $report->getId();
+            }
+        }
+
+        $informants = $this->informantRepository->findByGeoNotes($place);
+        foreach ($informants as $informant) {
+            if ($informant->getPlaceBirth() === $place) {
+                if ($informant->getGeoPointBirth() && $informant->getGeoPointBirth()->getId() !== $geoPoint->getId()) {
+                    $result['skip'][] = 'Informant (birth): ' . $informant->getId();
+                } else {
+                    $informant->setGeoPointBirth($geoPoint);
+                    $informant->setPlaceBirth(null);
+                    $result['replace'][] = 'Informant (birth): ' . $informant->getId();
+                }
+            }
+            if ($informant->getPlaceCurrent() === $place) {
+                if ($informant->getGeoPointCurrent() && $informant->getGeoPointCurrent()->getId() !== $geoPoint->getId()) {
+                    $result['skip'][] = 'Informant (birth): ' . $informant->getId();
+                } else {
+                    $informant->setGeoPointCurrent($geoPoint);
+                    $informant->setPlaceCurrent(null);
+                    $result['replace'][] = 'Informant (current): ' . $informant->getId();
+                }
             }
         }
 
