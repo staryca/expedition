@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use App\Entity\Type\FileType;
 use App\Repository\FileRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -93,6 +94,11 @@ class File
     public function getType(): ?int
     {
         return $this->type;
+    }
+
+    public function isVirtualContent(): bool
+    {
+        return $this->type === FileType::TYPE_VIRTUAL_CONTENT_LIST;
     }
 
     public function setType(int $type): static

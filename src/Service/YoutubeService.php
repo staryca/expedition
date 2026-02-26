@@ -25,7 +25,7 @@ class YoutubeService
     public const int MAX_LENGTH_TITLE = 100;
     public const int MAX_LENGTH_DESCRIPTION = 5000;
     private const int SHORTENER_TRUNCATE = 3;
-    private const int YEAR_START_KOZENKA = 1998;
+    private const int YEAR_START_KOZENKA = 1998; // todo: move to parser
 
     /**
      * Only from 1 expedition!
@@ -256,7 +256,7 @@ class YoutubeService
 
         $texts = $fileMarker->getDecoding();
         if (!empty($texts)) {
-            $parts[] = ($fileMarker->getCategory() === CategoryType::DANCE ? 'Прыпеўкі:' : 'Словы:')
+            $parts[] = ($fileMarker->isCategoryDance() ? 'Прыпеўкі:' : 'Словы:')
                 . (str_contains($texts, "\n") ? '<br>' : ' ')
                 . str_replace("\n", '<br>', $texts);
         }
@@ -654,6 +654,9 @@ class YoutubeService
     public function getMarkerDescription(FileMarker $fileMarker): string
     {
         $localName = $fileMarker->getAdditionalLocalName();
+        if (empty($localName)) {
+            $localName = $fileMarker->getName();
+        }
         $baseName = $fileMarker->getAdditionalDance();
         $danceType = $fileMarker->getAdditionalPack();
         $improvisation = $fileMarker->getAdditionalImprovisation();

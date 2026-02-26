@@ -73,6 +73,6 @@
     {% endfor %}
 {% endif %}
 
-{% if informant.notes %}
-    | <small>{{ informant.notes }}</small>
+{% if informant.getFullNotes() is not empty %}
+    | <small>{{ informant.getFullNotes() }}</small>
 {% endif %}

@@ -24,7 +24,7 @@ class FileMarkerRepository extends ServiceEntityRepository
         parent::__construct($registry, FileMarker::class);
     }
 
-    public function getStatistics(?Expedition $expedition): array
+    public function getStatistics(?Expedition $expedition = null): array
     {
         $qb = $this->createQueryBuilder('fm')
             ->select('COUNT(fm.id) AS cnt', 'fm.category')
