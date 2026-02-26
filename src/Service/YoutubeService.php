@@ -9,6 +9,7 @@ use App\Entity\FileMarker;
 use App\Entity\Type\CategoryType;
 use App\Helper\TextHelper;
 use App\Repository\FileMarkerRepository;
+use App\Repository\UserRepository;
 use Carbon\Carbon;
 use Google\Client;
 use Google\Service\Exception;
@@ -164,7 +165,20 @@ class YoutubeService
             ? $dateActionNotes
             : (empty($year) ? '' : $year . ' годзе.');
         if (!empty($date)) {
-            $part .= $fileMarker->getCategory() !== CategoryType::FILM && ($year > self::YEAR_START_KOZENKA || null === $year)
+            $byKoz = $fileMarker->getCategory() !== CategoryType::FILM && ($year > self::YEAR_START_KOZENKA || null === $year);
+            if ($byKoz) {
+                $hasKoz = false;
+                $userReports = $fileMarker->getReport()->getUserReports();
+                foreach ($userReports as $userReport) {
+                    if ($userReport->getParticipant()->getId() === UserRepository::USER_KOZENKA_ID) {
+                        $hasKoz = true;
+                        break;
+                    }
+                }
+                $byKoz = $hasKoz;
+            }
+
+            $part .= $byKoz
                 ? 'Відэа запісана Козенкам М.А. у ' . $date
                 : 'Відэа запісана ў ' . $date;
         }
@@ -427,7 +441,7 @@ class YoutubeService
      * @throws Exception
      * @throws \Google\Exception
      */
-    public function sheduledInYouTube(FileMarker $fileMarker): mixed
+    public function scheduledInYouTube(FileMarker $fileMarker): mixed
     {
         $youtube = $this->getYoutubeService();
 
@@ -618,7 +632,7 @@ class YoutubeService
             $item->setSnippet($snippet);
 
             try {
-                //$youtube->playlistItems->insert('snippet', $item);
+                $youtube->playlistItems->insert('snippet', $item);
             } catch (Exception $e) {
                 $result['error'] = $e->getMessage();
                 $result['error_video'] = $videoId;
@@ -702,7 +716,7 @@ class YoutubeService
             $text = implode(' ', $texts);
 
             return mb_strtoupper(mb_substr($text, 0, 1)) . mb_substr($text, 1);
-        } elseif ($fileMarker->isCategoryNotOther()) {
+        } elseif ($fileMarker->isCategoryNotOther() && $fileMarker->getCategory() !== CategoryType::CHORUSES) {
             $texts = [];
             $tradition_text = FileMarkerAdditional::getTradition($tradition);
             if (!empty($tradition_text)) {

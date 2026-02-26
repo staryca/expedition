@@ -15,7 +15,7 @@ use Doctrine\ORM\Mapping as ORM;
 class Task
 {
     #[ORM\Id]
-    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
+    #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
 

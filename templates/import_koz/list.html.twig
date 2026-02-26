@@ -23,6 +23,7 @@
         <tr>
             <td>
                 ID: <b>{{ row.id }}</b>
+                (Блок: #{{ row.marker.getReportBlock().id }}, справа #{{ row.marker.getReportBlock().getReport().id }})
                 <br><br>
 
                 Status: <b>{{ row.status|raw }}</b>

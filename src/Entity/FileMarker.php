@@ -79,7 +79,7 @@ class FileMarker
     public static function makeFromEpisode(EpisodeDto $episode): FileMarker
     {
         $fileMarker = new self();
-        $fileMarker->setNotes($episode->getText());
+        $fileMarker->setName($episode->getText());
         $fileMarker->setCategory($episode->getCategory());
         $fileMarker->setRitual($episode->ritual);
 

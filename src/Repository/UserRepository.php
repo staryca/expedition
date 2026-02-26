@@ -13,6 +13,8 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class UserRepository extends ServiceEntityRepository
 {
+    public const int USER_KOZENKA_ID = 6;
+
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, User::class);

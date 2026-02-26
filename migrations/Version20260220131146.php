@@ -26,10 +26,14 @@ final class Version20260220131146 extends AbstractMigration
 
         $this->addSql('INSERT INTO district (id, name, playlist) SELECT id, name, playlist FROM region');
         $this->addSql('TRUNCATE TABLE region');
+
         $regions = $this->getArrayFromFile('src/DataFixtures/regions.csv');
         foreach ($regions as $key => $region) {
             $this->addSql('INSERT INTO region (id, name, playlist) VALUES (' . $key . ', \'' . $region . '\', NULL)');
         }
+
+        $this->addSql('ALTER TABLE pack ALTER id DROP DEFAULT');
+        $this->addSql('ALTER TABLE task ALTER id DROP DEFAULT');
     }
 
     public function down(Schema $schema): void
@@ -37,6 +41,13 @@ final class Version20260220131146 extends AbstractMigration
         // this down() migration is auto-generated, please modify it to your needs
         $this->addSql('DROP SEQUENCE district_id_seq CASCADE');
         $this->addSql('DROP TABLE district');
+
+        $this->addSql('CREATE SEQUENCE task_id_seq');
+        $this->addSql('SELECT setval(\'task_id_seq\', (SELECT MAX(id) FROM task))');
+        $this->addSql('ALTER TABLE task ALTER id SET DEFAULT nextval(\'task_id_seq\')');
+        $this->addSql('CREATE SEQUENCE pack_id_seq');
+        $this->addSql('SELECT setval(\'pack_id_seq\', (SELECT MAX(id) FROM pack))');
+        $this->addSql('ALTER TABLE pack ALTER id SET DEFAULT nextval(\'pack_id_seq\')');
     }
 
     private function getArrayFromFile(string $filename): array
