@@ -7,14 +7,13 @@ namespace App\Service;
 use App\Entity\File;
 use App\Entity\FileMarker;
 use App\Entity\ReportBlock;
-use App\Entity\Type\FileType;
 use App\Entity\Type\TaskStatus;
 use App\Repository\FileMarkerRepository;
 
-class SearchService
+readonly class SearchService
 {
     public function __construct(
-        private readonly FileMarkerRepository $fileMarkerRepository,
+        private FileMarkerRepository $fileMarkerRepository,
     ) {
     }
 
@@ -63,7 +62,7 @@ class SearchService
                 if ($task->getStatus() === TaskStatus::TIP) {
                     $subtext .= 'наводка: ';
                 }
-                $subtext .= trim($task->getContent(), " .,;") . ', ';
+                $subtext .= trim((string) $task->getContent(), " .,;") . ', ';
                 if ($task->getInformant() !== null) {
                     $informant = $task->getInformant();
                     $subtext .= $informant->getInformation() . ', ';
@@ -124,7 +123,7 @@ class SearchService
     {
         $text = '';
 
-        if ($file->getType() === FileType::TYPE_VIRTUAL_CONTENT_LIST) {
+        if ($file->isVirtualContent()) {
             $subtexts = [];
             foreach ($file->getFileMarkers() as $fileMarker) {
                 $texts = [];

@@ -6,6 +6,7 @@ namespace App\Controller;
 
 use App\Handler\SearchHandler;
 use App\Repository\ReportBlockRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -16,6 +17,7 @@ class SearchController extends AbstractController
     public function __construct(
         private readonly SearchHandler $searchHandler,
         private readonly ReportBlockRepository $reportBlockRepository,
+        private readonly EntityManagerInterface $entityManager,
     ) {
     }
 
@@ -55,6 +57,8 @@ class SearchController extends AbstractController
             $blocks++;
         }
         $data['blocks'] = $blocks;
+
+        $this->entityManager->flush();
 
         return $this->render('import/show.json.result.html.twig', [
             'data' => $data,

@@ -498,6 +498,22 @@ class Informant
         return $this;
     }
 
+    public function getFullNotes(): string
+    {
+        $notes = [];
+        if (!empty($this->notes)) {
+            $notes[] = $this->notes;
+        }
+        if (!empty($this->phone)) {
+            $notes[] = $this->phone;
+        }
+        if (!empty($this->address)) {
+            $notes[] = $this->address;
+        }
+
+        return implode('; ', $notes);
+    }
+
     public function __toString(): string
     {
         return $this->getFirstName();

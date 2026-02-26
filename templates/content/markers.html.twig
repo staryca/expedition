@@ -1,0 +1,75 @@
+{% extends 'base.content.html.twig' %}
+
+{% block title %}
+    {{ category }}
+{% endblock %}
+
+{% block body %}
+    <div class="container py-5">
+        <h1 class="h2">{{ category }}</h1>
+        <div class="row">
+            <p><a href="{{ path('content_lists') }}">Усе катэгорыі</a>.</p>
+
+            <table class="table">
+                <thead>
+                <tr>
+                    <th scope="col">Год і месца</th>
+                    <th scope="col">Назва</th>
+                    <th scope="col">Заўвагі</th>
+                </tr>
+                </thead>
+
+                <tbody>
+                {% for marker in markers %}
+                    <tr>
+                        <td>
+                            {% set report = marker.getReport() %}
+                            {% set year = report.getDateActionYear() %}
+                            {% if report.geoPoint %}
+                                {% if year %}{{ year }},{% endif %}
+                                <b>{{ report.geoPoint.getLongBeName() }}</b>
+                                {% if report.geoPoint.district %}
+                                    {{ report.geoPoint.district }}
+                                {% endif %}
+                            {% endif %}
+                        </td>
+                        <td>
+                            {{ marker.name }}
+                            {% for tag in marker.tags %}
+                                <span class="badge text-bg-secondary">{{ tag.name }}</span>
+                            {% endfor %}
+                            <a href="{{ path('content_marker', {id: marker.id}) }}"><i class="bi bi-arrow-right-circle"></i></a>
+                        </td>
+                        <td>
+                            {% if marker.ritual %}
+                                {% for ritual in marker.ritual.getRitualList() %}
+                                    {{- ritual.name -}}
+                                    {% if not loop.last %}<i class="bi bi-arrow-right"></i>{% endif %}
+                                {%- endfor -%}.
+
+                                <br />
+                                {% if marker.notes is not empty %}-----<br />{% endif %}
+                            {% endif %}
+
+                            {{ marker.notes }}
+
+                            {% if marker.decoding %}
+                                <button title="Расшыфроўка" class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ marker.id }}" aria-expanded="false" aria-controls="collapse{{ marker.id }}">
+                                    <i class="bi bi-arrow-down-square-fill"></i>
+                                </button>
+                                <div class="collapse" id="collapse{{ marker.id }}">
+                                    <div class="card card-body">
+                                        {{ marker.decoding|nl2br }}
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+{% endblock %}

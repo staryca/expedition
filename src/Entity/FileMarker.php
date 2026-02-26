@@ -150,6 +150,11 @@ class FileMarker
         return $this->category === CategoryType::QUADRILLE;
     }
 
+    public function isCategorySong(): bool
+    {
+        return $this->category === CategoryType::SONGS;
+    }
+
     public function isCategoryNotOther(): bool
     {
         return $this->category !== CategoryType::OTHER;
@@ -326,13 +331,18 @@ class FileMarker
         return $this;
     }
 
-    public function getReport(): ?Report
+    public function getSomeReportBlock(): ?ReportBlock
     {
         if ($this->reportBlock) {
-            return $this->reportBlock->getReport();
+            return $this->reportBlock;
         }
 
-        return $this->file?->getReportBlock()?->getReport();
+        return $this->file?->getReportBlock();
+    }
+
+    public function getReport(): ?Report
+    {
+        return $this->getSomeReportBlock()?->getReport();
     }
 
     public function getPublish(): ?\DateTime

@@ -9,6 +9,7 @@ Application for importing, viewing and changing of the expedition data.
 1. Run `composer install`
 2. Create database `bin/console doctrine:database:create`
 3. Execute migrations `bin/console doctrine:migrations:migrate`
+4. Add dictionary from https://github.com/staryca/dict_be
 
 ## Updating Entities 
 

@@ -224,7 +224,7 @@ class ReportBlock
     public function getContentFile(): ?File
     {
         foreach ($this->getFiles() as $file) {
-            if ($file->getType() === FileType::TYPE_VIRTUAL_CONTENT_LIST) {
+            if ($file->isVirtualContent()) {
                 return $file;
             }
         }
@@ -240,7 +240,7 @@ class ReportBlock
         $result = new ArrayCollection();
 
         foreach ($this->getFiles() as $file) {
-            if ($file->getType() !== FileType::TYPE_VIRTUAL_CONTENT_LIST) {
+            if (!$file->isVirtualContent()) {
                 $result->add($file);
             }
         }
@@ -253,7 +253,7 @@ class ReportBlock
         $result = [];
 
         foreach ($this->getFiles() as $file) {
-            if ($file->getType() !== FileType::TYPE_VIRTUAL_CONTENT_LIST) {
+            if (!$file->isVirtualContent()) {
                 $result[$file->getType()][] = $file;
             }
         }
