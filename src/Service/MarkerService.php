@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Service;
 
+use App\Entity\Category;
 use App\Entity\Expedition;
 use App\Entity\FileMarker;
 use App\Entity\GeoPoint;
@@ -130,5 +131,27 @@ readonly class MarkerService
         }
 
         return $csv;
+    }
+
+    public function detectCategories(FileMarker $marker): array
+    {
+        $categories = [];
+
+        foreach ($marker->getTags() as $tag) {
+            $category = CategoryType::getCategoryByTags($tag->getName());
+            if ($category !== null) {
+                $categories[$category] = 1;
+            }
+            $category = CategoryType::detectCategory($tag->getName());
+            if ($category !== null) {
+                $categories[$category] = 1;
+            }
+            $category = CategoryType::detectCategoryByName($tag->getName());
+            if ($category !== null) {
+                $categories[$category] = 1;
+            }
+        }
+
+        return array_keys($categories);
     }
 }

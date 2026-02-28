@@ -97,7 +97,7 @@ class CategoryType
         self::QUADRILLE => ['кадрыль'],
         self::CHORUSES => ['прыпеўка'],
         self::SONGS => ['песень', 'песьня', 'песьні'],
-        self::STORY => ['аповеды пра', 'аповед пра', 'аповед', 'размова', 'расказ'],
+        self::STORY => ['аповеды пра', 'аповед пра', 'аповед', 'размова', 'расказ', 'апавяданні'],
         self::ABOUT_DANCES => [
             'згадваньне пра танцы', 'як танцавалі', 'пра танец', 'каманда ў танцах', 'каманды ў танцах'
         ],
@@ -107,6 +107,7 @@ class CategoryType
         self::PAREMIA => [
             'прыкмета', 'прыкметы', 'праклён', 'вітанне', 'вітання', 'афарызм', 'прымаўка', 'прымаўкі',
             'пажаданне', 'пажаданні', 'каламбур', 'тост', 'лічылка', 'лічылкі', 'прыказка', 'прыказкі',
+            'прыгавор', 'прыгаворы', 'дражнілка',
         ],
         self::ABOUT_RECORD => [
             'зьвесткі пра запіс',
@@ -135,7 +136,7 @@ class CategoryType
             'вялікодная', 'піліпаўская', 'калядная', 'раманс', 'масьленыя', 'вясельныя', 'турэмная', 'рамансы',
             'веснавыя', 'лірычныя', 'на сене', 'провады ў армію', 'лірыка', 'хрэсьбінная',
             'у любы час', 'партызанская', 'карагодная', 'рэкруцкая', 'хрэсьбінская', 'летняя', 'касарская',
-            'траецкая', 'сенакосная', 'пазаабрадавая', 'веснавая', 'свадзьбальная', 'жытняя', 'маёвая',
+            'траецкая', 'сенакосная', 'веснавая', 'свадзьбальная', 'жытняя', 'маёвая',
             'аўтарская',
         ],
         self::STORY => [
@@ -205,13 +206,13 @@ class CategoryType
         self::GAME => ['гульні'],
         self::STORY => [
             'размова', 'звычаі', 'апісанні розныя', 'народная проза', 'рэлігійная паэзія', 'сатырычныя',
-            'каляндарная абраднасць і паэзія', 'сямейная абраднасць і паэзія', 'дзіцячы фальклор',
-            'народная драма',
+            'народная драма', 'легенды', 'легенда', 'жарты', 'фальклорная проза', 'страшылкі', 'байкі',
         ],
         self::ABOUT_DANCES =>  ['згадванне пра танцы'],
         self::PAREMIA => [
             'прыкметы', 'праклёны', 'вітання', 'афарызмы', 'прымаўкі', 'выслоўі', 'прыгаворы',
-            'пажаданні', 'каламбуры', 'тосты', 'лічылкі', 'прыказкі', 'забаўлянкі',
+            'пажаданні', 'каламбуры', 'тосты', 'лічылкі', 'прыказкі', 'забаўлянкі', 'дражнілкі',
+            'слоўныя прыгаворы',
         ], // малыя жанры
         self::FAIRY_TALE => ['казка'],
         self::LULLABY => ['калыханкі'],
@@ -434,13 +435,7 @@ class CategoryType
     {
         $tag = mb_strtolower($tag);
 
-        foreach (self::TYPES_BY_TAGS as $type => $tags) {
-            if (in_array($tag, $tags, true)) {
-                return $type;
-            }
-        }
-
-        return null;
+        return array_find_key(self::TYPES_BY_TAGS, fn($tags) => in_array($tag, $tags, true));
     }
 
     public static function detectCategory(string $content, ?string $notes = null, ?int $default = null): ?int
@@ -451,8 +446,26 @@ class CategoryType
         }
 
         $category = self::findId($content, '', false);
-        if ($category === null) {
+        if ($category === null && !empty($notes)) {
             $category = self::findId($notes, '') ?? $default;
+        }
+
+        return $category;
+    }
+
+    public static function detectCategoryByName(string $content): ?int
+    {
+        $category = null;
+        foreach (self::TYPES_MANY as $key => $name) {
+            if (null === $name) {
+                continue;
+            }
+            if (mb_strpos($content, $name) !== false) {
+                if (null !== $category && $category !== $key) {
+                    return null;
+                }
+                $category = $key;
+            }
         }
 
         return $category;

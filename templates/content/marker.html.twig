@@ -156,7 +156,11 @@
         <div class="row" style="width: 560px;">
             {% set youtube = marker.getAdditionalYoutube() %}
             {% if youtube is not empty %}
-                <iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/{{ youtube }}" title="{{ description }}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                {% if marker.isPublished() %}
+                    <iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/{{ youtube }}" title="{{ description }}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                {% else %}
+                    <p><b>Відэа будзе апублікавана {{ marker.getPublishDateText() }}</b>.</p>
+                {% endif %}
             {% endif %}
         </div>
     </div>

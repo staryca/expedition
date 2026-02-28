@@ -360,6 +360,13 @@ class FileMarker
         return $this->publish ? $this->publish->format('d.m.Y') : 'manual';
     }
 
+    public function isPublished(): bool
+    {
+        $date = $this->getPublishDate();
+
+        return $date === null || $date->isPast();
+    }
+
     public function setPublish(?\DateTime $publish): static
     {
         $this->publish = $publish;

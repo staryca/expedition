@@ -1,4 +1,4 @@
-{% extends 'base.html.twig' %}
+{% extends 'base.content.html.twig' %}
 
 {% block title %}
     Інфармацыя па {{ geoPoint.getLongBeName() }}
@@ -10,17 +10,19 @@
             Інфармацыя па
             {{ geoPoint.getLongBeName() }}{% if geoPoint.district %}, {{ geoPoint.district }}{% endif %}
         </h1>
-        <p class="text-start">
-            <small>
-                <a href="{{ path('place_item_near', {id: geoPoint.id}) }}">Вакол гэтага населенага пункта</a>,
-                <a href="{{ path('place_item_near_informants', {id: geoPoint.id}) }}">Інфарманты вакол</a>,
-                <a href="{{ path('place_item_near_informants_export', {id: geoPoint.id}) }}"><i class="bi bi-cloud-arrow-down"></i> Экспарт інфармантаў</a>
-                <a href="{{ path('place_item_near_songs', {id: geoPoint.id}) }}">Песьні вакол</a>,
-                <a href="{{ path('place_item_near_songs_print', {id: geoPoint.id}) }}">Друк песень</a>,
-                <a href="{{ path('place_item_near_songs_export', {id: geoPoint.id}) }}"><i class="bi bi-cloud-arrow-down"></i> Экспарт песень</a>
-                <a href="{{ path('place_item_near_other_export', {id: geoPoint.id}) }}"><i class="bi bi-cloud-arrow-down"></i> Экспарт іншага</a>
-            </small>
-        </p>
+        {% if is_granted('ROLE_USER') %}
+            <p class="text-start">
+                <small>
+                    <a href="{{ path('place_item_near', {id: geoPoint.id}) }}">Вакол гэтага населенага пункта</a>,
+                    <a href="{{ path('place_item_near_informants', {id: geoPoint.id}) }}">Інфарманты вакол</a>,
+                    <a href="{{ path('place_item_near_informants_export', {id: geoPoint.id}) }}"><i class="bi bi-cloud-arrow-down"></i> Экспарт інфармантаў</a>
+                    <a href="{{ path('place_item_near_songs', {id: geoPoint.id}) }}">Песьні вакол</a>,
+                    <a href="{{ path('place_item_near_songs_print', {id: geoPoint.id}) }}">Друк песень</a>,
+                    <a href="{{ path('place_item_near_songs_export', {id: geoPoint.id}) }}"><i class="bi bi-cloud-arrow-down"></i> Экспарт песень</a>
+                    <a href="{{ path('place_item_near_other_export', {id: geoPoint.id}) }}"><i class="bi bi-cloud-arrow-down"></i> Экспарт іншага</a>
+                </small>
+            </p>
+        {% endif %}
         <p class="text-end"><small><a href="{{ path('place_list') }}">Усе лакацыі</a></small></p>
 
         <div class="row mb-3">
