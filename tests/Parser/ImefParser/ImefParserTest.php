@@ -93,7 +93,7 @@ class ImefParserTest extends TestCase
         $this->assertEquals('Да гарэлкі, сваткі, гарэлкі', $dto->name);
         $this->assertCount(2, $dto->tags);
         $this->assertEquals('Сямейная абраднасць і паэзія', $dto->tags[0]);
-        $this->assertEquals(CategoryType::STORY, $dto->category);
+        $this->assertEquals(CategoryType::OTHER, $dto->category);
 
         /** @var ImefDto $dto */
         $dto = array_shift($dtos);
@@ -112,7 +112,7 @@ class ImefParserTest extends TestCase
         $this->assertEquals('Ды я жала, не лягала', $dto->name);
         $this->assertCount(4, $dto->tags);
         $this->assertEquals('Каляндарная абраднасць і паэзія', $dto->tags[0]);
-        $this->assertEquals(CategoryType::STORY, $dto->category);
+        $this->assertEquals(CategoryType::OTHER, $dto->category);
 
         /** @var ImefDto $dto */
         $dto = array_shift($dtos);
@@ -130,7 +130,7 @@ class ImefParserTest extends TestCase
         $this->assertEquals('А пад дубам, дубам ячмень', $dto->name);
         $this->assertCount(2, $dto->tags);
         $this->assertEquals('Каляндарная абраднасць і паэзія', $dto->tags[0]);
-        $this->assertEquals(CategoryType::STORY, $dto->category);
+        $this->assertEquals(CategoryType::OTHER, $dto->category);
 
         /** @var ImefDto $dto */
         $dto = array_shift($dtos);
@@ -195,6 +195,6 @@ class ImefParserTest extends TestCase
         $this->assertEquals('Да расла да цвіла да чарэмуха', $dto->name);
         $this->assertCount(2, $dto->tags);
         $this->assertEquals('Вясна', $dto->tags[1]);
-        $this->assertEquals(CategoryType::STORY, $dto->category);
+        $this->assertEquals(CategoryType::OTHER, $dto->category);
     }
 }

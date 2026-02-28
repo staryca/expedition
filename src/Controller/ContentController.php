@@ -12,7 +12,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
-class MarkerController extends AbstractController
+class ContentController extends AbstractController
 {
     public function __construct(
         private readonly FileMarkerRepository $fileMarkerRepository,
@@ -25,9 +25,14 @@ class MarkerController extends AbstractController
     {
         $statistics = $this->fileMarkerRepository->getStatistics();
 
+        $markers = $this->fileMarkerRepository->getMarkersByPublish(true, 1);
+        $marker = current($markers);
+        $future = $marker ? $this->youtubeService->getTitle($marker) : null;
+
         return $this->render('content/lists.html.twig', [
             'statistics' => $statistics,
             'categories' => CategoryType::getManyNames(),
+            'future' => $future,
         ]);
     }
 
@@ -57,6 +62,24 @@ class MarkerController extends AbstractController
             'category' => CategoryType::getManyOrSingleName($marker->getCategory()),
             'description' => $description,
             'tmkb' => $marker->getAdditionalValue(FileMarkerAdditional::TMKB),
+        ]);
+    }
+
+    #[Route('/content/future', name: 'content_future', methods: ['GET'])]
+    public function future(): Response
+    {
+        $amount = 100;
+        $markers = $this->fileMarkerRepository->getMarkersByPublish(true, $amount);
+
+        $titles = [];
+        foreach ($markers as $key => $marker) {
+            $titles[$key] = $this->youtubeService->getTitle($marker);
+        }
+
+        return $this->render('content/future.html.twig', [
+            'markers' => $markers,
+            'titles' => $titles,
+            'isAll' => count($markers) !== $amount,
         ]);
     }
 }

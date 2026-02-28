@@ -250,4 +250,38 @@ class FileMarkerRepository extends ServiceEntityRepository
 
         return $result;
     }
+
+    /**
+     * @param bool $isFuture
+     * @param int|null $amount
+     * @return array<FileMarker>
+     */
+    public function getMarkersByPublish(bool $isFuture = true, ?int $amount = null): array
+    {
+        $qb = $this->createQueryBuilder('fm');
+
+        $qb
+            ->leftJoin('fm.reportBlock', 'rb')
+            ->leftJoin('fm.file', 'f')
+            ->leftJoin('f.reportBlock', 'rb2')
+            ->leftJoin('rb.report', 'r')
+            ->leftJoin('rb2.report', 'r2')
+            ->leftJoin('r.geoPoint', 'gp')
+            ->leftJoin('r2.geoPoint', 'gp2')
+            ->where('fm.publish = :isFuture')
+            ->orderBy('fm.publish', $isFuture ? 'ASC' : 'DESC')
+            ->addOrderBy('RANDOM()');
+
+        $sign = $isFuture ? '>' : '<';
+        $qb->where('fm.publish ' . $sign . ' :isFuture')
+            ->setParameter('isFuture', Carbon::now());
+
+        if ($amount) {
+            $qb->setMaxResults($amount);
+        }
+
+        return $qb
+            ->getQuery()
+            ->getResult();
+    }
 }

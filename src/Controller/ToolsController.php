@@ -11,6 +11,7 @@ use App\Entity\Type\GenderType;
 use App\Handler\GeoPointHandler;
 use App\Manager\PersonManager;
 use App\Parser\VopisDetailedParser;
+use App\Repository\FileMarkerRepository;
 use App\Repository\GeoPointRepository;
 use App\Repository\InformantRepository;
 use App\Repository\ReportBlockRepository;
@@ -33,6 +34,7 @@ class ToolsController extends AbstractController
         private readonly ReportRepository $reportRepository,
         private readonly ReportBlockRepository $reportBlockRepository,
         private readonly GeoPointRepository $geoPointRepository,
+        private readonly FileMarkerRepository $fileMarkerRepository,
         private readonly GeoPointHandler $geoPointHandler,
         private readonly PersonService $personService,
         private readonly LocationService $locationService,
@@ -593,6 +595,55 @@ class ToolsController extends AbstractController
 
         return $this->render('import/show.json.result.html.twig', [
             'data' => $result,
+        ]);
+    }
+
+    #[Route('/import/tools/replace_marker_category', name: 'app_import_tools_replace_marker_category')]
+    public function replaceMarkerCategory(): Response
+    {
+        $data = [];
+
+        $markers = $this->fileMarkerRepository->findAll();
+        foreach ($markers as $marker) {
+            if ($marker->isCategoryNotOther()) {
+                continue;
+            }
+
+            $file = $marker->getFile();
+            if ($file && $file->isVirtualContent()) {
+                continue;
+            }
+
+            $newCategories = $this->markerService->detectCategories($marker);
+            $newCategory = count($newCategories) === 1 ? current($newCategories) : null;
+
+            $text = '';
+            foreach ($newCategories as $category) {
+                $text .= CategoryType::getSingleName($category) . ', ';
+            }
+
+            $item = [
+                'id' => $marker->getId(),
+                'name' => $marker->getName(),
+                'notes' => $marker->getNotes(),
+                'tags' => implode(', ', $marker->getTagNames()),
+                'category' => $marker->getCategoryName(),
+                'new' => $newCategory ? CategoryType::getSingleName($newCategory) : ('? ' . $text),
+            ];
+
+            if ($newCategory) {
+                $marker->setCategory($newCategory);
+                array_unshift($data, $item);
+            } else {
+                $data[] = $item;
+            }
+        }
+
+        $this->entityManager->flush();
+
+        return $this->render('import/show.table.result.html.twig', [
+            'headers' => ['ID', 'Name', 'Notes', 'Tags', 'Катэгорыя', 'Новая'],
+            'data' => $data,
         ]);
     }
 }
