@@ -79,8 +79,9 @@ class FileMarker
     public static function makeFromEpisode(EpisodeDto $episode): FileMarker
     {
         $fileMarker = new self();
-        $fileMarker->setNotes($episode->getText());
+        $fileMarker->setName($episode->getText());
         $fileMarker->setCategory($episode->getCategory());
+        $fileMarker->setRitual($episode->ritual);
 
         return $fileMarker;
     }
@@ -147,6 +148,11 @@ class FileMarker
     public function isCategoryQuadrille(): bool
     {
         return $this->category === CategoryType::QUADRILLE;
+    }
+
+    public function isCategorySong(): bool
+    {
+        return $this->category === CategoryType::SONGS;
     }
 
     public function isCategoryNotOther(): bool
@@ -325,13 +331,18 @@ class FileMarker
         return $this;
     }
 
-    public function getReport(): ?Report
+    public function getSomeReportBlock(): ?ReportBlock
     {
         if ($this->reportBlock) {
-            return $this->reportBlock->getReport();
+            return $this->reportBlock;
         }
 
-        return $this->file?->getReportBlock()?->getReport();
+        return $this->file?->getReportBlock();
+    }
+
+    public function getReport(): ?Report
+    {
+        return $this->getSomeReportBlock()?->getReport();
     }
 
     public function getPublish(): ?\DateTime
@@ -347,6 +358,13 @@ class FileMarker
     public function getPublishDateText(): string
     {
         return $this->publish ? $this->publish->format('d.m.Y') : 'manual';
+    }
+
+    public function isPublished(): bool
+    {
+        $date = $this->getPublishDate();
+
+        return $date === null || $date->isPast();
     }
 
     public function setPublish(?\DateTime $publish): static

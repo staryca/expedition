@@ -198,7 +198,7 @@ class Informant
     public function getDiedText(): string
     {
         return 'пам' . ($this->gender !== GenderType::FEMALE ? 'ё' : 'е')
-        . 'р' . ($this->gender !== GenderType::UNKNOWN ? '' : '/') . ($this->gender !== GenderType::MALE ? 'ла' : '');
+        . 'р' . ($this->hasGender() ? '' : '/') . ($this->gender !== GenderType::MALE ? 'ла' : '');
     }
 
     public function getYearDied(): ?int
@@ -209,6 +209,9 @@ class Informant
     public function setYearDied(?int $yearDied): static
     {
         $this->yearDied = $yearDied;
+        if (null !== $yearDied) {
+            $this->isDied = true;
+        }
 
         return $this;
     }
@@ -252,6 +255,11 @@ class Informant
     public function getGender(): int
     {
         return $this->gender;
+    }
+
+    public function hasGender(): bool
+    {
+        return $this->gender !== GenderType::UNKNOWN;
     }
 
     public function setGender(int $gender): static
@@ -488,6 +496,22 @@ class Informant
         $this->isMusician = $isMusician;
 
         return $this;
+    }
+
+    public function getFullNotes(): string
+    {
+        $notes = [];
+        if (!empty($this->notes)) {
+            $notes[] = $this->notes;
+        }
+        if (!empty($this->phone)) {
+            $notes[] = $this->phone;
+        }
+        if (!empty($this->address)) {
+            $notes[] = $this->address;
+        }
+
+        return implode('; ', $notes);
     }
 
     public function __toString(): string

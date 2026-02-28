@@ -27,13 +27,11 @@ class GeoPointRepository extends ServiceEntityRepository
      */
     public function findByNameAndDistrict(GeoPointSearchDto $geoPointSearchDto): array
     {
-        if (empty($geoPointSearchDto->names)) {
-            return [];
-        }
-
         $qb = $this->createQueryBuilder('gp');
 
-        if ($geoPointSearchDto->prefixes) {
+        $withEmpty = !empty($geoPointSearchDto->names);
+
+        if ($geoPointSearchDto->names) {
             $qb->andWhere('gp.name IN (:names)')
                 ->setParameter('names', $geoPointSearchDto->names);
         }
@@ -46,26 +44,26 @@ class GeoPointRepository extends ServiceEntityRepository
         if (null !== $geoPointSearchDto->district) {
             if (str_contains($geoPointSearchDto->district, '.')) {
                 $district = str_replace('.', '%', $geoPointSearchDto->district);
-                $exReg = $qb->expr()->orX(
-                    $qb->expr()->like('gp.district', ':district'),
-                    'LENGTH(gp.district) = 0'
-                );
+                $comp = $qb->expr()->like('gp.district', ':district');
             } else {
                 $district = $geoPointSearchDto->district;
-                $exReg = $qb->expr()->orX('gp.district = :district', 'LENGTH(gp.district) = 0');
+                $comp = 'gp.district = :district';
             }
+            $exReg = !$withEmpty ? $comp : $qb->expr()->orX($comp, 'LENGTH(gp.district) = 0');
             $qb->andWhere($exReg)
                 ->setParameter('district', $district);
         }
 
         if (null !== $geoPointSearchDto->subDistrict) {
-            $exReg = $qb->expr()->orX('gp.subdistrict = :subDistrict', 'LENGTH(gp.subdistrict) = 0');
+            $comp = 'gp.subdistrict = :subDistrict';
+            $exReg = !$withEmpty ? $comp : $qb->expr()->orX($comp, 'LENGTH(gp.subdistrict) = 0');
             $qb->andWhere($exReg)
                 ->setParameter('subDistrict', $geoPointSearchDto->subDistrict);
         }
 
         if (null !== $geoPointSearchDto->region) {
-            $exReg = $qb->expr()->orX('gp.region = :region', 'LENGTH(gp.region) = 0');
+            $comp = 'gp.region = :region';
+            $exReg = !$withEmpty ? $comp : $qb->expr()->orX($comp, 'LENGTH(gp.region) = 0');
             $qb->andWhere($exReg)
                 ->setParameter('region', $geoPointSearchDto->region);
         }

@@ -4,12 +4,17 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use ApiPlatform\Metadata\UrlGeneratorInterface;
 use App\Entity\Additional\Musician;
 use App\Entity\Type\CategoryType;
 use App\Entity\Type\GenderType;
 use App\Handler\GeoPointHandler;
+use App\Manager\PersonManager;
 use App\Parser\VopisDetailedParser;
+use App\Repository\FileMarkerRepository;
+use App\Repository\GeoPointRepository;
 use App\Repository\InformantRepository;
+use App\Repository\ReportBlockRepository;
 use App\Repository\ReportRepository;
 use App\Service\CategoryService;
 use App\Service\LocationService;
@@ -19,6 +24,7 @@ use App\Service\RitualService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Attribute\Route;
 
 class ToolsController extends AbstractController
@@ -26,12 +32,16 @@ class ToolsController extends AbstractController
     public function __construct(
         private readonly InformantRepository $informantRepository,
         private readonly ReportRepository $reportRepository,
+        private readonly ReportBlockRepository $reportBlockRepository,
+        private readonly GeoPointRepository $geoPointRepository,
+        private readonly FileMarkerRepository $fileMarkerRepository,
         private readonly GeoPointHandler $geoPointHandler,
         private readonly PersonService $personService,
         private readonly LocationService $locationService,
         private readonly RitualService $ritualService,
         private readonly MarkerService $markerService,
         private readonly CategoryService $categoryService,
+        private readonly PersonManager $personManager,
         private readonly EntityManagerInterface $entityManager,
     ) {
     }
@@ -159,26 +169,94 @@ class ToolsController extends AbstractController
         $duplicates = $this->personService->getDuplicates($informants);
 
         foreach ($duplicates as $informants) {
+            $linkCompare = $this->generateUrl(
+                'app_import_tools_compare_informants',
+                ['id1' => $informants[0]->getId(), 'id2' => $informants[1]->getId()],
+                UrlGeneratorInterface::ABS_URL
+            );
+            $item['compare'] = '<a target="_blank" href="' . $linkCompare . '">Параўнаць</a>';
+
             $informant = $informants[0];
-            $item['name1'] = $informant->getFirstName()
-                . ' (' . GenderType::TYPES_MIDDLE[$informant->getGender()] . ')'
-                . ($informant->getYearBirth() ? ', ' . $informant->getYearBirth() . ' г.н.' : '');
-            $item['birth1'] = $informant->getBirthPlaceBe();
-            $item['current1'] = $informant->getCurrentPlaceBe();
+            $item['name1'] = $this->renderView('part/informant.full.html.twig', ['informant' => $informant]);
 
             $informant = $informants[1];
-            $item['name2'] = $informant->getFirstName()
-                . ' (' . GenderType::TYPES_MIDDLE[$informant->getGender()] . ')'
-                . ($informant->getYearBirth() ? ', ' . $informant->getYearBirth() . ' г.н.' : '');
-            $item['birth2'] = $informant->getBirthPlaceBe();
-            $item['current2'] = $informant->getCurrentPlaceBe();
+            $item['name2'] = $this->renderView('part/informant.full.html.twig', ['informant' => $informant]);
+
+            $hasShortName = str_contains($informant->getFirstName(), '.');
+            $item['duplicate'] = ($item['name1'] === $item['name2'] && !$hasShortName) ? 'yes' : 'no';
+
+            $linkMerge = $this->generateUrl(
+                'app_import_tools_merge_informants',
+                ['id1' => $informants[0]->getId(), 'id2' => $informants[1]->getId(), 'full' => 0],
+                UrlGeneratorInterface::ABS_URL
+            );
+            $item['merge'] = '<a target="_blank" href="' . $linkMerge . '">Аб\'яднаць</a>';
 
             $data[] = $item;
         }
 
         return $this->render('import/show.table.result.html.twig', [
-            'headers' => ['Імя 1', 'Нараджэньне 1', 'Зараз 1', 'Імя 2', 'Нараджэньне 2', 'Зараз 2'],
+            'headers' => ['Параўнаць', 'Інфармант 1', 'Інфармант 2', '=', "Аб'яднаць"],
             'data' => $data,
+        ]);
+    }
+
+    #[Route('/import/tools/merge_duplicate_informants', name: 'app_import_tools_merge_duplicate_informants')]
+    public function mergeDuplicateInformants(): Response
+    {
+        $result = [];
+
+        $informants = $this->informantRepository->findSortedByName();
+        $duplicates = $this->personService->getDuplicates($informants);
+
+        foreach ($duplicates as $informants) {
+            $informant1 = $informants[0];
+            $html1 = $this->renderView('part/informant.full.html.twig', ['informant' => $informant1]);
+
+            $informant2 = $informants[1];
+            $html2 = $this->renderView('part/informant.full.html.twig', ['informant' => $informant2]);
+
+            if ($html1 === $html2) {
+                $result[] = $this->personManager->mergeDuplicates($informant1, $informant2, false);
+            }
+        }
+
+        $this->entityManager->flush();
+
+        return $this->render('import/show.json.result.html.twig', [
+            'data' => $result,
+        ]);
+    }
+
+    #[Route('/import/tools/merge_informants/{id1}/{id2}/{full}', name: 'app_import_tools_merge_informants')]
+    public function mergeTwoInformants(int $id1, int $id2, string $full): Response
+    {
+        $informant1 = $this->informantRepository->find($id1);
+        $informant2 = $this->informantRepository->find($id2);
+        $isFull = !empty($full);
+        $result = $this->personManager->mergeDuplicates($informant1, $informant2, $isFull);
+
+        $this->entityManager->flush();
+
+        return $this->render('import/show.json.result.html.twig', [
+            'data' => $result,
+        ]);
+    }
+
+    #[Route('/import/tools/compare_informants/{id1}/{id2}', name: 'app_import_tools_compare_informants')]
+    public function compareTwoInformants(int $id1, int $id2): Response
+    {
+        $informant1 = $this->informantRepository->find($id1);
+        $informant2 = $this->informantRepository->find($id2);
+
+        $blocks1 = $this->reportBlockRepository->findByInformant($informant1);
+        $blocks2 = $this->reportBlockRepository->findByInformant($informant2);
+
+        return $this->render('tools/compare.informants.html.twig', [
+            'informant1' => $informant1,
+            'informant2' => $informant2,
+            'blocks1' => $blocks1,
+            'blocks2' => $blocks2,
         ]);
     }
 
@@ -239,10 +317,23 @@ class ToolsController extends AbstractController
 
             $item = [
                 'id' => $report->getId(),
-                'was' => $reportPlace,
-                'now' => $reportPoint?->getFullBeName(true),
+                'was' => $reportPlace . '<br>' . $report->getTextDateAction(),
+                'district' => $dto->district,
             ];
 
+            $variants = [];
+            $geoPoints = $this->locationService->findVariantsBySearchDto($dto);
+            foreach ($geoPoints as $index => $geoPoint) {
+                $html = $this->renderView('tools/part/geopoint.compare.item.html.twig', [
+                    'index' => $index,
+                    'geoPoint' => $geoPoint,
+                    'place' => $reportPlace,
+                ]);
+                $variants[] = $html;
+            }
+            $item['variants'] = implode('<br>', $variants);
+
+            $item['found'] = $reportPoint?->getFullBeName(true);
             if ($reportPoint !== null) {
                 $report->setGeoPoint($reportPoint);
                 $report->setGeoNotes(null);
@@ -256,7 +347,7 @@ class ToolsController extends AbstractController
         $this->entityManager->flush();
 
         return $this->render('import/show.table.result.html.twig', [
-            'headers' => ['Справаздача', 'Лакацыя', 'Знойдзена'],
+            'headers' => ['Справаздача', 'Лакацыя', 'Раён', 'Варыянты', 'Знойдзена'],
             'data' => $data,
         ]);
     }
@@ -275,9 +366,22 @@ class ToolsController extends AbstractController
                 $item = [
                     'id' => $informant->getFirstName(),
                     'was' => $place,
-                    'now' => $point?->getFullBeName(true),
+                    'district' => $dto->district,
                 ];
 
+                $variants = [];
+                $geoPoints = $this->locationService->findVariantsBySearchDto($dto);
+                foreach ($geoPoints as $index => $geoPoint) {
+                    $html = $this->renderView('tools/part/geopoint.compare.item.html.twig', [
+                        'index' => $index,
+                        'geoPoint' => $geoPoint,
+                        'place' => $place,
+                    ]);
+                    $variants[] = $html;
+                }
+                $item['variants'] = implode('<br>', $variants);
+
+                $item['found'] = $point?->getFullBeName(true);
                 if ($point !== null) {
                     $informant->setGeoPointBirth($point);
                     $informant->setPlaceBirth(null);
@@ -296,9 +400,22 @@ class ToolsController extends AbstractController
                 $item = [
                     'id' => $informant->getFirstName(),
                     'was' => $place,
-                    'now' => $point?->getFullBeName(true),
+                    'district' => $dto->district,
                 ];
 
+                $variants = [];
+                $geoPoints = $this->locationService->findVariantsBySearchDto($dto);
+                foreach ($geoPoints as $index => $geoPoint) {
+                    $html = $this->renderView('tools/part/geopoint.compare.item.html.twig', [
+                        'index' => $index,
+                        'geoPoint' => $geoPoint,
+                        'place' => $place,
+                    ]);
+                    $variants[] = $html;
+                }
+                $item['variants'] = implode('<br>', $variants);
+
+                $item['found'] = $point?->getFullBeName(true);
                 if ($point !== null) {
                     $informant->setGeoPointCurrent($point);
                     $informant->setPlaceCurrent(null);
@@ -313,7 +430,7 @@ class ToolsController extends AbstractController
         $this->entityManager->flush();
 
         return $this->render('import/show.table.result.html.twig', [
-            'headers' => ['Інфармант', 'Лакацыя', 'Знойдзена'],
+            'headers' => ['Інфармант', 'Лакацыя', 'Раён', 'Варыянты', 'Знойдзена'],
             'data' => $data,
         ]);
     }
@@ -357,6 +474,175 @@ class ToolsController extends AbstractController
 
         return $this->render('import/show.table.result.html.twig', [
             'headers' => ['Id', 'Тып', 'Назва', 'Заўвагі', 'Жанр', 'Тып 2'],
+            'data' => $data,
+        ]);
+    }
+
+    #[Route('/import/tools/correct_informant_places', name: 'app_import_tools_correct_informant_places')]
+    public function correctInformantPlaces(): Response
+    {
+        $data = [];
+
+        $informants = $this->informantRepository->findNotDetectedPoints();
+        foreach ($informants as $informant) {
+            $place = (string) $informant->getPlaceBirth();
+            if (!empty($place) && $informant->getGeoPointBirth()) {
+                $point = $this->locationService->detectLocationByFullPlace($place);
+                if ($point !== null && $informant->getGeoPointBirth()->getId() === $point->getId()) {
+                    $item = [
+                        'id' => $informant->getId(),
+                        'name' => $informant->getFirstName(),
+                        'status' => 'ok',
+                        'place' => $place,
+                        'point' => $informant->getGeoPointBirth()->getFullBeName(true),
+                    ];
+                    $informant->setPlaceBirth(null);
+                } else {
+                    $item = [
+                        'id' => $informant->getId(),
+                        'name' => $informant->getFirstName(),
+                        'status' => 'no',
+                        'place' => $place,
+                        'point' => $informant->getGeoPointBirth()->getFullBeName(true),
+                    ];
+                }
+                $data[] = $item;
+
+                $place = (string) $informant->getPlaceCurrent();
+                if (!empty($place) && $informant->getGeoPointCurrent()) {
+                    $point = $this->locationService->detectLocationByFullPlace($place);
+                    if ($point !== null && $informant->getGeoPointCurrent()->getId() === $point->getId()) {
+                        $item = [
+                            'id' => $informant->getId(),
+                            'name' => $informant->getFirstName(),
+                            'status' => 'ok',
+                            'place' => $place,
+                            'point' => $informant->getGeoPointCurrent()->getFullBeName(true),
+                        ];
+                        $informant->setPlaceCurrent(null);
+                    } else {
+                        $item = [
+                            'id' => $informant->getId(),
+                            'name' => $informant->getFirstName(),
+                            'status' => 'no',
+                            'place' => $place,
+                            'point' => $informant->getGeoPointCurrent()->getFullBeName(true),
+                        ];
+                    }
+                    $data[] = $item;
+                }
+            }
+        }
+
+        $this->entityManager->flush();
+
+        return $this->render('import/show.table.result.html.twig', [
+            'headers' => ['ID', 'Інфармант', 'Status', 'Place', 'Point'],
+            'data' => $data,
+        ]);
+    }
+
+    #[Route('/import/tools/replace_place/{id}/{place}', name: 'app_import_tools_replace_place')]
+    public function replacePlace(int $id, string $place): Response
+    {
+        $place = urldecode($place);
+        if (empty($place)) {
+            throw new NotFoundHttpException('Empty place');
+        }
+
+        $geoPoint = $this->geoPointRepository->find($id);
+        if (empty($geoPoint)) {
+            throw new NotFoundHttpException('Bad geoPoint ID: ' . $id);
+        }
+
+        $reports = $this->reportRepository->findBy(['geoNotes' => $place]);
+
+        $result = ['skip' => [], 'replace' => []];
+        $result['place'] = $place;
+        foreach ($reports as $report) {
+            if ($report->getGeoPoint() && $report->getGeoPoint()->getId() !== $geoPoint->getId()) {
+                $result['skip'][] = 'Report #' . $report->getId();
+            } else {
+                $report->setGeoPoint($geoPoint);
+                $report->setGeoNotes(null);
+                $result['replace'][] = 'Report #' . $report->getId();
+            }
+        }
+
+        $informants = $this->informantRepository->findByGeoNotes($place);
+        foreach ($informants as $informant) {
+            if ($informant->getPlaceBirth() === $place) {
+                if ($informant->getGeoPointBirth() && $informant->getGeoPointBirth()->getId() !== $geoPoint->getId()) {
+                    $result['skip'][] = 'Informant (birth): ' . $informant->getId();
+                } else {
+                    $informant->setGeoPointBirth($geoPoint);
+                    $informant->setPlaceBirth(null);
+                    $result['replace'][] = 'Informant (birth): ' . $informant->getId();
+                }
+            }
+            if ($informant->getPlaceCurrent() === $place) {
+                if ($informant->getGeoPointCurrent() && $informant->getGeoPointCurrent()->getId() !== $geoPoint->getId()) {
+                    $result['skip'][] = 'Informant (birth): ' . $informant->getId();
+                } else {
+                    $informant->setGeoPointCurrent($geoPoint);
+                    $informant->setPlaceCurrent(null);
+                    $result['replace'][] = 'Informant (current): ' . $informant->getId();
+                }
+            }
+        }
+
+        $this->entityManager->flush();
+
+        return $this->render('import/show.json.result.html.twig', [
+            'data' => $result,
+        ]);
+    }
+
+    #[Route('/import/tools/replace_marker_category', name: 'app_import_tools_replace_marker_category')]
+    public function replaceMarkerCategory(): Response
+    {
+        $data = [];
+
+        $markers = $this->fileMarkerRepository->findAll();
+        foreach ($markers as $marker) {
+            if ($marker->isCategoryNotOther()) {
+                continue;
+            }
+
+            $file = $marker->getFile();
+            if ($file && $file->isVirtualContent()) {
+                continue;
+            }
+
+            $newCategories = $this->markerService->detectCategories($marker);
+            $newCategory = count($newCategories) === 1 ? current($newCategories) : null;
+
+            $text = '';
+            foreach ($newCategories as $category) {
+                $text .= CategoryType::getSingleName($category) . ', ';
+            }
+
+            $item = [
+                'id' => $marker->getId(),
+                'name' => $marker->getName(),
+                'notes' => $marker->getNotes(),
+                'tags' => implode(', ', $marker->getTagNames()),
+                'category' => $marker->getCategoryName(),
+                'new' => $newCategory ? CategoryType::getSingleName($newCategory) : ('? ' . $text),
+            ];
+
+            if ($newCategory) {
+                $marker->setCategory($newCategory);
+                array_unshift($data, $item);
+            } else {
+                $data[] = $item;
+            }
+        }
+
+        $this->entityManager->flush();
+
+        return $this->render('import/show.table.result.html.twig', [
+            'headers' => ['ID', 'Name', 'Notes', 'Tags', 'Катэгорыя', 'Новая'],
             'data' => $data,
         ]);
     }

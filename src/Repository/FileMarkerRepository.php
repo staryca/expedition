@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App\Repository;
 
 use App\Dto\LatLonDto;
-use App\Entity\Additional\FileMarkerAdditional;
 use App\Entity\Expedition;
 use App\Entity\FileMarker;
 use App\Entity\GeoPoint;
 use App\Entity\Type\CategoryType;
 use App\Service\LocationService;
+use Carbon\Carbon;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -24,7 +24,7 @@ class FileMarkerRepository extends ServiceEntityRepository
         parent::__construct($registry, FileMarker::class);
     }
 
-    public function getStatistics(?Expedition $expedition): array
+    public function getStatistics(?Expedition $expedition = null): array
     {
         $qb = $this->createQueryBuilder('fm')
             ->select('COUNT(fm.id) AS cnt', 'fm.category')
@@ -55,9 +55,10 @@ class FileMarkerRepository extends ServiceEntityRepository
     /**
      * @param Expedition $expedition
      * @param int|null $category
+     * @param Carbon|null $tillDate
      * @return array<FileMarker>
      */
-    public function getMarkersByExpedition(Expedition $expedition, ?int $category = null): array
+    public function getMarkersByExpedition(Expedition $expedition, ?int $category = null, ?Carbon $tillDate = null): array
     {
         $qb = $this->createQueryBuilder('fm')
             ->leftJoin('fm.reportBlock', 'rb')
@@ -72,6 +73,11 @@ class FileMarkerRepository extends ServiceEntityRepository
         if ($category) {
             $qb->andWhere('fm.category = :category')
                 ->setParameter('category', $category);
+        }
+
+        if ($tillDate) {
+            $qb->andWhere('fm.publish <= :tillDate')
+                ->setParameter('tillDate', $tillDate);
         }
 
         return $qb
@@ -243,5 +249,39 @@ class FileMarkerRepository extends ServiceEntityRepository
         }
 
         return $result;
+    }
+
+    /**
+     * @param bool $isFuture
+     * @param int|null $amount
+     * @return array<FileMarker>
+     */
+    public function getMarkersByPublish(bool $isFuture = true, ?int $amount = null): array
+    {
+        $qb = $this->createQueryBuilder('fm');
+
+        $qb
+            ->leftJoin('fm.reportBlock', 'rb')
+            ->leftJoin('fm.file', 'f')
+            ->leftJoin('f.reportBlock', 'rb2')
+            ->leftJoin('rb.report', 'r')
+            ->leftJoin('rb2.report', 'r2')
+            ->leftJoin('r.geoPoint', 'gp')
+            ->leftJoin('r2.geoPoint', 'gp2')
+            ->where('fm.publish = :isFuture')
+            ->orderBy('fm.publish', $isFuture ? 'ASC' : 'DESC')
+            ->addOrderBy('RANDOM()');
+
+        $sign = $isFuture ? '>' : '<';
+        $qb->where('fm.publish ' . $sign . ' :isFuture')
+            ->setParameter('isFuture', Carbon::now());
+
+        if ($amount) {
+            $qb->setMaxResults($amount);
+        }
+
+        return $qb
+            ->getQuery()
+            ->getResult();
     }
 }

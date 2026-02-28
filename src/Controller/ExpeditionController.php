@@ -224,12 +224,20 @@ class ExpeditionController extends AbstractController
             }
         }
 
+        // Sort by names
+        asort($organizations);
+        $markerGroupsSorted = [];
+        foreach ($organizations as $orgId => $orgName) {
+            $markerGroupsSorted[$orgId] = $markerGroups[$orgId];
+        }
+        unset($markerGroups);
+
         $geoMapData = $this->geoMapManager->getGeoMapDataForOrganizations($expedition);
 
         return $this->render('expedition/organizations.html.twig', [
             'expedition' => $expedition,
             'geoMapData' => $geoMapData,
-            'markerGroups' => $markerGroups,
+            'markerGroups' => $markerGroupsSorted,
             'organizations' => $organizations,
         ]);
     }

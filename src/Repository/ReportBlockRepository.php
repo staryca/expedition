@@ -27,7 +27,7 @@ class ReportBlockRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('rb')
             ->where('rb.searchIndex IS NULL')
             ->orWhere('rb.searchIndex = \'\'')
-            ->setMaxResults(300)
+            ->setMaxResults(500)
             ->getQuery()
             ->getResult()
         ;
@@ -83,7 +83,6 @@ class ReportBlockRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('rb')
             ->where(':informant MEMBER OF rb.informants')
             ->setParameter('informant', $informant)
-            ->setMaxResults(1)
             ->getQuery()
             ->getResult()
         ;

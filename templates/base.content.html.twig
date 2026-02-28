@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="robots" content="noindex, nofollow"/>
+        <title>{% block title %}{% endblock %}</title>
+        <link rel="icon" type="image/png" sizes="192x192" href="{{ asset('android-icon-192x192.png') }}">
+        <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('favicon-32x32.png') }}">
+        <link rel="icon" type="image/png" sizes="96x96" href="{{ asset('favicon-96x96.png') }}">
+
+        {# https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css #}
+        <link href="{{ asset('css/bootstrap.min.css') }}" rel="stylesheet">
+        {# https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css #}
+        <link href="{{ asset('css/bootstrap-icons.min.css') }}" rel="stylesheet">
+
+        {% block stylesheets %}
+        {% endblock %}
+
+        {% block javascripts %}
+        {% endblock %}
+    </head>
+    <body>
+
+        <nav class="navbar navbar-expand-md bg-secondary sticky-top border-bottom d-print-none" data-bs-theme="dark">
+            <div class="container">
+                <a class="navbar-brand d-md-none" href="{{ path('expedition_list') }}">
+                    База экспедыцый
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvas" aria-controls="offcanvas" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvas" aria-labelledby="offcanvasLabel">
+                    <div class="offcanvas-header">
+                        <h5 class="offcanvas-title" id="offcanvasLabel">База экспедыцый</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                    </div>
+                    <div class="offcanvas-body">
+                        <ul class="navbar-nav flex-grow-1 justify-content-between">
+                            <li class="nav-item"><a class="nav-link" href="{{ path('content_lists') }}">
+                                    <i class="bi bi-file-earmark-text"></i> Прагляд</a>
+                            </li>
+                            <li class="nav-item"><a class="nav-link" href="{{ path('place_list') }}">
+                                    <i class="bi bi-geo-alt"></i> Лакацыі</a>
+                            </li>
+                            <li class="nav-item"><a class="nav-link" href="{{ path('app_search') }}">
+                                    <i class="bi bi-search"></i> Пошук</a>
+                            </li>
+                            {% if is_granted('ROLE_USER') %}
+                                <li class="nav-item"><a class="nav-link" href="{{ path('expedition_list') }}">
+                                        <i class="bi bi-music-player"></i> Экспедыцыі</a>
+                                </li>
+                                <li class="nav-item"><a class="nav-link" href="{{ path('report_new_for_active_expedition') }}">
+                                     <i class="bi bi-file-earmark-plus"></i> Дадаць справаздачу</a>
+                                </li>
+                                <li class="nav-item"><a class="nav-link" href="{{ path('app_import_tools_list') }}">Апрацоўка</a></li>
+                            {% endif %}
+                            <li class="nav-item">{% include 'part/auth.html.twig' %}</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        {% block body %}{% endblock %}
+
+        <script src="{{ asset('js/bootstrap.bundle.min.js') }}"></script>
+        <script src="{{ asset('js/choices.min.js') }}"></script>
+        <script>
+            const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+            const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+        </script>
+
+        {% block styles_finish %}{% endblock %}
+    </body>
+</html>

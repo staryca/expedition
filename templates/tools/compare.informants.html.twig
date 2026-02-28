@@ -1,0 +1,45 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+    Параўнаньне інфармантаў
+{% endblock %}
+
+{% block body %}
+    <div class="container-fluid">
+        <table class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th scope="col">Інфармант 1 (#{{ informant1.id }})</th>
+                    <th scope="col">Інфармант 2 (#{{ informant2.id }})</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                <tr>
+                    <td>{% include 'part/informant.full.html.twig' with {'informant': informant1} %}</td>
+                    <td>{% include 'part/informant.full.html.twig' with {'informant': informant2} %}</td>
+                </tr>
+
+                {% if informant1.urlPhoto is not empty or informant2.urlPhoto is not empty %}
+                <tr>
+                    <td>{% include 'part/image.html.twig' with {'url': informant1.urlPhoto} %}</td>
+                    <td>{% include 'part/image.html.twig' with {'url': informant2.urlPhoto} %}</td>
+                </tr>
+                {% endif %}
+
+                <tr>
+                    <td>{% include 'part/informant.reports.html.twig' with {'blocks': blocks1} %}</td>
+                    <td>{% include 'part/informant.reports.html.twig' with {'blocks': blocks2} %}</td>
+                </tr>
+                <tr>
+                    <td><a href="{{ path('app_import_tools_merge_informants', {id1: informant1.id, id2: informant2.id, full: 1}) }}">
+                            Аб'яднаць (галоўны ён)
+                        </a></td>
+                    <td><a href="{{ path('app_import_tools_merge_informants', {id1: informant2.id, id2: informant1.id, full: 1}) }}">
+                            Аб'яднаць (галоўны ён)
+                        </a></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

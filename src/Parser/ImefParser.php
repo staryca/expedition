@@ -16,11 +16,11 @@ use Symfony\Component\DomCrawler\Crawler;
 
 class ImefParser
 {
-    public const BAD_WORDS = [
+    public const array BAD_WORDS = [
         'сталін', 'крым', 'немцы', 'немец', 'гітлер', 'берлін', 'брыгадзір', 'фашыст', 'мінск', 'эсэс', 'паліцай', 'фрыц',
         'вайна', 'партызан', 'ленін', 'нямецк', 'штаб', 'кацюша', 'эшалон', 'германск', 'фронт',
     ];
-    public const BAD_TAGS = ['ваенная песня', 'салдацкая песня', 'рэвалюцыйная песня'];
+    public const array BAD_TAGS = ['ваенная песня', 'салдацкая песня', 'рэвалюцыйная песня'];
 
     public function __construct(
         private readonly LocationService $locationService,
@@ -67,6 +67,9 @@ class ImefParser
                 $date = TextHelper::cleanManySpaces($columns->eq(0)->text());
                 if ($date === 'Год') {
                     return;
+                }
+                if (($pos = mb_strpos($date, '-')) !== false) { // 10-20 mmm YYYY
+                    $date = trim(mb_substr($date, $pos + 1));
                 }
                 if ((int) $date >= 1 && (int) $date <= 31) {
                     $parts = explode(' ', $date);
@@ -118,7 +121,8 @@ class ImefParser
 
                 $users = $columns->eq(1)->text();
                 foreach (explode(';', $users) as $user) {
-                    $dto->users[] = new UserDto($user);
+                    $userDto = new UserDto($user);
+                    $dto->users[] = $userDto;
                 }
 
                 $place = $columns->eq(2)->text();
@@ -136,7 +140,8 @@ class ImefParser
                     $informants,
                     '',
                     null,
-                    ($dto->date ? $dto->date->year : null),
+                    $dto->date?->year,
+                    '|'
                 );
 
                 $name = $columns->eq(4)->text();
@@ -145,7 +150,7 @@ class ImefParser
                 $tags = $columns->eq(5)->text();
                 foreach (explode('#', $tags) as $tag) {
                     if (!empty($tag)) {
-                        $dto->tags[] = $tag;
+                        $dto->tags[] = trim($tag);
                     }
                 }
 

@@ -19,6 +19,7 @@ class TextHelper
         return trim($string);
     }
 
+    /* Replace "abc def" to "Abc Def" */
     public static function lettersToUpper(string $text): string
     {
         $result = [];
@@ -31,10 +32,16 @@ class TextHelper
         return implode(' ', $result);
     }
 
+    /* Replace "aBc DeF" to "Abc def" */
+    public static function letterToUpper(string $text): string
+    {
+        return mb_strtoupper(mb_substr($text, 0, 1)) . mb_strtolower(mb_substr($text, 1));
+    }
+
     /* Replace AbcdeF to Abcdef */
     public static function fixName(string $text): string
     {
-        $name = mb_strtoupper(mb_substr($text, 0, 1)) . mb_strtolower(mb_substr($text, 1));
+        $name = self::letterToUpper($text);
         $nameWithLast = mb_substr($name, 0, -1) . mb_strtoupper(mb_substr($name, -1));
 
         return $nameWithLast === $text ? $name : $text;
@@ -278,5 +285,42 @@ class TextHelper
         }
 
         return $text;
+    }
+
+    public static function compareWords(string $word1, string $word2): int
+    {
+        $len1 = mb_strlen($word1);
+        $len2 = mb_strlen($word2);
+        if ($len1 === 0 || $len2 === 0) {
+            return 0;
+        }
+
+        $letters1 = mb_str_split($word1);
+        $letters2 = mb_str_split($word2);
+
+        $result = 0;
+        $diff = str_ireplace($letters1, "", $word2);
+        $result += 500 * ($len2 - mb_strlen($diff)) / $len2;
+
+        $diff = str_ireplace($letters2, "", $word1);
+        $result += 500 * ($len1 - mb_strlen($diff)) / $len1;
+
+        $count = 0;
+        for ($i = 0; $i < min($len1, $len2); $i++) {
+            if ($letters1[$i] === $letters2[$i]) {
+                $count++;
+            }
+        }
+        $result += 500 * $count / max($len1, $len2);
+
+        $count = 0;
+        for ($i = 0; $i < min($len1, $len2); $i++) {
+            if ($letters1[$len1 - $i - 1] === $letters2[$len2 - $i - 1]) {
+                $count++;
+            }
+        }
+        $result += 500 * $count / max($len1, $len2);
+
+        return (int) round($result);
     }
 }

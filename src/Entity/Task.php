@@ -15,7 +15,7 @@ use Doctrine\ORM\Mapping as ORM;
 class Task
 {
     #[ORM\Id]
-    #[ORM\GeneratedValue(strategy: 'IDENTITY')]
+    #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
 
@@ -112,5 +112,10 @@ class Task
     public function getFollowReport(): ?Report
     {
         return $this->report ?? $this->reportBlock->getReport();
+    }
+
+    public function __toString(): string
+    {
+        return trim('#' . $this->id . ' ' . $this->getContent());
     }
 }

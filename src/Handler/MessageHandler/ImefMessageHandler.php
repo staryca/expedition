@@ -28,6 +28,10 @@ class ImefMessageHandler
 
         $reports = $this->handler->saveDtos($dtos);
 
-        $this->logger->info('Reports saved: ' . count($reports));
+        $this->logger->info('Reports saved: ' . count($reports['reports']));
+        if (count($reports['reports']) > 0) {
+            $report = current($reports['reports']);
+            $this->logger->info('New report #' . $report->getId());
+        }
     }
 }

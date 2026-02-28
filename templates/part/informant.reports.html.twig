@@ -1,0 +1,67 @@
+{% if blocks is empty %}
+    няма блокаў
+{% endif %}
+
+{% for key, block in blocks %}
+    {% set report = block.report %}
+    {{ key+1 }}) <b>#{{ block.id }}</b>, {{ report.expedition.name }}: {{ report.getTextDateAction() }}
+    {% if report.geoPoint %}
+        <b>{{ report.geoPoint.getLongBeName() }}</b>
+        {% if report.geoPoint.district %}
+            ({{ report.geoPoint.district }} )
+        {% endif %}
+    {% else %}
+        <b>{{ report.geoNotes }}</b>
+        {% if report.geoNotes is empty %}
+            <span class="text-danger"><i class="bi bi-exclamation-triangle"></i> Няма лакацыі!</span>
+        {% endif %}
+    {% endif %}
+    <small>
+        {% for userReport in report.getUserReports() %}
+            {{ userReport.getRoleName() }}: {{ userReport.participant.lastName }}
+            {{ userReport.participant.firstName }}{% if not loop.last %},{% endif %}
+        {% endfor %}
+    </small>
+    <br>
+    <p class="h4">Блок: {{ block.getTypeCorrectName() }}</p>
+    {% if block.organization %}
+        <p>
+            Арганізацыя:
+            {% include 'part/organization.full.html.twig' with {'organization': block.organization, 'isLink' : false} %}
+        </p>
+    {% endif %}
+    {% if block.informants|length %}
+        <ul>Інфарманты:
+            {% for informant in block.informants %}
+                <li>
+                    {% include 'part/informant.full.html.twig'
+                        with {'informant': informant, 'geoPoint': report.geoPoint, 'isLink' : false} %}
+                </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+    {% if block.description %}
+        <p>{{ block.description|nl2br }}</p>
+    {% endif %}
+    {% if block.getContentFile() %}
+        <h5>Змест</h5>
+        <ul class="list-group">
+            {% for marker in block.getContentFile().fileMarkers %}
+                <li class="list-group-item">
+                    {% if marker.isCategoryNotOther() %}
+                        {{ marker.getCategoryName() }}{% if marker.name %}:{% else %}.{% endif %}
+                    {% endif %}
+                    {{ marker.name }}
+                    {% if marker.ritual %}
+                        <span class="badge text-bg-primary">{{ marker.ritual.name }}</span>
+                    {% endif %}
+                    {% for tag in marker.tags %}
+                        <span class="badge text-bg-secondary">{{ tag.name }}</span>
+                    {% endfor %}
+                    <p class="fw-light">{{ marker.notes|nl2br }}</p>
+                </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+    <hr>
+{% endfor %}

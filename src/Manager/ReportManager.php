@@ -743,7 +743,6 @@ class ReportManager
 
             $this->entityManager->flush();
             $this->entityManager->getConnection()->commit();
-            $this->entityManager->clear();
         } catch (\Exception $e) {
             if ($this->entityManager->isOpen()) {
                 $this->entityManager->getConnection()->rollBack();

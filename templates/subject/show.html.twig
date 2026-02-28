@@ -37,12 +37,7 @@
                                 <tbody>
 
                                 {% for marker in file.fileMarkers %}
-                                    {% set reportBlock = null %}
-                                    {% if marker.reportBlock %}
-                                        {% set reportBlock = marker.reportBlock %}
-                                    {% elseif file.reportBlock %}
-                                        {% set reportBlock = file.reportBlock %}
-                                    {% endif %}
+                                    {% set reportBlock = marker.getSomeReportBlock() %}
 
                                     {% if reportBlock %}
                                         {% set reportPlace = reportBlock.getReport().getGeoPlace() %}

@@ -1,0 +1,30 @@
+{% extends 'base.content.html.twig' %}
+
+{% block title %}
+    Прагляд вынікаў экспедыцый
+{% endblock %}
+
+{% block body %}
+    <div class="container py-5">
+        {% if future %}
+            <p>Чакайце ў бліжэйшы час <b>{{ future }}</b> і яшчэ <a href="{{ path('content_future') }}">шмат відэа</a>.</p>
+        {% endif %}
+
+        <h1 class="h2">Катэгорыі</h1>
+        <div class="row">
+            {% set all = 0 %}
+            {% for category, count in statistics %}
+                <div class="card" style="width: 18rem;">
+                    <div class="card-body">
+                        {% set link = path('content_category', {category: category}) %}
+                        <a href="{{ link }}">{{ categories[category]|capitalize }}</a> ({{ count }})
+                        {% set all = all + count %}
+                    </div>
+                </div>
+            {% endfor %}
+            {% if all > 0 %}
+                <p>Усяго: {{ all }}</p>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

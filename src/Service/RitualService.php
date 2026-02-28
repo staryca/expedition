@@ -51,7 +51,7 @@ class RitualService
             $this->rituals = $this->getRitualAll();
         }
 
-        $ritualName = trim($ritualName, "#\t\n\r\0\x0B");
+        $ritualName = trim($ritualName, " #\t\n\r\0\x0B");
         $parts = explode('#', $ritualName);
         $last = array_pop($parts);
 

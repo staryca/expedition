@@ -31,10 +31,9 @@ use League\Csv\InvalidArgument;
 
 class VideoKozHandler
 {
-    private const int USER_LEADER_ID = 6; // Kozienka
-    private const int AMOUNT_FIRST_VIDEOS = 100;
-    private const int AMOUNT_PER_DAY = 5;
-    private const string PRESENTATION_DATE = '2026-02-14';
+    private const int AMOUNT_FIRST_VIDEOS = 0;
+    private const int AMOUNT_PER_DAY = 0;
+    private const string PUBLISH_DATE = '2026-02-14';
 
     public function __construct(
         private readonly VideoKozParser $parser,
@@ -167,7 +166,7 @@ class VideoKozHandler
      */
     public function createReportsData(array &$files): array
     {
-        $user = $this->userRepository->find(self::USER_LEADER_ID);
+        $user = $this->userRepository->find(UserRepository::USER_KOZENKA_ID);
 
         /** @var array<ReportDataDto> $reports */
         $reports = [];
@@ -344,7 +343,7 @@ class VideoKozHandler
 
         $updated = 0;
         $active = 0;
-        $sheduled = 0;
+        $scheduled = 0;
         $all = 0;
         foreach ($markers as $fileMarker) {
             $all++;
@@ -355,12 +354,12 @@ class VideoKozHandler
                 $active++;
             }
             if ((int)$fileMarker->getAdditionalValue(FileMarkerAdditional::STATUS_SHEDULED) > 0) {
-                $sheduled++;
+                $scheduled++;
             }
         }
 
         $item['stat'] = '<i class="bi bi-arrow-clockwise"></i> / <i class="bi bi-eye-fill"></i> / <i class="bi bi-stopwatch"></i> / all<br>'
-            . $updated . ' / ' . $active . ' / ' . $sheduled . ' / ' . $all;
+            . $updated . ' / ' . $active . ' / ' . $scheduled . ' / ' . $all;
         $data[0] = $item;
 
         $keyWarningDesc = $keyWarningTitle = $keyOk = 1;
@@ -394,6 +393,7 @@ class VideoKozHandler
                 : '-';
 
             $item = [];
+            $item['marker'] = $fileMarker;
             $item['id'] = $fileMarker->getId();
             $item['status'] = implode(' / ', $statuses);
             $item['number'] = $fileMarker->getAdditionalNumber();
@@ -419,12 +419,12 @@ class VideoKozHandler
         }
 
         $count = 0;
-        $date = Carbon::parse(self::PRESENTATION_DATE);
+        $date = Carbon::parse(self::PUBLISH_DATE);
         $markers = $this->fileMarkerRepository->getMarkersWithFullObjects($expedition, [], true);
         foreach ($markers as $fileMarker) {
             if ($count < self::AMOUNT_FIRST_VIDEOS) {
                 $fileMarker->setPublish(null);
-            } else {
+            } elseif (self::AMOUNT_PER_DAY > 0) {
                 $num = ($count - self::AMOUNT_FIRST_VIDEOS) % self::AMOUNT_PER_DAY;
                 if ($num === 0) {
                     $date->addDay();
@@ -438,7 +438,7 @@ class VideoKozHandler
             'amount' => $count,
             'manual' => self::AMOUNT_FIRST_VIDEOS,
             'per_day' => self::AMOUNT_PER_DAY,
-            'start' => self::PRESENTATION_DATE,
+            'start' => self::PUBLISH_DATE,
             'end' => $date->format('Y-m-d'),
         ];
     }

@@ -6,36 +6,25 @@ namespace App\Tests\Parser\ImefParser;
 
 use App\Dto\ImefDto;
 use App\Entity\Type\CategoryType;
-use App\Helper\TextHelper;
 use App\Parser\ImefParser;
 use App\Repository\GeoPointRepository;
-use App\Repository\UserRepository;
 use App\Service\LocationService;
 use App\Service\PersonService;
-use App\Service\UserService;
-use Doctrine\ORM\EntityManager;
 use PHPUnit\Framework\TestCase;
 
 class ImefParserTest extends TestCase
 {
     private readonly ImefParser $parser;
-    private readonly GeoPointRepository $geoPointRepository;
 
     public function setUp(): void
     {
 
-        $this->geoPointRepository = $this->createMock(GeoPointRepository::class);
+        $geoPointRepository = $this->createMock(GeoPointRepository::class);
 
-        $textHelper = new TextHelper();
-        $locationService = new LocationService($this->geoPointRepository);
+        $locationService = new LocationService($geoPointRepository);
         $personService = new PersonService();
-        $userService = new UserService(
-            $this->createMock(UserRepository::class),
-            $textHelper,
-            $this->createMock(EntityManager::class),
-        );
 
-        $this->parser = new ImefParser($locationService, $personService, $userService);
+        $this->parser = new ImefParser($locationService, $personService);
     }
 
     public function testParse(): void
@@ -104,7 +93,7 @@ class ImefParserTest extends TestCase
         $this->assertEquals('Да гарэлкі, сваткі, гарэлкі', $dto->name);
         $this->assertCount(2, $dto->tags);
         $this->assertEquals('Сямейная абраднасць і паэзія', $dto->tags[0]);
-        $this->assertEquals(CategoryType::STORY, $dto->category);
+        $this->assertEquals(CategoryType::OTHER, $dto->category);
 
         /** @var ImefDto $dto */
         $dto = array_shift($dtos);
@@ -123,7 +112,7 @@ class ImefParserTest extends TestCase
         $this->assertEquals('Ды я жала, не лягала', $dto->name);
         $this->assertCount(4, $dto->tags);
         $this->assertEquals('Каляндарная абраднасць і паэзія', $dto->tags[0]);
-        $this->assertEquals(CategoryType::STORY, $dto->category);
+        $this->assertEquals(CategoryType::OTHER, $dto->category);
 
         /** @var ImefDto $dto */
         $dto = array_shift($dtos);
@@ -141,7 +130,7 @@ class ImefParserTest extends TestCase
         $this->assertEquals('А пад дубам, дубам ячмень', $dto->name);
         $this->assertCount(2, $dto->tags);
         $this->assertEquals('Каляндарная абраднасць і паэзія', $dto->tags[0]);
-        $this->assertEquals(CategoryType::STORY, $dto->category);
+        $this->assertEquals(CategoryType::OTHER, $dto->category);
 
         /** @var ImefDto $dto */
         $dto = array_shift($dtos);
@@ -176,7 +165,6 @@ class ImefParserTest extends TestCase
         $this->assertEquals('Лірычныя песні', $dto->tags[0]);
         $this->assertEquals(CategoryType::SONGS, $dto->category);
 
-
         /** @var ImefDto $dto */
         $dto = array_shift($dtos);
         $this->assertEquals('19460818', $dto->date->format('Ymd'));
@@ -192,5 +180,21 @@ class ImefParserTest extends TestCase
         $this->assertCount(1, $dto->tags);
         $this->assertEquals('Лірычныя песні', $dto->tags[0]);
         $this->assertEquals(CategoryType::SONGS, $dto->category);
+
+        /** @var ImefDto $dto */
+        $dto = array_shift($dtos);
+        $this->assertEquals('19610630', $dto->date->format('Ymd'));
+        $this->assertCount(2, $dto->users);
+        $this->assertEquals('Бахмет Святлана Трафімаўна', $dto->users[0]->name);
+        $this->assertEquals('Бабруйскі раён, в. Тажылавічы', $dto->place);
+        $this->assertCount(1, $dto->informants);
+        $this->assertEquals('Гацко ... Дзмітрыеўна', $dto->informants[0]->name);
+        $this->assertEquals('', $dto->informants[0]->notes);
+        $this->assertNull($dto->informants[0]->birth);
+        $this->assertEquals('', $dto->informants[0]->notes);
+        $this->assertEquals('Да расла да цвіла да чарэмуха', $dto->name);
+        $this->assertCount(2, $dto->tags);
+        $this->assertEquals('Вясна', $dto->tags[1]);
+        $this->assertEquals(CategoryType::OTHER, $dto->category);
     }
 }

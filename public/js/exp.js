@@ -1,5 +1,6 @@
 const sendRequest = function (url, method, data, title, id, index, errorMessage, cycleObj) {
     return new Promise(function (resolve) {
+        if (data.id !== undefined) {data.id = parseInt(data.id)}
         const xhr = new XMLHttpRequest()
         xhr.open(method, url, true)
         if (method !== 'DELETE') {

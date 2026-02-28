@@ -114,6 +114,18 @@ class GetPersonNameTest extends TestCase
         $this->assertEquals('', $informant->notes);
     }
 
+    public function testSuccessWithLastAsMiddle2(): void
+    {
+        $name = 'Зміцер Астапук';
+
+        $informant = $this->personService->getPersonByFullName($name, null, true);
+
+        $this->assertNotNull($informant);
+        $this->assertEquals('Зміцер Астапук', $informant->name); // "Зміцер" and "Астапук" are names
+        $this->assertNull($informant->birth);
+        $this->assertEquals(GenderType::MALE, $informant->gender);
+        $this->assertEquals('', $informant->notes);
+    }
     public function testSuccessWithMaybeBirth(): void
     {
         $name = 'Савасцееў Івана Еўдакімавіча каля 100 гадоў';
@@ -125,7 +137,6 @@ class GetPersonNameTest extends TestCase
         $this->assertEquals(1908, $informant->birth);
         $this->assertEquals('', $informant->notes);
     }
-
 
     public function testSuccessWithShortNameAndBirth(): void
     {
@@ -139,6 +150,7 @@ class GetPersonNameTest extends TestCase
         $this->assertEquals(GenderType::UNKNOWN, $informant->gender);
         $this->assertEquals('', $informant->notes);
     }
+
     public function testSuccessFrom(): void
     {
         $name = 'ад Раманоўскай Вольгі Сямёнаўны';

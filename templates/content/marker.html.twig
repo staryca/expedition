@@ -1,0 +1,167 @@
+{% extends 'base.content.html.twig' %}
+
+{% block title %}
+    {% if marker.isCategoryNotOther() %}
+        {{ marker.getCategoryName() }}
+    {% endif %}
+    {{ marker.name }}
+{% endblock %}
+
+{% block body %}
+    <div class="container py-5">
+        <h1 class="h2">
+            {{ description }}
+        </h1>
+        <div class="row">
+            <p>
+
+                {% for tag in marker.tags %}
+                    <span class="badge text-bg-secondary">{{ tag.name }}</span>
+                {% endfor %}
+                <br>
+                {% if marker.notes is not empty %}
+                    {{ marker.notes }}
+                    <br>
+                {% endif %}
+
+                <br><a href="{{ path('content_category', {category: marker.category}) }}">Усе {{ category|lower }}</a>.<br>
+
+                {% set reportBlock = marker.getSomeReportBlock() %}
+                {% set report = marker.getReport() %}
+
+                {% if report %}
+                    <br>
+                    {% if report.dateAction %}
+                        Дата запісу: {{ report.getTextDateAction() }}<br>
+                    {% endif %}
+
+                    {% set reportPlace = report.getGeoPlace() %}
+                    {% if reportPlace %}
+                        {{ reportPlace }}
+                        {% if report.geoPoint %}
+                            (усе запісы адсюль <a href="{{ path('place_item', {id: report.geoPoint.id}) }}">
+                                <i class="bi bi-box-arrow-in-right"></i>
+                            </a>)
+                        {% endif %}
+                    {% else %}
+                        [невядомае месца]
+                    {% endif %}
+                    <br>
+
+                    {% set expedition = report.expedition %}
+                    <b>{{ expedition.name }}</b>
+                    {% if expedition.startDate %}
+                        (даты правядзеньня:
+                        {{ expedition.startDate|format_datetime(pattern: 'dd.MM.Y') }}
+                        - {{ expedition.endDate|format_datetime(pattern: 'dd.MM.Y') }})
+                    {% endif %}
+                    <br>
+
+                    {% if report.getUserReports() %}
+                        Зьбіральнікі:
+                        {% for userReport in report.getUserReports() %}
+                            {{ userReport.participant.lastName }} {{ userReport.participant.firstName }}
+                            ({{ userReport.getRoleName()|lower }}){% if not loop.last %},{% endif %}
+                        {% endfor %}
+                        <br>
+                    {% endif %}
+
+                    {% set folder = report.getTempValue('folder') %}
+                    {% if folder is not empty %}
+                        <a target="_blank" href="{{ imef_url }}{{ folder }}">Крыніца</a>.<br>
+                    {% endif %}
+                {% endif %}
+
+                {% set file = marker.getFile() %}
+                {% if file and not file.isVirtualContent() %}
+                    <br>
+                    Файл: {{ file.filename }}
+                    {% if file.sizeText %}
+                        - {{ file.sizeText }}
+                    {% endif %}
+
+                    {% if file.comment %}
+                        ({{ file.comment }})
+                    {% endif %}
+                    <br>
+                {% endif %}
+
+                {% if marker.startTime %}
+                    {{ marker.startTime|date("H:i:s.u")|slice(0,-3) }}
+                    {% if marker.endTime %}
+                        - {{ marker.endTime|date("H:i:s.u")|slice(0,-3) }}
+                    {% endif %}
+                    <br>
+                {% endif %}
+
+                {% if reportBlock %}
+                    <br>
+                    {% if reportBlock.organization %}
+                        <b>{{ reportBlock.organization.name }}</b><br>
+                    {% endif %}
+
+                    {% set informants = reportBlock.getInformantsWithoutMusicians() %}
+                    {% if informants is not empty %}
+                        <br>
+                        {% if marker.isCategoryStory() %}Расказваюць{% else %}Выконваюць{% endif %}:<br>
+                        {% for informant in informants %}
+                            <b>{{ informant.firstName }}</b>
+                            {% if informant.yearBirth %}{{ informant.yearBirth }} г.н.{% endif %}
+                            {% if informant.getBirthPlaceBe() %}з <i>{{ informant.getBirthPlaceBe() }}</i>{% endif %}
+                            {% if informant.getFullNotes() is not empty %} ({{ informant.getFullNotes() }}){% endif %}
+                            {% if informant.urlPhoto %}
+                                <img src="{{ informant.urlPhoto }}" class="img-thumbnail" alt="" style="max-width: 200px; max-height: 100px;">
+                            {% endif %}
+
+                            {% if not loop.last %}<br>{% endif %}
+                        {% endfor %}
+                        <br>
+                    {% endif %}
+
+                    {% set informants = reportBlock.getMusicians() %}
+                    {% if informants is not empty %}
+                        <br>
+                        Музы́кі:<br>
+                        {% for informant in informants %}
+                            <b>{{ informant.firstName }}</b>
+                            {% if informant.yearBirth %}{{ informant.yearBirth }} г.н.{% endif %}
+                            {% if informant.getBirthPlaceBe() %}з <i>{{ informant.getBirthPlaceBe() }}</i>{% endif %}
+                            {% if informant.getFullNotes() is not empty %} ({{ informant.getFullNotes() }}){% endif %}
+                            {% if informant.urlPhoto %}
+                                <img src="{{ informant.urlPhoto }}" class="img-thumbnail" alt="" style="max-width: 200px; max-height: 100px;">
+                            {% endif %}
+
+                            {% if not loop.last %}<br>{% endif %}
+                        {% endfor %}
+                    {% endif %}
+                    <br>
+                {% endif %}
+
+                {% if marker.decoding %}
+                    <br>
+                    <i>
+                        {% if marker.isCategoryDance() %}
+                            Прыпеўкі{% elseif marker.isCategorySong() %}Словы{% else %}Расшыфроўка{% endif %}</i>:<br>
+                    {{ marker.decoding|nl2br }}
+                    <br>
+                {% endif %}
+
+                {% if tmkb %}
+                    <br>
+                    {{ tmkb|nl2br }}
+                    <br>
+                {% endif %}
+            </p>
+        </div>
+        <div class="row" style="width: 560px;">
+            {% set youtube = marker.getAdditionalYoutube() %}
+            {% if youtube is not empty %}
+                {% if marker.isPublished() %}
+                    <iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/{{ youtube }}" title="{{ description }}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                {% else %}
+                    <p><b>Відэа будзе апублікавана {{ marker.getPublishDateText() }}</b>.</p>
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

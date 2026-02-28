@@ -1,6 +1,9 @@
 {% if isLink is not defined %}
     {% set isLink = true %}
 {% endif %}
+{% if geoPoint is not defined %}
+    {% set geoPoint = null %}
+{% endif %}
 
 {% if informant.isMusician is same as(true) %}<i class="bi bi-music-note" title="Музыкант"></i>{% endif %}
 <b>{{ informant.firstName }}</b>
@@ -70,6 +73,6 @@
     {% endfor %}
 {% endif %}
 
-{% if informant.notes %}
-    | <small>{{ informant.notes }}</small>
+{% if informant.getFullNotes() is not empty %}
+    | <small>{{ informant.getFullNotes() }}</small>
 {% endif %}
