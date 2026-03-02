@@ -296,7 +296,7 @@ class ToolsController extends AbstractController
         $data = $this->geoPointHandler->setRegionsAndDistricts();
 
         return $this->render('import/show.table.result.html.twig', [
-            'headers' => ['Id', 'Месца', 'Тып', 'К.', 'Рэгіёны', 'Раёны', 'Тыпы', 'Новае', '!'],
+            'headers' => ['Id', 'Месца', 'Тып', 'К.', 'Рэгіёны', 'Раёны', 'Тыпы', 'Новае', '!', 'L'],
             'data' => $data,
         ]);
     }

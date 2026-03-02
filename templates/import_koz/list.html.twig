@@ -20,42 +20,43 @@
             <td></td>
         </tr>
         {% for row in data %}
-        <tr>
+        <tr class="{% if row.color is not empty %}table-{{ row.color }}{% endif %}">
             <td>
-                ID: <b>{{ row.id }}</b>
+                ID: <b>{{ row.marker.id }}</b>
                 (Блок: #{{ row.marker.getReportBlock().id }}, справа #{{ row.marker.getReportBlock().getReport().id }})
                 <br><br>
 
                 Status: <b>{{ row.status|raw }}</b>
                 <br><br>
 
-                Number: <b>{{ row.number }}</b>
+                Number: <b>{{ row.marker.getAdditionalNumber() }}</b>
                 <br><br>
 
-                File: <b>{{ row.file }}</b>
+                File: <b>{{ row.marker.getFile()?.getFullFileName() }}</b>
                 <br><br>
 
-                Publish: <b>{{ row.publish }}</b>
+                Publish: <b>{{ row.marker.getPublishDateText() }}</b>
                 <br><br>
 
                 Video:
-                {% if row.youtube is not empty %}
-                    <a href="https://www.youtube.com/watch?v={{ row.youtube }}" target="_blank">{{ row.youtube }}</a>
+                {% set youtube = row.marker.getAdditionalYoutube() %}
+                {% if youtube is not empty %}
+                    <a href="https://www.youtube.com/watch?v={{ youtube }}" target="_blank">{{ youtube }}</a>
                 {% else %}
                     <i class="bi bi-exclamation-diamond-fill text-danger"></i> Відэа няма
                 {% endif %}
                 <br><br>
 
                 {% if is_granted('ROLE_USER') %}
-                    <a class="btn btn-primary" href="{{ path('app_import_video_koz_update_item', {id: row.id}) }}" role="button">
+                    <a class="btn btn-primary" href="{{ path('app_import_video_koz_update_item', {id: row.marker.id}) }}" role="button">
                         <i class="bi bi-arrow-clockwise"> Абнавіць апісаньне</i>
                     </a>
                     <br><br>
-                    <a class="btn btn-primary" href="{{ path('app_import_video_koz_show_item', {id: row.id}) }}" role="button">
+                    <a class="btn btn-primary" href="{{ path('app_import_video_koz_show_item', {id: row.marker.id}) }}" role="button">
                         <i class="bi bi-eye-fill"> Зрабіць агульнадасяжным</i>
                     </a>
                     <br><br>
-                    <a class="btn btn-primary" href="{{ path('app_import_video_koz_sheduled_item', {id: row.id}) }}" role="button">
+                    <a class="btn btn-primary" href="{{ path('app_import_video_koz_sheduled_item', {id: row.marker.id}) }}" role="button">
                         <i class="bi bi-stopwatch"> Схаваць і задаць дату публікацыі</i>
                     </a>
                 {% endif %}

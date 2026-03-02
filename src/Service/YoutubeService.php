@@ -138,7 +138,7 @@ class YoutubeService
         return $title;
     }
 
-    public function getDescription(FileMarker $fileMarker): string
+    public function getDescription(FileMarker $fileMarker, bool $isFull = true): string
     {
         $localName = $fileMarker->getAdditionalLocalName();
         $baseName = $fileMarker->getAdditionalDance();
@@ -295,7 +295,9 @@ class YoutubeService
         if ($fileMarker->getCategory() !== CategoryType::DANCE_MOVEMENTS) {
             $tags[] = '#' . $this->textHelper->getTagFormat($categoryNameMany . ' беларусаў');
         }
-        $parts[] = implode(' ', $tags);
+        if ($isFull) {
+            $parts[] = implode(' ', $tags);
+        }
 
         if (!empty($tmkb)) {
             $parts[] = $tmkb;
@@ -306,7 +308,9 @@ class YoutubeService
         $notes .= 'Праект па апрацоўцы архіва – некамерцыйная валанцёрская ініцыятыва.';
         $notes .= '<br><br>';
         $notes .= 'Калі ласка, будзьце тактоўныя і ўважлівыя пры стварэнні допісаў да відэа. Дапамажыце дапоўніць інфармацыю, падзяліцеся дадатковымі звесткамі пра людзей, калі вы іх ведаеце. Публікацыя паведамленняў, якія парушаюць закон, змяшчаюць пагрозы, абразы, непрыстойнасці, не дапускаецца.';
-        $parts[] = $notes;
+        if ($isFull) {
+            $parts[] = $notes;
+        }
 
         if (!$this->isSetMarkers) {
             $markers = $this->fileMarkerRepository->getMarkersWithFullObjects(
@@ -346,12 +350,12 @@ class YoutubeService
             $descriptionLink .= ': ' . $linkTypeMarker->getAdditionalYoutubeLink();
             $descriptionLinks[] = $descriptionLink;
         }
-        if (!empty($descriptionLinks)) {
+        if (!empty($descriptionLinks) && $isFull) {
             $parts[] = 'Глядзіце яшчэ:<br>' . implode('<br>', $descriptionLinks);
         }
 
         $tags = CategoryType::getTags($fileMarker->getCategory());
-        if (!empty($tags)) {
+        if (!empty($tags) && $isFull) {
             $parts[] = implode(' ', $tags);
         }
 
