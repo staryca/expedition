@@ -72,13 +72,16 @@ class ContentController extends AbstractController
         $markers = $this->fileMarkerRepository->getMarkersByPublish(true, $amount);
 
         $titles = [];
+        $descriptions = [];
         foreach ($markers as $key => $marker) {
             $titles[$key] = $this->youtubeService->getTitle($marker);
+            $descriptions[$key] = $this->youtubeService->getDescription($marker, false);
         }
 
         return $this->render('content/future.html.twig', [
             'markers' => $markers,
             'titles' => $titles,
+            'descriptions' => $descriptions,
             'isAll' => count($markers) !== $amount,
         ]);
     }

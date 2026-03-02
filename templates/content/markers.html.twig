@@ -16,6 +16,7 @@
                     <th scope="col">Год і месца</th>
                     <th scope="col">Назва</th>
                     <th scope="col">Заўвагі</th>
+                    <th scope="col">Відэа</th>
                 </tr>
                 </thead>
 
@@ -63,6 +64,17 @@
                                     </div>
                                 </div>
                             {% endif %}
+                        </td>
+                        <td>
+                            {% set youtube = marker.getAdditionalYoutube() %}
+                            {% if youtube is not empty %}
+                                {% if marker.isPublished() %}
+                                    <a target="_blank" href="{{ marker.getAdditionalYoutubeLink() }}">Глядзець</a>
+                                {% else %}
+                                    <p>Будзе апублікавана {{ marker.getPublishDateText() }}</p>
+                                {% endif %}
+                            {% endif %}
+
                         </td>
                     </tr>
                 {% endfor %}

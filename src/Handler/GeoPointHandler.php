@@ -7,20 +7,27 @@ namespace App\Handler;
 use App\Repository\GeoPointRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
-class GeoPointHandler
+readonly class GeoPointHandler
 {
     public function __construct(
-        private readonly GeoPointRepository $geoPointRepository,
-        private readonly EntityManagerInterface $entityManager,
+        private GeoPointRepository $geoPointRepository,
+        private EntityManagerInterface $entityManager,
     ) {
     }
 
     public function setRegionsAndDistricts(): array
     {
-        $points = $this->geoPointRepository->findWithoutDistrict(1000);
+        $points = $this->geoPointRepository->findWithoutDistrict(3000);
 
-        $data = [];
+        $data = [
+            0 => [
+                'id' => 'Updated',
+                'name' => 0,
+            ]
+        ];
+        $updated = 0;
         foreach ($points as $point) {
+            $oldRegion = $point->getRegion();
             $neighbors = $this->geoPointRepository->findNeighbors($point->getLatLonDto());
             $amounts = ['regions' => [], 'districts' => [], 'prefixes' => []];
             $count = 0;
@@ -57,10 +64,26 @@ class GeoPointHandler
 
             $error = '';
 
-            $newRegion = '';
-            if (count($amounts['regions']) === 1) {
+            arsort($amounts['regions']);
+            $newRegion = count($amounts['regions']) === 1 ? key($amounts['regions']) : '';
+            if (count($amounts['regions']) >= 2) {
                 $newRegion = key($amounts['regions']);
-                if ($count > 20 && (current($amounts['regions']) > $count / 3) && $point->getRegion() !== $newRegion) {
+                $amount = next($amounts['regions']);
+                $value = next($amounts['regions']);
+                while ($value !== false) {
+                    $amount += $value;
+                    $value = next($amounts['regions']);
+                }
+                if (
+                    $amounts['regions'][$newRegion] < $count * 0.65
+                    || $amount > $count * 0.10
+                    || $amounts['regions'][$newRegion] < 16 * $amount
+                ) {
+                    $newRegion = '';
+                }
+            }
+            if (!empty($newRegion)) {
+                if ($count > 20 && ($amounts['regions'][$newRegion] > $count / 3) && $point->getRegion() !== $newRegion) {
                     if (!empty($point->getRegion())) {
                         $error = ' Old: ' . $point->getRegion() . ', new: ' . $newRegion;
                     } else {
@@ -71,10 +94,29 @@ class GeoPointHandler
                 }
             }
 
-            $newDistrict = '';
-            if (count($amounts['districts']) === 1 && count($amounts['regions']) === 1) {
+            arsort($amounts['districts']);
+            $newDistrict = count($amounts['districts']) === 1 ? key($amounts['districts']) : '';
+            if (count($amounts['districts']) >= 2) {
                 $newDistrict = key($amounts['districts']);
-                if ($count > 20 && (current($amounts['districts']) > $count / 3) && $point->getDistrict() !== $newDistrict) {
+                $amount = next($amounts['districts']);
+                $value = next($amounts['districts']);
+                while ($value !== false) {
+                    $amount += $value;
+                    $value = next($amounts['districts']);
+                }
+                if (
+                    $amounts['districts'][$newDistrict] < $count * 0.58
+                    || $amount > $count * 0.10
+                    || $amounts['districts'][$newDistrict] < 16 * $amount
+                ) {
+                    $newDistrict = '';
+                }
+            }
+            if (empty($newRegion) && empty($oldRegion)) {
+                $newDistrict = '';
+            }
+            if (!empty($newDistrict)) {
+                if ($count > 20 && ($amounts['districts'][$newDistrict] > $count / 3) && $point->getDistrict() !== $newDistrict) {
                     if (!empty($point->getDistrict())) {
                         $error = ' Old: ' . $point->getDistrict() . ', new: ' . $newDistrict;
                     } else {
@@ -86,12 +128,15 @@ class GeoPointHandler
             }
 
             if (empty($newRegion) && empty($newDistrict)) {
-                $point->setDistrict('-');
+                $point->setDistrict('-'); // for skip
+            } else {
+                $updated++;
             }
 
+            $link = 'https://www.openstreetmap.org/node/' . $point->getId();
             $data[] = [
                 'id' => $point->getId(),
-                'name' => $point->getName(),
+                'name' => $point->getName() . '<br>' . $oldRegion,
                 'prefix' => $point->getPrefixBe(),
                 'count' => $count,
                 'regions' => var_export($amounts['regions'], true),
@@ -99,8 +144,10 @@ class GeoPointHandler
                 'prefixes' => var_export($amounts['prefixes'], true),
                 'new' => $newRegion . ' ' . $newDistrict,
                 'error' => $error,
+                'link' => '<a target="_blank" href="' . $link . '"><i class="bi bi-box-arrow-in-right"></i></a>',
             ];
         }
+        $data[0]['name'] = $updated . '/' . count($points);
 
         $this->entityManager->flush();
 

@@ -362,6 +362,7 @@ class VideoKozHandler
             . $updated . ' / ' . $active . ' / ' . $scheduled . ' / ' . $all;
         $data[0] = $item;
 
+        $errors = 0;
         $keyWarningDesc = $keyWarningTitle = $keyOk = 1;
         foreach ($markers as $fileMarker) {
             $title = $this->youtubeService->getTitle($fileMarker);
@@ -381,31 +382,36 @@ class VideoKozHandler
                 default => YoutubeService::MAX_LENGTH_DESCRIPTION + $keyOk++,
             };
 
+            $isUpdated = (int)$fileMarker->getAdditionalValue(FileMarkerAdditional::STATUS_UPDATED) > 0;
+            $isActive = (int)$fileMarker->getAdditionalValue(FileMarkerAdditional::STATUS_ACTIVE) > 0;
+            $isScheduled = (int)$fileMarker->getAdditionalValue(FileMarkerAdditional::STATUS_SHEDULED) > 0;
+
             $statuses = [];
-            $statuses[] = (int)$fileMarker->getAdditionalValue(FileMarkerAdditional::STATUS_UPDATED) > 0
-                ? '<i class="bi bi-arrow-clockwise"></i>'
-                : '-';
-            $statuses[] = (int)$fileMarker->getAdditionalValue(FileMarkerAdditional::STATUS_ACTIVE) > 0
-                ? '<i class="bi bi-eye-fill"></i>'
-                : '-';
-            $statuses[] = (int)$fileMarker->getAdditionalValue(FileMarkerAdditional::STATUS_SHEDULED) > 0
-                ? '<i class="bi bi-stopwatch"></i>'
-                : '-';
+            $statuses[] = $isUpdated ? '<i class="bi bi-arrow-clockwise"></i>' : '-';
+            $statuses[] = $isActive ? '<i class="bi bi-eye-fill"></i>' : '-';
+            $statuses[] = $isScheduled ? '<i class="bi bi-stopwatch"></i>' : '-';
+
+            $color = '';
+            $isPublished = $fileMarker->getPublishDate()?->isPast();
+            if (($isPublished && (!$isUpdated || (!$isActive && !$isScheduled))) || (!$isPublished && $isActive)) {
+                $color = 'danger';
+                $errors++;
+            } elseif (!$isPublished) {
+                $color = 'info';
+            }
 
             $item = [];
             $item['marker'] = $fileMarker;
-            $item['id'] = $fileMarker->getId();
+            $item['color'] = $color;
             $item['status'] = implode(' / ', $statuses);
-            $item['number'] = $fileMarker->getAdditionalNumber();
-            $item['file'] = $fileMarker->getFile()?->getFullFileName();
-            $item['publish'] = $fileMarker->getPublishDateText();
-            $item['youtube'] = $fileMarker->getAdditionalYoutube();
             $item['youtube_title'] = $titleNotes . $title;
             $item['youtube_description'] = $descriptionWarning . $description;
 
             $data[$key] = $item;
         }
         ksort($data);
+
+        $data[0]['stat'] .= ' Errors: ' . $errors;
 
         return $data;
     }
