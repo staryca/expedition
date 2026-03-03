@@ -41,7 +41,7 @@
                 Video:
                 {% set youtube = row.marker.getAdditionalYoutube() %}
                 {% if youtube is not empty %}
-                    <a href="https://www.youtube.com/watch?v={{ youtube }}" target="_blank">{{ youtube }}</a>
+                    <a href="{{ row.marker.getAdditionalYoutubeLink() }}" target="_blank">{{ youtube }}</a>
                 {% else %}
                     <i class="bi bi-exclamation-diamond-fill text-danger"></i> Відэа няма
                 {% endif %}

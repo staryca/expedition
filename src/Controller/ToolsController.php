@@ -11,6 +11,7 @@ use App\Entity\Type\GenderType;
 use App\Handler\GeoPointHandler;
 use App\Manager\PersonManager;
 use App\Parser\VopisDetailedParser;
+use App\Parser\VopisNazinaParser;
 use App\Repository\FileMarkerRepository;
 use App\Repository\GeoPointRepository;
 use App\Repository\InformantRepository;
@@ -53,6 +54,7 @@ class ToolsController extends AbstractController
             'tools/list.html.twig',
             [
                 'vopis_detailed_columns' => VopisDetailedParser::getColumns(),
+                'vopis_nazina_columns' => VopisNazinaParser::getColumns(),
             ]
         );
     }

@@ -52,7 +52,7 @@ readonly class VopisDetailedParser
      * @throws Exception
      * @throws InvalidArgument
      */
-    public function parse(string $content): array
+    public function parse(string $contentFile): array
     {
         /** @var array<SubjectDto> $subjects */
         $subjects = [];
@@ -61,7 +61,7 @@ readonly class VopisDetailedParser
         $isPrevSubject = false;
         $isPrevFile = false;
 
-        $csv = Reader::fromString($content);
+        $csv = Reader::fromString($contentFile);
         $csv->setDelimiter(';');
         $csv->setEnclosure('"');
         $csv->setHeaderOffset(0);
@@ -142,10 +142,7 @@ readonly class VopisDetailedParser
                 }
 
                 $notes = trim($record[VopisDetailedColumns::ADDITIONAL]);
-                $pos = mb_strpos($content, ') ');
-                if ($pos !== false && $pos < 3) {
-                    $content = trim(mb_substr($content, $pos + 1));
-                }
+                $content = TextHelper::removeFirstNumbers($content);
 
                 $category = $this->categoryService->detectCategory($content, $notes) ?? CategoryType::OTHER;
                 $marker->category = $category !== CategoryType::OTHER ? $category : CategoryType::STORY;

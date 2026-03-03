@@ -31,12 +31,11 @@
                                         </h2>
                                         <div id="collapse{{ keyA }}" class="accordion-collapse collapse" data-bs-parent="#accordionLocations{{ key }}">
                                             <div class="accordion-body">
-                                                {#
                                                 <a href="{{ path('place_district_informants_export', {district: locationDistrict.name}) }}"><i class="bi bi-cloud-arrow-down"></i> Экспарт інфармантаў</a>,
                                                 <a href="{{ path('place_district_songs_export', {district: locationDistrict.name}) }}"><i class="bi bi-cloud-arrow-down"></i> Экспарт песень</a>,
                                                 <a href="{{ path('place_district_other_export', {district: locationDistrict.name}) }}"><i class="bi bi-cloud-arrow-down"></i> Экспарт іншага</a>
                                                 <br /><br />
-                                                #}
+
                                                 {% for locationOther in locationDistrict.items %}
                                                 - <a href="{{ path('place_item', {id: locationOther.id}) }}">{{ locationOther.name }}</a><br />
                                                 {% endfor %}

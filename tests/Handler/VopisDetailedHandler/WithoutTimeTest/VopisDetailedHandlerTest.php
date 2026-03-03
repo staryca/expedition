@@ -14,6 +14,7 @@ use App\Repository\ExpeditionRepository;
 use App\Repository\GeoPointRepository;
 use App\Repository\UserRepository;
 use App\Service\CategoryService;
+use App\Service\DanceService;
 use App\Service\LocationService;
 use App\Service\PersonService;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -39,7 +40,8 @@ class VopisDetailedHandlerTest extends TestCase
         $reportManager = $this->createMock(ReportManager::class);
 
         $danceRepository = $this->createMock(DanceRepository::class);
-        $categoryService = new CategoryService($danceRepository);
+        $danceService = new DanceService($danceRepository);
+        $categoryService = new CategoryService($danceService);
         $parser = new VopisDetailedParser($locationService, $categoryService);
 
         $this->handler = new VopisDetailedHandler(

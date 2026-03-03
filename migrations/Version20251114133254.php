@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace DoctrineMigrations;
 
 use App\Dto\TreeItemDto;
+use App\Helper\FileHelper;
 use App\Service\RitualService;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\Migrations\AbstractMigration;
-use League\Csv\Reader;
 
 /**
  * Auto-generated Migration: Please modify to your needs!
@@ -28,7 +28,7 @@ final class Version20251114133254 extends AbstractMigration
         $this->addSql('CREATE INDEX IDX_ED8FF2B0727ACA70 ON ritual (parent_id)');
         $this->addSql('ALTER TABLE ritual ADD CONSTRAINT FK_ED8FF2B0727ACA70 FOREIGN KEY (parent_id) REFERENCES ritual (id) NOT DEFERRABLE INITIALLY IMMEDIATE');
 
-        $rituals = $this->getListFromFile('src/DataFixtures/rituals.csv');
+        $rituals = FileHelper::getListFromFile('src/DataFixtures/rituals.csv');
         $tree = RitualService::getTreeFromList($rituals);
 
         /** @var TreeItemDto[] $items */
@@ -54,19 +54,6 @@ final class Version20251114133254 extends AbstractMigration
         $this->addSql('ALTER TABLE "file_marker" DROP CONSTRAINT FK_3AD80641F8922643');
         $this->addSql('DROP INDEX IDX_3AD80641F8922643');
         $this->addSql('ALTER TABLE "file_marker" DROP ritual_id');
-    }
-
-    private function getListFromFile(string $filename): array
-    {
-        $result = [];
-
-        $csv = Reader::from($filename);
-        $csv->setDelimiter(';');
-        foreach ($csv->getRecords() as $record) {
-            $result[] = $record[0];
-        }
-
-        return $result;
     }
 
     private function setParentListFromTree(array $tree, ?int $parentId, array &$list): void

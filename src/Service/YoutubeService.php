@@ -737,7 +737,9 @@ class YoutubeService
             }
 
             $categoryName = $fileMarker->getCategoryName();
-            $nameHasType = !empty($localName) && !empty($categoryName) && str_contains(mb_strtolower($localName), mb_strtolower($categoryName));
+            $nameHasType =
+                (!empty($localName) && !empty($categoryName) && str_contains(mb_strtolower($localName), mb_strtolower($categoryName)))
+                || ($fileMarker->getCategory() === CategoryType::KARAHOD && str_contains(mb_strtolower($localName), 'танок'));
             if (!empty($categoryName) && !$nameHasType) {
                 if ($fileMarker->isCategoryDanceMovements()) {
                     $texts = [

@@ -7,22 +7,22 @@ namespace App\Controller;
 use ApiPlatform\Metadata\UrlGeneratorInterface;
 use App\Dto\FileMarkerDto;
 use App\Entity\Type\GenderType;
-use App\Handler\VopisDetailedHandler;
+use App\Handler\VopisNazinaHandler;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
-class ImportVopisDetailedController extends AbstractController
+class ImportVopisNazinaController extends AbstractController
 {
-    private const int EXPEDITION_ID = 3; // 3
-    private const string FILENAME = '../var/data/vopis_detailed/vit_koz.csv';
+    private const int EXPEDITION_ID = 996; // 14
+    private const string FILENAME = '../var/data/vopis_nazina/vopis.csv';
 
     public function __construct(
-        private readonly VopisDetailedHandler $handler,
+        private readonly VopisNazinaHandler $handler,
     ) {
     }
 
-    #[Route('/import/vopis_detailed/check', name: 'app_import_vopis_detailed_check')]
+    #[Route('/import/vopis_nazina/check', name: 'app_import_vopis_nazina_check')]
     public function check(): Response
     {
         $subjects = $this->handler->checkFile(self::FILENAME);
@@ -30,8 +30,6 @@ class ImportVopisDetailedController extends AbstractController
         $data = [];
         $data['errors_type'] = [];
         $data['errors_location'] = [];
-        $data['errors_date'] = [];
-        $data['errors_time'] = [];
         foreach ($subjects as $subject) {
             foreach ($subject->files as $file) {
                 foreach ($file->markers as $marker) {
@@ -40,15 +38,6 @@ class ImportVopisDetailedController extends AbstractController
                     }
                     if (null === $marker->geoPoint) {
                         $data['errors_location'][] = $marker->place;
-                    }
-                    if (null === $marker->dateAction && !isset($marker->others[FileMarkerDto::OTHER_RECORD])) {
-                        $data['errors_date'][] = $marker;
-                    }
-                    if (
-                        ($marker->timeFrom !== null && !str_contains($marker->timeFrom, ':'))
-                        || ($marker->timeTo !== null && !str_contains($marker->timeTo, ':'))
-                    ) {
-                        $data['errors_time'][] = $marker;
                     }
                 }
             }
@@ -69,17 +58,25 @@ class ImportVopisDetailedController extends AbstractController
         }
 
         $reportsData = $this->handler->createReportsData($subjects);
+        $data['errors_date'] = [];
+        foreach ($reportsData as $reportData) {
+            if (null === $reportData->dateAction) {
+                $data['errors_date'][] = $reportData->getPlaceHash();
+            } elseif (1900 > (int) $reportData->dateAction->format('Y')) {
+                $data['errors_date'][] = $reportData->getPlaceHash() . ' Year: ' . $reportData->dateAction->format('Y');
+            }
+        }
         $data['reports'] = $reportsData;
 
         $data['subjects'] = $subjects;
-        $data['link'] = $this->generateUrl('app_import_vopis_detailed_save', [], UrlGeneratorInterface::ABS_URL);
+        $data['link'] = $this->generateUrl('app_import_vopis_nazina_save', [], UrlGeneratorInterface::ABS_URL);
 
         return $this->render('import/show.json.result.html.twig', [
             'data' => $data,
         ]);
     }
 
-    #[Route('/import/vopis_detailed/save', name: 'app_import_vopis_detailed_save')]
+    #[Route('/import/vopis_nazina/save', name: 'app_import_vopis_nazina_save')]
     public function save(): Response
     {
         try {
