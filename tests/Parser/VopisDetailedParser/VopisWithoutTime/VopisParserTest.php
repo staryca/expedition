@@ -10,6 +10,7 @@ use App\Parser\VopisDetailedParser;
 use App\Repository\DanceRepository;
 use App\Repository\GeoPointRepository;
 use App\Service\CategoryService;
+use App\Service\DanceService;
 use App\Service\LocationService;
 use PHPUnit\Framework\TestCase;
 
@@ -25,7 +26,8 @@ class VopisParserTest extends TestCase
         $danceRepository = $this->createMock(DanceRepository::class);
 
         $locationService = new LocationService($geoPointRepository);
-        $categoryService = new CategoryService($danceRepository);
+        $danceService = new DanceService($danceRepository);
+        $categoryService = new CategoryService($danceService);
         $this->parser = new VopisDetailedParser($locationService, $categoryService);
     }
 

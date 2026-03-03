@@ -6,9 +6,9 @@ namespace DoctrineMigrations;
 
 use App\Entity\Additional\FileMarkerAdditional;
 use App\Entity\Type\CategoryType;
+use App\Helper\FileHelper;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\Migrations\AbstractMigration;
-use League\Csv\Reader;
 
 /**
  * Auto-generated Migration: Please modify to your needs!
@@ -40,7 +40,8 @@ final class Version20251014112428 extends AbstractMigration
             $this->addSql('INSERT INTO category (id, playlist) VALUES (' . $key . ', NULL)');
         }
 
-        foreach ($this->getDances() as $key => $dance) {
+        $dances = FileHelper::getArrayFromFile('src/DataFixtures/dances.csv');
+        foreach ($dances as $key => $dance) {
             $this->addSql('INSERT INTO dance (id, name, playlist) VALUES (' . $key . ', \'' . $dance . '\', NULL)');
         }
 
@@ -48,7 +49,8 @@ final class Version20251014112428 extends AbstractMigration
             $this->addSql('INSERT INTO improvisation (id, name, playlist) VALUES (' . $key . ', \'' . $improvisation . '\', NULL)');
         }
 
-        foreach ($this->getRegions() as $key => $region) {
+        $regions = FileHelper::getArrayFromFile('src/DataFixtures/regions.csv');
+        foreach ($regions as $key => $region) {
             $this->addSql('INSERT INTO region (id, name, playlist) VALUES (' . $key . ', \'' . $region . '\', NULL)');
         }
     }
@@ -69,28 +71,5 @@ final class Version20251014112428 extends AbstractMigration
         $this->addSql('DROP TABLE tradition');
         $this->addSql('ALTER TABLE "user" ALTER roles SET DEFAULT \'\'');
         $this->addSql('ALTER TABLE pack DROP playlist');
-    }
-
-    private function getDances(): array
-    {
-        return $this->getArrayFromFile('src/DataFixtures/dances.csv');
-    }
-
-    private function getRegions(): array
-    {
-        return $this->getArrayFromFile('src/DataFixtures/regions.csv');
-    }
-
-    private function getArrayFromFile(string $filename): array
-    {
-        $result = [];
-
-        $csv = Reader::from($filename);
-        $csv->setDelimiter(';');
-        foreach ($csv->getRecords() as $record) {
-            $result[$record[0]] = $record[1];
-        }
-
-        return $result;
     }
 }

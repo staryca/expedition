@@ -44,7 +44,7 @@ class FileMarkerRepository extends ServiceEntityRepository
         $result = [];
         foreach ($records as $record) {
             $category = $record['category'];
-            if (!in_array($category, CategoryType::SYSTEM_TYPES, true)) {
+            if (!CategoryType::isSystemType($category)) {
                 $result[$category] = $record['cnt'];
             }
         }

@@ -15,8 +15,8 @@ use League\Csv\Reader;
 
 class VopisParser
 {
-    private const NAME_TECHNICAL = '***';
-    private const NAME_GROUP = '+++';
+    private const string NAME_TECHNICAL = '***';
+    private const string NAME_GROUP = '+++';
 
     public function __construct(
         private readonly LocationService $locationService,
@@ -76,16 +76,19 @@ class VopisParser
                 if (($pos = mb_strpos($name, ' ')) !== false) {
                     $name = mb_substr($name, $pos + 1);
                 }
-                $category = CategoryType::findId($name, '', false);
-                if ($category !== null) {
+                $category = CategoryType::findId($name, '');
+                if ($category !== null && CategoryType::isSystemType($category)) {
                     $marker->category = $category;
                 } else {
                     if ($name === self::NAME_TECHNICAL) {
                         $marker->isNewBlock = true;
                     }
-                    $marker->category = $name !== self::NAME_GROUP
-                        ? (CategoryType::findId($notes, '') ?? CategoryType::OTHER)
-                        : CategoryType::OTHER;
+                    if (!$category) {
+                        $category = $name !== self::NAME_GROUP
+                            ? (CategoryType::findId($notes, '') ?? CategoryType::OTHER)
+                            : CategoryType::OTHER;
+                    }
+                    $marker->category = $category;
                     if ($marker->category === CategoryType::OTHER && self::isTechName($name)) {
                         $marker->notes = $notes;
                     }

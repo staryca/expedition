@@ -323,4 +323,25 @@ class TextHelper
 
         return (int) round($result);
     }
+
+    public static function removeFirstNumbers(string $text): string
+    {
+        $pos = mb_strpos($text, ') ');
+        if ($pos !== false && $pos < 3) {
+            $number = (int) mb_substr($text, 0, $pos);
+            if ($pos === 0 || $number > 0) {
+                return trim(mb_substr($text, $pos + 1));
+            }
+        }
+
+        $pos = mb_strpos($text, '. ');
+        if ($pos !== false && $pos < 3) {
+            $number = (int) mb_substr($text, 0, $pos);
+            if ($pos === 0 || $number > 0) {
+                return trim(mb_substr($text, $pos + 1));
+            }
+        }
+
+        return $text;
+    }
 }

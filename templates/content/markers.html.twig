@@ -26,11 +26,19 @@
                         <td>
                             {% set report = marker.getReport() %}
                             {% set year = report.getDateActionYear() %}
+                            {% if year %}{{ year }},{% endif %}
+
                             {% if report.geoPoint %}
-                                {% if year %}{{ year }},{% endif %}
-                                <b>{{ report.geoPoint.getLongBeName() }}</b>
-                                {% if report.geoPoint.district %}
+                                <b>{{ report.geoPoint.getMiddleBeName() }}</b>
+                                {%- if report.geoPoint.district %},
                                     {{ report.geoPoint.district }}
+                                {% endif %}
+                            {% else %}
+                                {% set reportPlace = report.getGeoPlace() %}
+                                {% if reportPlace %}
+                                    {{ reportPlace }}
+                                {% else %}
+                                    [невядомае месца]
                                 {% endif %}
                             {% endif %}
                         </td>

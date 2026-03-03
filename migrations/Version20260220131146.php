@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace DoctrineMigrations;
 
+use App\Helper\FileHelper;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\Migrations\AbstractMigration;
-use League\Csv\Reader;
 
 /**
  * Auto-generated Migration: Please modify to your needs!
@@ -27,7 +27,7 @@ final class Version20260220131146 extends AbstractMigration
         $this->addSql('INSERT INTO district (id, name, playlist) SELECT id, name, playlist FROM region');
         $this->addSql('TRUNCATE TABLE region');
 
-        $regions = $this->getArrayFromFile('src/DataFixtures/regions.csv');
+        $regions = FileHelper::getArrayFromFile('src/DataFixtures/regions.csv');
         foreach ($regions as $key => $region) {
             $this->addSql('INSERT INTO region (id, name, playlist) VALUES (' . $key . ', \'' . $region . '\', NULL)');
         }
@@ -48,18 +48,5 @@ final class Version20260220131146 extends AbstractMigration
         $this->addSql('CREATE SEQUENCE pack_id_seq');
         $this->addSql('SELECT setval(\'pack_id_seq\', (SELECT MAX(id) FROM pack))');
         $this->addSql('ALTER TABLE pack ALTER id SET DEFAULT nextval(\'pack_id_seq\')');
-    }
-
-    private function getArrayFromFile(string $filename): array
-    {
-        $result = [];
-
-        $csv = Reader::from($filename);
-        $csv->setDelimiter(';');
-        foreach ($csv->getRecords() as $record) {
-            $result[$record[0]] = $record[1];
-        }
-
-        return $result;
     }
 }

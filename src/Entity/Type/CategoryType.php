@@ -94,9 +94,10 @@ class CategoryType
 
     private const array VARIANTS_SAME = [
         self::DANCE_MOVEMENTS => ['рух танца', 'рухі танцаў'],
-        self::QUADRILLE => ['кадрыль'],
-        self::CHORUSES => ['прыпеўка'],
-        self::SONGS => ['песень', 'песьня', 'песьні'],
+        self::QUADRILLE => ['кадрыль', 'кадрылі'],
+        self::MELODY => ['гукарад', 'сігнал', 'марш', 'гучанне'],
+        self::CHORUSES => ['прыпеўка', 'прыпевы'],
+        self::SONGS => ['песень', 'песьня', 'песьні', 'галашэнне'],
         self::STORY => ['аповеды пра', 'аповед пра', 'аповед', 'размова', 'расказ', 'апавяданні'],
         self::ABOUT_DANCES => [
             'згадваньне пра танцы', 'як танцавалі', 'пра танец', 'каманда ў танцах', 'каманды ў танцах'
@@ -136,11 +137,11 @@ class CategoryType
             'вялікодная', 'піліпаўская', 'калядная', 'раманс', 'масьленыя', 'вясельныя', 'турэмная', 'рамансы',
             'веснавыя', 'лірычныя', 'на сене', 'провады ў армію', 'лірыка', 'хрэсьбінная',
             'у любы час', 'партызанская', 'карагодная', 'рэкруцкая', 'хрэсьбінская', 'летняя', 'касарская',
-            'траецкая', 'сенакосная', 'веснавая', 'свадзьбальная', 'жытняя', 'маёвая',
-            'аўтарская',
+            'траецкая', 'сенакосная', 'веснавая', 'свадзьбальная', 'свадзебная', 'жытняя', 'маёвая',
+            'аўтарская', 'застольная', 'шчадроўка', 'казацкая', 'царкоўная', 'сацыяльна-бытавая',
         ],
         self::STORY => [
-            'апавядае',
+            'апавядае', 'анекдот', 'былічка',
         ]
     ];
 
@@ -153,6 +154,9 @@ class CategoryType
     ];
 
     private const array VARIANTS_GROUPED = [
+        self::CHORUSES => [
+            ['прыпеўка да '],
+        ],
         self::STORY => [
             ['што', 'такое'],
             ['як', 'гралі'],
@@ -164,13 +168,21 @@ class CategoryType
         self::ABOUT_DANCES => [
             ['як', 'танцавалі'],
             ['пра', 'танцы'],
+            ['якія', 'былі', 'танцы'],
+            ['якія', 'гулялі', 'танцы'],
         ],
         self::MELODY => [
             ['на', 'язык'],
         ],
+        self::SONGS => [
+            ['узгадка', 'песні'],
+        ],
+        self::OTHER => [
+            ['праверка', 'апаратуры'],
+        ],
     ];
 
-    public const array SYSTEM_TYPES = [
+    private const array SYSTEM_TYPES = [
         self::ABOUT_RECORD,
         self::ABOUT_INFORMANT,
         self::ABOUT_OTHER_INFORMANTS,
@@ -207,6 +219,7 @@ class CategoryType
         self::STORY => [
             'размова', 'звычаі', 'апісанні розныя', 'народная проза', 'рэлігійная паэзія', 'сатырычныя',
             'народная драма', 'легенды', 'легенда', 'жарты', 'фальклорная проза', 'страшылкі', 'байкі',
+            'анекдот',
         ],
         self::ABOUT_DANCES =>  ['згадванне пра танцы'],
         self::PAREMIA => [
@@ -324,20 +337,8 @@ class CategoryType
             if (!$isAll && !in_array($key, [self::ABOUT_RECORD, self::ABOUT_INFORMANT, self::ABOUT_OTHER_INFORMANTS])) {
                 continue;
             }
-            if (false !== mb_strstr($text, $name)) {
-                return $key;
-            }
-        }
-
-        foreach (self::VARIANTS_SAME as $key => $variants) {
-            foreach ($variants as $variant) {
-                if (
-                    !$isAll
-                    && !in_array($key, [self::ABOUT_RECORD, self::ABOUT_INFORMANT, self::ABOUT_OTHER_INFORMANTS])
-                ) {
-                    continue;
-                }
-                if (false !== mb_strstr($text, $variant)) {
+            if (false !== mb_strstr($text, $name) && $key !== self::FAIRY_TALE) {
+                if (empty(preg_grep('/(.*)(' . $name . '[а-я]|[а-я]' . $name . ')(.*)/u', [$text]))) {
                     return $key;
                 }
             }
@@ -354,6 +355,20 @@ class CategoryType
                 }
 
                 if ($hasAll) {
+                    return $key;
+                }
+            }
+        }
+
+        foreach (self::VARIANTS_SAME as $key => $variants) {
+            foreach ($variants as $variant) {
+                if (
+                    !$isAll
+                    && in_array($key, [self::ABOUT_RECORD, self::ABOUT_INFORMANT, self::ABOUT_OTHER_INFORMANTS])
+                ) {
+                    continue;
+                }
+                if (false !== mb_strstr($text, $variant)) {
                     return $key;
                 }
             }
@@ -440,12 +455,7 @@ class CategoryType
 
     public static function detectCategory(string $content, ?string $notes = null, ?int $default = null): ?int
     {
-        $pos = mb_strpos($content, ') ');
-        if ($pos !== false && $pos < 3) {
-            $content = trim(mb_substr($content, $pos + 1));
-        }
-
-        $category = self::findId($content, '', false);
+        $category = self::findId($content, '', true);
         if ($category === null && !empty($notes)) {
             $category = self::findId($notes, '') ?? $default;
         }

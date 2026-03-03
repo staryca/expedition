@@ -8,6 +8,7 @@ class SubjectDto
 {
     public string $name;
     public ?int $type = null;
+    public ?string $notes = null;
 
     /** @var array<FileDto> $files */
     public array $files = [];
