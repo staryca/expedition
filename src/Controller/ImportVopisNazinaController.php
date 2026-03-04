@@ -41,7 +41,7 @@ class ImportVopisNazinaController extends AbstractController
                     if (null === $marker->geoPoint) {
                         $data['errors_location'][] = $marker->place;
                     }
-                    if (null === $marker->dance && in_array($marker->category, [CategoryType::DANCE], true)) {
+                    if (null === $marker->dance && $marker->category === CategoryType::DANCE) {
                         $data['errors_dance'][] = 'No dance for: ' . $marker->name;
                     }
                 }

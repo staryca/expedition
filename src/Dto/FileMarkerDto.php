@@ -11,12 +11,12 @@ use Carbon\Carbon;
 class FileMarkerDto extends PlaceDto
 {
     // To reportBlock
-    public const OTHER_RECORD = 'record';
+    public const string OTHER_RECORD = 'record';
     // To informant
-    public const OTHER_BIRTH_GEO_POINT = 'birth_geo_point';
-    public const OTHER_BIRTH_LOCATION = 'birth_location';
+    public const string OTHER_BIRTH_GEO_POINT = 'birth_geo_point';
+    public const string OTHER_BIRTH_LOCATION = 'birth_location';
     // To ...
-    public const OTHER_MENTION = 'mention';
+    public const string OTHER_MENTION = 'mention';
 
     // To report
     public ?Carbon $dateAction = null;

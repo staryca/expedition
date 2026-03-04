@@ -29,4 +29,21 @@ class DateHelper
 
         return $result;
     }
+
+    public static function getYear(string $text): ?Carbon
+    {
+        $year = null;
+
+        $pos = mb_strpos($text, '19');
+        if ($pos !== false) {
+            $year = (int) mb_substr($text, $pos);
+        } else {
+            $pos = mb_strpos($text, '20');
+            if ($pos !== false) {
+                $year = (int) mb_substr($text, $pos);
+            }
+        }
+
+        return $year > 0 ? self::getDate((string) $year) : null;
+    }
 }

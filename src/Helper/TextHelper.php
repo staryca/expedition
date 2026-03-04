@@ -324,6 +324,11 @@ class TextHelper
         return (int) round($result);
     }
 
+    /**
+     * Remove 12. or 12)
+     * @param string $text
+     * @return string
+     */
     public static function removeFirstNumbers(string $text): string
     {
         $pos = mb_strpos($text, ') ');
