@@ -60,6 +60,7 @@ readonly class VopisNazinaParser
         $keyFile = -1;
         $isPrevSubject = false;
         $isPrevFile = false;
+        $dateSubject = null;
 
         $csv = Reader::fromString($content);
         $csv->setDelimiter(';');
@@ -77,14 +78,7 @@ readonly class VopisNazinaParser
                 continue;
             }
 
-
-            $date = trim($record[VopisNazinaColumns::YEAR]);
-            if (empty($date) && !empty($nameSubject)) {
-                $pos = mb_strpos($nameSubject, '19');
-                if ($pos !== false) {
-                    $date = (int) mb_substr($nameSubject, $pos);
-                }
-            }
+            $dateText = trim($record[VopisNazinaColumns::YEAR]);
 
             $sideNotes = TextHelper::replaceLetters($record[VopisNazinaColumns::NOTES]);
             $informants = trim($record[VopisNazinaColumns::INFORMANTS]);
@@ -93,6 +87,14 @@ readonly class VopisNazinaParser
                 $keySubject < 0
                 || $title === ''
             ) {
+                $date = DateHelper::getYear($dateText);
+                if (empty($date) && !empty($nameSubject)) {
+                    $date = DateHelper::getYear($nameSubject);
+                }
+                if (!empty($date)) {
+                    $dateSubject = $date;
+                }
+
                 if (empty($nameSubject) && empty($side)) {
                     if (!isset($subjects[$keySubject], $subjects[$keySubject]->files[$keyFile])) {
                         throw new \Exception(sprintf(
@@ -139,6 +141,10 @@ readonly class VopisNazinaParser
                     }
                     $isPrevSubject = true;
                     $isPrevFile = false;
+
+                    if (empty($date)) {
+                        $dateSubject = null;
+                    }
                 } else {
                     if (!isset($subjects[$keySubject])) {
                         throw new \Exception(sprintf(
@@ -174,17 +180,11 @@ readonly class VopisNazinaParser
 
                 $marker = new FileMarkerDto();
 
-                if ($date !== '') {
-                    $dateAction = DateHelper::getDate($date);
-                    if (null === $dateAction) {
-                        throw new \Exception(sprintf(
-                            'Bad date "%s", row #%d: %s',
-                            $date,
-                            $key,
-                            $title
-                        ));
-                    }
-                    $marker->dateAction = $dateAction;
+                if (!empty($date)) {
+                    $dateSubject = $date;
+                }
+                if (!empty($dateSubject)) {
+                    $marker->dateAction = $dateSubject;
                 }
 
                 $notes = trim($record[VopisNazinaColumns::ADDITIONAL]);
