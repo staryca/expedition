@@ -10,11 +10,12 @@ use App\Dto\SubjectDto;
 use App\Entity\Type\CategoryType;
 use App\Entity\Type\FileType;
 use App\Entity\Type\SubjectType;
+use App\Helper\DateHelper;
 use App\Helper\TextHelper;
 use App\Parser\Columns\VopisNazinaColumns;
 use App\Service\CategoryService;
+use App\Service\DanceService;
 use App\Service\LocationService;
-use Carbon\Carbon;
 use League\Csv\Exception;
 use League\Csv\InvalidArgument;
 use League\Csv\Reader;
@@ -24,6 +25,7 @@ readonly class VopisNazinaParser
     public function __construct(
         private LocationService $locationService,
         private CategoryService $categoryService,
+        private DanceService $danceService,
     ) {
     }
 
@@ -173,32 +175,16 @@ readonly class VopisNazinaParser
                 $marker = new FileMarkerDto();
 
                 if ($date !== '') {
-                    if (strlen($date) === 4) {
-                        $year = (int) $date;
-                        if ($year < 1900 || $year > 2020) {
-                            throw new \Exception(sprintf(
-                                'Bad date "%s", row #%d: %s',
-                                $date,
-                                $key,
-                                $title
-                            ));
-                        }
-                        $marker->dateAction = Carbon::createFromDate($date, 1, 1); // 01/01 as unknown
-                    } else {
-                        try {
-                            $dateAction = Carbon::createFromFormat('d.m.Y', $date);
-                            if ($dateAction->year < 100) {
-                                $dateAction->year += 1900;
-                            }
-                        } catch (\Exception $e) {
-                            throw new \Exception(sprintf(
-                                'Bad date "%s", row #%d: %s',
-                                $date,
-                                $key,
-                                $title
-                            ));
-                        }
+                    $dateAction = DateHelper::getDate($date);
+                    if (null === $dateAction) {
+                        throw new \Exception(sprintf(
+                            'Bad date "%s", row #%d: %s',
+                            $date,
+                            $key,
+                            $title
+                        ));
                     }
+                    $marker->dateAction = $dateAction;
                 }
 
                 $notes = trim($record[VopisNazinaColumns::ADDITIONAL]);
@@ -210,6 +196,8 @@ readonly class VopisNazinaParser
                     $marker->name = $title;
                     $marker->notes = $notes;
                 }
+
+                $marker->dance = $this->danceService->detectDance($title);
 
                 $locationText = '';
                 $marker->geoPoint = $this->locationService->parsePlace(

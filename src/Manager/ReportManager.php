@@ -627,6 +627,7 @@ class ReportManager
                 $fileMarker->setNotes($markerDto->notes);
                 $fileMarker->setDecoding($markerDto->decoding);
                 $fileMarker->setRitual($markerDto->ritual);
+                $fileMarker->setDance($markerDto->dance);
                 $fileMarker->setAdditional($markerDto->additional);
 
                 $fileMarker->setReportBlock($reportBlocks[$markerDto->reportKey][$markerDto->blockKey]);

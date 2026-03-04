@@ -71,6 +71,9 @@ class FileMarker
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
     private ?\DateTime $publish = null;
 
+    #[ORM\ManyToOne]
+    private ?Dance $dance = null;
+
     public function __construct()
     {
         $this->tags = new ArrayCollection();
@@ -370,6 +373,18 @@ class FileMarker
     public function setPublish(?\DateTime $publish): static
     {
         $this->publish = $publish;
+
+        return $this;
+    }
+
+    public function getDance(): ?Dance
+    {
+        return $this->dance;
+    }
+
+    public function setDance(?Dance $dance): static
+    {
+        $this->dance = $dance;
 
         return $this;
     }

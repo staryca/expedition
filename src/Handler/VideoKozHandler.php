@@ -21,6 +21,7 @@ use App\Parser\VideoKozParser;
 use App\Repository\ExpeditionRepository;
 use App\Repository\FileMarkerRepository;
 use App\Repository\UserRepository;
+use App\Service\DanceService;
 use App\Service\PersonService;
 use App\Service\RitualService;
 use App\Service\YoutubeService;
@@ -43,6 +44,7 @@ class VideoKozHandler
         private readonly UserRepository $userRepository,
         private readonly ReportManager $reportManager,
         private readonly RitualService $ritualService,
+        private readonly DanceService $danceService,
         private readonly YoutubeService $youtubeService,
     ) {
     }
@@ -264,6 +266,7 @@ class VideoKozHandler
                 }
                 if (!empty($videoItem->baseName)) {
                     $marker->additional[FileMarkerAdditional::BASE_NAME] = $videoItem->baseName;
+                    $marker->dance = $this->danceService->detectDance($videoItem->baseName);
                 }
                 if (!empty($videoItem->youTube)) {
                     $marker->additional[FileMarkerAdditional::YOUTUBE] = $videoItem->youTube;

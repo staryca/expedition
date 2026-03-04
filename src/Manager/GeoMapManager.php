@@ -6,6 +6,7 @@ namespace App\Manager;
 
 use App\Dto\GeoMapDto;
 use App\Entity\Expedition;
+use App\Entity\FileMarker;
 use App\Entity\GeoPoint;
 use App\Entity\Informant;
 use App\Entity\Report;
@@ -291,7 +292,7 @@ readonly class GeoMapManager
         return $geoMapData;
     }
 
-    public function getGeoMapDataForMarkers(Expedition $expedition): GeoMapDto
+    public function getGeoMapDataForExpeditionMarkers(Expedition $expedition): GeoMapDto
     {
         $geoMapData = new GeoMapDto();
 
@@ -330,6 +331,40 @@ readonly class GeoMapManager
                     }
                 }
             }
+        }
+
+        // Group by location
+        $geoMapData->groupByLocation();
+
+        return $geoMapData;
+    }
+
+    /**
+     * @param array<FileMarker> $markers
+     * @return GeoMapDto
+     */
+    public function getGeoMapDataForMarkers(array $markers): GeoMapDto
+    {
+        $geoMapData = new GeoMapDto();
+
+        $reports = [];
+        foreach ($markers as $marker) {
+            $report = $marker->getReport();
+            $latLon = $report->getLatLon();
+            $popup = $marker->getName();
+            if ($latLon && !empty($popup)) {
+                $color = $marker->getAdditionalValue('color');
+                $type = empty($color) ? GeoMapDto::TYPE_REPORT : null;
+                $geoMapData->addLatLon($latLon, $popup, $type, $color);
+                $reports[$report->getId()] = $report;
+            }
+        }
+
+        foreach ($reports as $report) {
+            $latLon = $report->getLatLon();
+            $popup = $report->getShortGeoPlace(true);
+            $type = GeoMapDto::TYPE_LOCATION;
+            $geoMapData->addLatLon($latLon, $popup, $type);
         }
 
         // Group by location
