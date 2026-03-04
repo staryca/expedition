@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repository;
 
 use App\Dto\LatLonDto;
+use App\Entity\Dance;
 use App\Entity\Expedition;
 use App\Entity\FileMarker;
 use App\Entity\GeoPoint;
@@ -24,7 +25,7 @@ class FileMarkerRepository extends ServiceEntityRepository
         parent::__construct($registry, FileMarker::class);
     }
 
-    public function getStatistics(?Expedition $expedition = null): array
+    public function getStatisticsByCategory(?Expedition $expedition = null): array
     {
         $qb = $this->createQueryBuilder('fm')
             ->select('COUNT(fm.id) AS cnt', 'fm.category')
@@ -46,6 +47,37 @@ class FileMarkerRepository extends ServiceEntityRepository
             $category = $record['category'];
             if (!CategoryType::isSystemType($category)) {
                 $result[$category] = $record['cnt'];
+            }
+        }
+
+        return $result;
+    }
+
+
+    public function getStatisticsByDance(?Expedition $expedition = null): array
+    {
+        $qb = $this->createQueryBuilder('fm')
+            ->select('COUNT(fm.id) AS cnt', 'd.id')
+            ->leftJoin('fm.reportBlock', 'rb')
+            ->leftJoin('rb.report', 'r')
+            ->leftJoin('fm.dance', 'd')
+            ->groupBy('d.id')
+            ->orderBy('d.name', 'ASC');
+
+        if ($expedition) {
+            $qb->andWhere('r.expedition = :expedition')
+                ->setParameter('expedition', $expedition);
+        }
+
+        $records = $qb
+            ->getQuery()
+            ->getResult();
+
+        $result = [];
+        foreach ($records as $record) {
+            $dance = $record['id'];
+            if (!empty($dance)) {
+                $result[$dance] = $record['cnt'];
             }
         }
 
@@ -178,10 +210,15 @@ class FileMarkerRepository extends ServiceEntityRepository
      * @param LatLonDto|null $dto
      * @param string|null $district
      * @param int|null $category
+     * @param Dance|null $dance
      * @return array<FileMarker>
      */
-    public function getMarkersInLocation(?LatLonDto $dto = null, ?string $district = null, ?int $category = null): array
-    {
+    public function getMarkersInLocation(
+        ?LatLonDto $dto = null,
+        ?string $district = null,
+        ?int $category = null,
+        ?Dance $dance = null,
+    ): array {
         $qb = $this->createQueryBuilder('fm');
 
         $qb
@@ -222,6 +259,11 @@ class FileMarkerRepository extends ServiceEntityRepository
         if ($category) {
             $qb->andWhere('fm.category = :category')
                 ->setParameter('category', $category);
+        }
+
+        if ($dance) {
+            $qb->andWhere('fm.dance = :dance')
+                ->setParameter('dance', $dance);
         }
 
         return $qb

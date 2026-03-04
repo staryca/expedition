@@ -6,6 +6,7 @@ namespace App\Controller;
 
 use ApiPlatform\Metadata\UrlGeneratorInterface;
 use App\Dto\FileMarkerDto;
+use App\Entity\Type\CategoryType;
 use App\Entity\Type\GenderType;
 use App\Handler\VopisNazinaHandler;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -30,6 +31,7 @@ class ImportVopisNazinaController extends AbstractController
         $data = [];
         $data['errors_type'] = [];
         $data['errors_location'] = [];
+        $data['errors_dance'] = [];
         foreach ($subjects as $subject) {
             foreach ($subject->files as $file) {
                 foreach ($file->markers as $marker) {
@@ -38,6 +40,9 @@ class ImportVopisNazinaController extends AbstractController
                     }
                     if (null === $marker->geoPoint) {
                         $data['errors_location'][] = $marker->place;
+                    }
+                    if (null === $marker->dance && in_array($marker->category, [CategoryType::DANCE], true)) {
+                        $data['errors_dance'][] = 'No dance for: ' . $marker->name;
                     }
                 }
             }

@@ -6,7 +6,10 @@ namespace App\Controller;
 
 use App\Entity\Additional\FileMarkerAdditional;
 use App\Entity\Type\CategoryType;
+use App\Manager\GeoMapManager;
+use App\Repository\DanceRepository;
 use App\Repository\FileMarkerRepository;
+use App\Service\DanceService;
 use App\Service\YoutubeService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -16,22 +19,28 @@ class ContentController extends AbstractController
 {
     public function __construct(
         private readonly FileMarkerRepository $fileMarkerRepository,
+        private readonly DanceRepository $danceRepository,
         private readonly YoutubeService $youtubeService,
+        private readonly DanceService $danceService,
+        private readonly GeoMapManager $geoMapManager,
     ) {
     }
 
     #[Route('/content', name: 'content_lists', methods: ['GET'])]
     public function content(): Response
     {
-        $statistics = $this->fileMarkerRepository->getStatistics();
+        $statisticsCategory = $this->fileMarkerRepository->getStatisticsByCategory();
+        $statisticsDance = $this->fileMarkerRepository->getStatisticsByDance();
 
         $markers = $this->fileMarkerRepository->getMarkersByPublish(true, 1);
         $marker = current($markers);
         $future = $marker ? $this->youtubeService->getTitle($marker) : null;
 
         return $this->render('content/lists.html.twig', [
-            'statistics' => $statistics,
+            'statisticsCategory' => $statisticsCategory,
+            'statisticsDance' => $statisticsDance,
             'categories' => CategoryType::getManyNames(),
+            'dances' => $this->danceService->getAllNames(),
             'future' => $future,
         ]);
     }
@@ -41,9 +50,33 @@ class ContentController extends AbstractController
     {
         $markers = $this->fileMarkerRepository->getMarkersInLocation(null, null, $category);
 
+        $geoMapData = $this->geoMapManager->getGeoMapDataForMarkers($markers);
+
         return $this->render('content/markers.html.twig', [
             'markers' => $markers,
-            'category' => CategoryType::getManyOrSingleName($category),
+            'title' => CategoryType::getManyOrSingleName($category),
+            'all' => 'Усе катэгорыі',
+            'geoMapData' => $geoMapData,
+        ]);
+    }
+
+    #[Route('/content/dance/{id}', name: 'content_dance', methods: ['GET'])]
+    public function dance(int $id): Response
+    {
+        $dance = $this->danceRepository->find($id);
+        if (null === $dance) {
+            throw $this->createNotFoundException('Dance not found');
+        }
+
+        $markers = $this->fileMarkerRepository->getMarkersInLocation(null, null, null, $dance);
+
+        $geoMapData = $this->geoMapManager->getGeoMapDataForMarkers($markers);
+
+        return $this->render('content/markers.html.twig', [
+            'markers' => $markers,
+            'title' => $dance->getName(),
+            'all' => 'Усе танцы',
+            'geoMapData' => $geoMapData,
         ]);
     }
 

@@ -53,7 +53,7 @@ class ExpeditionController extends AbstractController
 
         $geoMapData = $this->geoMapManager->getGeoMapDataForExpedition($expedition);
 
-        $statistics = $this->fileMarkerRepository->getStatistics($expedition);
+        $statistics = $this->fileMarkerRepository->getStatisticsByCategory($expedition);
 
         return $this->render('expedition/show.html.twig', [
             'expedition' => $expedition,
@@ -73,7 +73,7 @@ class ExpeditionController extends AbstractController
             throw $this->createNotFoundException('The expedition does not exist');
         }
 
-        $geoMapData = $this->geoMapManager->getGeoMapDataForMarkers($expedition);
+        $geoMapData = $this->geoMapManager->getGeoMapDataForExpeditionMarkers($expedition);
 
         return $this->render('expedition/map.html.twig', [
             'expedition' => $expedition,

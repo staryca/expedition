@@ -7,12 +7,14 @@ namespace App\Tests\Handler\VideoKozHandler\InformantsTest;
 use App\Handler\VideoKozHandler;
 use App\Manager\ReportManager;
 use App\Parser\VideoKozParser;
+use App\Repository\DanceRepository;
 use App\Repository\ExpeditionRepository;
 use App\Repository\FileMarkerRepository;
 use App\Repository\GeoPointRepository;
 use App\Repository\PackRepository;
 use App\Repository\RitualRepository;
 use App\Repository\UserRepository;
+use App\Service\DanceService;
 use App\Service\LocationService;
 use App\Service\PersonService;
 use App\Service\RitualService;
@@ -33,6 +35,7 @@ class VideoKozHandlerTest extends TestCase
         $fileMarkerRepository = $this->createMock(FileMarkerRepository::class);
         $userRepository = $this->createMock(UserRepository::class);
         $ritualRepository = $this->createMock(RitualRepository::class);
+        $danceRepository = $this->createMock(DanceRepository::class);
 
         $locationService = new LocationService($geoPointRepository);
         $personService = new PersonService();
@@ -40,6 +43,7 @@ class VideoKozHandlerTest extends TestCase
 
         $reportManager = $this->createMock(ReportManager::class);
         $ritualService = new RitualService($ritualRepository);
+        $danceService = new DanceService($danceRepository);
         $youtubeService = $this->createMock(YoutubeService::class);
 
         $this->handler = new VideoKozHandler(
@@ -50,6 +54,7 @@ class VideoKozHandlerTest extends TestCase
             $userRepository,
             $reportManager,
             $ritualService,
+            $danceService,
             $youtubeService
         );
     }

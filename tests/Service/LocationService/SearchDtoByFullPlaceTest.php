@@ -66,6 +66,21 @@ class SearchDtoByFullPlaceTest extends TestCase
         $this->assertEquals('Гроб’е', $dto->names[2]);
         $this->assertEquals('Граб’я', $dto->names[3]);
     }
+
+    public function testShortSettlement(): void
+    {
+        $dto = $this->locationService->getSearchDtoByFullPlace('пас. Ластрыжна, Мсьціслаўскі раён, ');
+
+        $this->assertNull($dto->region);
+        $this->assertEquals('Мсціслаўскі раён', $dto->district);
+        $this->assertEquals(GeoPointType::BE_SETTLEMENT_LONGS, $dto->prefixes);
+        $this->assertCount(4, $dto->names);
+        $this->assertEquals('Ластрыжна', $dto->names[0]);
+        $this->assertEquals('Ластрыжн', $dto->names[1]);
+        $this->assertEquals('Лострыжна', $dto->names[2]);
+        $this->assertEquals('Ластражна', $dto->names[3]);
+    }
+
     public function testOtherWords(): void
     {
         $dto = $this->locationService->getSearchDtoByFullPlace('в. Казлы, Расонскі р-н падарожнае апытанне');
@@ -90,7 +105,21 @@ class SearchDtoByFullPlaceTest extends TestCase
         $this->assertEquals('Юркава', $dto->names[0]);
         $this->assertEquals('Юркова', $dto->names[1]);
     }
-    public function testWithComma(): void
+
+    public function testWithCommaAtEnd(): void
+    {
+        $dto = $this->locationService->getSearchDtoByFullPlace('в. За`ламы, Верхнядзвінскі раён, ');
+
+        $this->assertNull($dto->region);
+        $this->assertEquals('Верхнядзвінскі раён', $dto->district);
+        $this->assertEquals(GeoPointType::BE_VILLAGE_LONGS, $dto->prefixes);
+        $this->assertCount(3, $dto->names);
+        $this->assertEquals('Заламы', $dto->names[0]);
+        $this->assertEquals('Золамы', $dto->names[1]);
+        $this->assertEquals('Залама', $dto->names[2]);
+    }
+
+    public function testWithCommaAndEnter(): void
     {
         $dto = $this->locationService->getSearchDtoByFullPlace('в. Параф\'янава, Сітцаўскі сельсавет, Докшыцкі раён
 ');

@@ -1,14 +1,28 @@
 {% extends 'base.content.html.twig' %}
 
 {% block title %}
-    {{ category }}
+    {{ title }}
+{% endblock %}
+
+{% block stylesheets %}
+    <style>
+        #map { height: 300px; }
+    </style>
+{% endblock %}
+
+{% block styles_finish %}
+    {{ include('part/finish.for.geomapdata.html.twig') }}
 {% endblock %}
 
 {% block body %}
     <div class="container py-5">
-        <h1 class="h2">{{ category }}</h1>
+        <h1 class="h2">{{ title }}</h1>
         <div class="row">
-            <p><a href="{{ path('content_lists') }}">Усе катэгорыі</a>.</p>
+            <p><a href="{{ path('content_lists') }}">{{ all }}</a>.</p>
+
+            {% if geoMapData.center %}
+                <div id="map"></div>
+            {% endif %}
 
             <table class="table">
                 <thead>

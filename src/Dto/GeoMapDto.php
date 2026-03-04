@@ -6,13 +6,15 @@ namespace App\Dto;
 
 class GeoMapDto
 {
-    public const TYPE_REPORT = 1;
-    public const TYPE_BASE = 2;
-    public const TYPE_TIP = 3;
-    public const TYPE_COMMENT = 4;
-    public const TYPE_COMPLEX = 5;
+    public const int TYPE_LOCATION = 1;
+    public const int TYPE_REPORT = 2;
+    public const int TYPE_BASE = 3;
+    public const int TYPE_TIP = 4;
+    public const int TYPE_COMMENT = 5;
+    public const int TYPE_COMPLEX = 6;
 
-    private const COLOR_TYPES = [
+    private const array COLOR_TYPES = [
+        self::TYPE_LOCATION => 'yellow',
         self::TYPE_REPORT => 'green',
         self::TYPE_BASE => 'violet',
         self::TYPE_TIP => 'red',
@@ -90,21 +92,35 @@ class GeoMapDto
         return $groups;
     }
 
-    public function groupByLocation(): void
+    public function groupByLocation(int $maxItems = 8): void
     {
         $groups = $this->getGroupsByLocation();
         foreach ($groups as $keys) {
             $latLon = clone $this->points[current($keys)];
 
+            $location = '';
+            foreach ($keys as $key) {
+                if ($this->types[$key] === self::TYPE_LOCATION) {
+                    $location = $this->popups[$key];
+                }
+            }
+
             $types = [];
             $colors = [];
-            $popup = '<ul>';
-            foreach ($keys as $key) {
-                $popup .= '<li>' . $this->popups[$key] . '</li>';
-                if ($this->types[$key]) {
-                    $types[$this->types[$key]] = 1;
-                } else {
-                    $colors[$this->colors[$key]] = 1;
+            $popup = '<ul><b>' . $location . '</b>';
+            foreach ($keys as $index => $key) {
+                if ($this->types[$key] !== self::TYPE_LOCATION) {
+                    if ($index < $maxItems) {
+                        $popup .= '<li>' . $this->popups[$key] . '</li>';
+                    } elseif ($index === $maxItems) {
+                        $popup .= '<li>...</li>';
+                    }
+
+                    if ($this->types[$key]) {
+                        $types[$this->types[$key]] = 1;
+                    } else {
+                        $colors[$this->colors[$key]] = 1;
+                    }
                 }
 
                 $this->removeByIndex($key);
