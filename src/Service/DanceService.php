@@ -22,6 +22,8 @@ class DanceService
         'Камарынская' => ['Камарыцкага', 'Камарынскі'],
         'Васадулі' => ['Ва саду лі'],
         'Нарэчанька' => ['на рэчаньку'],
+        'Ойра' => ['Войра'],
+        'Вальс' => ['Вальсок'],
     ];
 
     private const array OTHER_NAMES = [
@@ -76,7 +78,9 @@ class DanceService
 
         foreach ($this->dances as $dance => $object) {
             if (mb_strpos($text, $dance) !== false) {
-                return $object;
+                if (empty(preg_grep('/(.*)(' . $dance . '([а-я]|і|ў)|([а-я]|і|ў)' . $dance . ')(.*)/u', [$text]))) {
+                    return $object;
+                }
             }
         }
 

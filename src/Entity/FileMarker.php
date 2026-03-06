@@ -163,6 +163,11 @@ class FileMarker
         return $this->category !== CategoryType::OTHER;
     }
 
+    public function isCategoryForDance(): bool
+    {
+        return in_array($this->category, CategoryType::TYPES_WITH_DANCES, true);
+    }
+
     public function getStartTime(): ?\DateTimeInterface
     {
         return $this->startTime;

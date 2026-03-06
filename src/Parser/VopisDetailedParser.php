@@ -13,17 +13,20 @@ use App\Entity\Type\SubjectType;
 use App\Helper\TextHelper;
 use App\Parser\Columns\VopisDetailedColumns;
 use App\Service\CategoryService;
+use App\Service\DanceService;
 use App\Service\LocationService;
 use Carbon\Carbon;
 use League\Csv\Exception;
 use League\Csv\InvalidArgument;
 use League\Csv\Reader;
+use League\Csv\SyntaxError;
 
 readonly class VopisDetailedParser
 {
     public function __construct(
         private LocationService $locationService,
         private CategoryService $categoryService,
+        private DanceService $danceService,
     ) {
     }
 
@@ -47,10 +50,11 @@ readonly class VopisDetailedParser
     }
 
     /**
-     * @param string $content
+     * @param string $contentFile
      * @return SubjectDto[]
      * @throws Exception
      * @throws InvalidArgument
+     * @throws SyntaxError
      */
     public function parse(string $contentFile): array
     {
@@ -148,7 +152,11 @@ readonly class VopisDetailedParser
                 $marker->category = $category !== CategoryType::OTHER ? $category : CategoryType::STORY;
                 if (!CategoryType::isSystemType($category)) {
                     $marker->name = $content;
-                    $marker->notes = $notes;
+                }
+                $marker->notes = $notes;
+
+                if (!empty($marker->name)) {
+                    $marker->dance = $this->danceService->detectDance($marker->name);
                 }
 
                 $locationText = '';

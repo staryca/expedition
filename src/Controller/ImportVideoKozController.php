@@ -125,6 +125,14 @@ class ImportVideoKozController extends AbstractController
         $data['reports'] = $reportsData;
 
         $this->videoKozHandler->convertVideoItemsToFileMarkers($files);
+        $data['errors_dance'] = [];
+        foreach ($files as $file) {
+            foreach ($file->markers as $marker) {
+                if ($marker->category === CategoryType::DANCE && empty($marker->dance)) {
+                    $data['errors_dance'][] = $marker;
+                }
+            }
+        }
         $data['files'] = $files;
 
         $data['save'] = $this->generateUrl('app_import_video_koz_save', [], UrlGeneratorInterface::ABS_URL);

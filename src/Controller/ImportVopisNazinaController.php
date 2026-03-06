@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use ApiPlatform\Metadata\UrlGeneratorInterface;
-use App\Dto\FileMarkerDto;
 use App\Entity\Type\CategoryType;
 use App\Entity\Type\GenderType;
 use App\Handler\VopisNazinaHandler;
@@ -15,7 +14,7 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class ImportVopisNazinaController extends AbstractController
 {
-    private const int EXPEDITION_ID = 996; // 14
+    private const int EXPEDITION_ID = 14; // 14
     private const string FILENAME = '../var/data/vopis_nazina/vopis.csv';
 
     public function __construct(

@@ -67,6 +67,9 @@ class DetectCategoryTest extends TestCase
             ['Сігнал "Сняданне"', 'труба', CategoryType::MELODY],
             ['Звесткі пра інфарманта', '', CategoryType::ABOUT_INFORMANT],
             ['(Зьвесткі пра запіс)', '', CategoryType::ABOUT_RECORD],
+            ['Як запрашалі на танец дзяўчыну, як трымаліся?', 'апускаў дзьве рукі далонямі ўгару', CategoryType::STORY],
+            ['Пра танец "Дустэп"', '', CategoryType::ABOUT_DANCES],
+            ['Да́мскі вальс', '', CategoryType::MELODY],
         ];
     }
 }

@@ -6,6 +6,7 @@ namespace App\Controller;
 
 use ApiPlatform\Metadata\UrlGeneratorInterface;
 use App\Dto\FileMarkerDto;
+use App\Entity\Type\CategoryType;
 use App\Entity\Type\GenderType;
 use App\Handler\VopisDetailedHandler;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -32,11 +33,18 @@ class ImportVopisDetailedController extends AbstractController
         $data['errors_location'] = [];
         $data['errors_date'] = [];
         $data['errors_time'] = [];
+        $data['empty_dance'] = [];
         foreach ($subjects as $subject) {
             foreach ($subject->files as $file) {
                 foreach ($file->markers as $marker) {
                     if ($marker->category === null) {
                         $data['errors_type'][] = $marker;
+                    }
+                    if (
+                        (in_array($marker->category, CategoryType::TYPES_WITH_DANCES))
+                        && empty($marker->dance)
+                    ) {
+                        $data['empty_dance'][] = $marker;
                     }
                     if (null === $marker->geoPoint) {
                         $data['errors_location'][] = $marker->place;

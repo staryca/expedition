@@ -164,6 +164,8 @@ class CategoryType
             ['як', 'святкавалі'],
             ['як', 'спявалі'],
             ['што', 'рабілі'],
+            ['як', 'запрашалі'],
+            ['калі', 'гралі'],
         ],
         self::ABOUT_DANCES => [
             ['як', 'танцавалі'],
@@ -187,6 +189,14 @@ class CategoryType
         self::ABOUT_INFORMANT,
         self::ABOUT_OTHER_INFORMANTS,
         self::CHANGE_INFORMANTS,
+    ];
+
+    public const array TYPES_WITH_DANCES = [
+        self::DANCE,
+        self::MELODY,
+        self::ABOUT_DANCES,
+        self::DANCE_MOVEMENTS,
+        self::CHORUSES,
     ];
 
     private const array NOT_IMPORTANT_TYPES = [
@@ -338,7 +348,10 @@ class CategoryType
                 continue;
             }
             if (false !== mb_strstr($text, $name) && $key !== self::FAIRY_TALE) {
-                if (empty(preg_grep('/(.*)(' . $name . '[а-я]|[а-я]' . $name . ')(.*)/u', [$text]))) {
+                if (
+                    empty(preg_grep('/(' . $name . '([а-я]|і|ў)|([а-я]|і|ў)' . $name . ')/u', [$text]))
+                    && empty(preg_grep('/( на ' . $name . ')|(пра ' . $name . ')/u', [$text])) // прапускаць, напрыклад, "на танец ..."
+                ) {
                     return $key;
                 }
             }

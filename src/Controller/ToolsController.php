@@ -18,6 +18,7 @@ use App\Repository\InformantRepository;
 use App\Repository\ReportBlockRepository;
 use App\Repository\ReportRepository;
 use App\Service\CategoryService;
+use App\Service\DanceService;
 use App\Service\LocationService;
 use App\Service\MarkerService;
 use App\Service\PersonService;
@@ -41,6 +42,7 @@ class ToolsController extends AbstractController
         private readonly LocationService $locationService,
         private readonly RitualService $ritualService,
         private readonly MarkerService $markerService,
+        private readonly DanceService $danceService,
         private readonly CategoryService $categoryService,
         private readonly PersonManager $personManager,
         private readonly EntityManagerInterface $entityManager,
@@ -645,6 +647,47 @@ class ToolsController extends AbstractController
 
         return $this->render('import/show.table.result.html.twig', [
             'headers' => ['ID', 'Name', 'Notes', 'Tags', 'Катэгорыя', 'Новая'],
+            'data' => $data,
+        ]);
+    }
+
+    #[Route('/import/tools/correct_marker_dance', name: 'app_import_tools_correct_marker_dance')]
+    public function correctMarkerDance(): Response
+    {
+        $data = [];
+
+        $markers = $this->fileMarkerRepository->findAll();
+        foreach ($markers as $marker) {
+            $file = $marker->getFile();
+            if ($file && $file->isVirtualContent()) {
+                continue;
+            }
+
+            if (empty($marker->getName())) {
+                continue;
+            }
+
+            $newDance = $this->danceService->detectDance($marker->getName());
+            if ($marker->getDance()?->getId() === $newDance?->getId()) {
+                continue;
+            }
+
+            $item = [
+                'id' => $marker->getId(),
+                'category' => $marker->getCategoryName(),
+                'name' => $marker->getName(),
+                'notes' => $marker->getNotes(),
+                'old' => $marker->getDance()?->getName(),
+                'new' => $newDance?->getName(),
+            ];
+
+            $data[] = $item;
+        }
+
+        //$this->entityManager->flush();
+
+        return $this->render('import/show.table.result.html.twig', [
+            'headers' => ['ID', 'Катэгорыя', 'Name', 'Notes', 'Былы', 'Новы'],
             'data' => $data,
         ]);
     }
