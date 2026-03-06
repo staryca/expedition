@@ -22,7 +22,7 @@ readonly class CategoryService
         $isDance = $category === CategoryType::QUADRILLE || $this->danceService->isDance($text);
         if ($category === null) {
             $isMusician = Musician::isMusician($notes);
-            if ($isDance && $isMusician) {
+            if ($isDance && ($isMusician || empty($notes))) {
                 $category = CategoryType::MELODY;
             }
         }

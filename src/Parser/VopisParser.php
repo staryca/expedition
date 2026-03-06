@@ -8,6 +8,7 @@ use App\Dto\FileDto;
 use App\Dto\FileMarkerDto;
 use App\Entity\Type\CategoryType;
 use App\Entity\Type\FileType;
+use App\Service\DanceService;
 use App\Service\LocationService;
 use League\Csv\Exception;
 use League\Csv\InvalidArgument;
@@ -20,6 +21,7 @@ class VopisParser
 
     public function __construct(
         private readonly LocationService $locationService,
+        private readonly DanceService $danceService,
     ) {
     }
 
@@ -97,6 +99,10 @@ class VopisParser
                         $marker->notes = $notes;
                         if ($marker->category === CategoryType::OTHER) {
                             $marker->category = CategoryType::STORY;
+                        }
+
+                        if (!empty($marker->name)) {
+                            $marker->dance = $this->danceService->detectDance($marker->name);
                         }
                     }
                 }

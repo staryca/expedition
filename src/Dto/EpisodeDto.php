@@ -40,7 +40,7 @@ class EpisodeDto
         return [
             'category' => $this->category,
             'text' => $this->text,
-            'ritual' => $this->ritual->getName(),
+            'ritual' => $this->ritual?->getName(),
             'tags' => $this->tags,
         ];
     }
