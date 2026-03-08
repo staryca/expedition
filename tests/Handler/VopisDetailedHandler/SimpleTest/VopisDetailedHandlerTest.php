@@ -43,7 +43,7 @@ class VopisDetailedHandlerTest extends TestCase
         $danceRepository = $this->createMock(DanceRepository::class);
         $danceService = new DanceService($danceRepository);
         $categoryService = new CategoryService($danceService);
-        $parser = new VopisDetailedParser($locationService, $categoryService);
+        $parser = new VopisDetailedParser($locationService, $categoryService, $danceService);
 
         $this->handler = new VopisDetailedHandler(
             $parser,

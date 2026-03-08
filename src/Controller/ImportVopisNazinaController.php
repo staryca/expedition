@@ -31,8 +31,12 @@ class ImportVopisNazinaController extends AbstractController
         $data['errors_type'] = [];
         $data['errors_location'] = [];
         $data['errors_dance'] = [];
+        $data['errors_filenames'] = [];
         foreach ($subjects as $subject) {
             foreach ($subject->files as $file) {
+                if (empty($file->getFilename())) {
+                    $data['errors_filenames'][] = $subject->name;
+                }
                 foreach ($file->markers as $marker) {
                     if ($marker->category === null) {
                         $data['errors_type'][] = $marker;

@@ -70,6 +70,8 @@ class DetectCategoryTest extends TestCase
             ['Як запрашалі на танец дзяўчыну, як трымаліся?', 'апускаў дзьве рукі далонямі ўгару', CategoryType::STORY],
             ['Пра танец "Дустэп"', '', CategoryType::ABOUT_DANCES],
             ['Да́мскі вальс', '', CategoryType::MELODY],
+            ['Кадрыль (1-ы танец)', '', CategoryType::QUADRILLE],
+            ['Як разводзяць танец на вісіллі', '', CategoryType::STORY],
         ];
     }
 }

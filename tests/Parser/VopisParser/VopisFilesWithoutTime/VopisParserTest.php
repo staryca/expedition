@@ -7,7 +7,9 @@ namespace App\Tests\Parser\VopisParser\VopisFilesWithoutTime;
 use App\Entity\Type\CategoryType;
 use App\Manager\FileManager;
 use App\Parser\VopisParser;
+use App\Repository\DanceRepository;
 use App\Repository\GeoPointRepository;
+use App\Service\DanceService;
 use App\Service\LocationService;
 use App\Service\PersonService;
 use Carbon\Carbon;
@@ -23,10 +25,12 @@ class VopisParserTest extends TestCase
         parent::setUp();
 
         $geoPointRepository = $this->createMock(GeoPointRepository::class);
+        $danceRepository = $this->createMock(DanceRepository::class);
 
         $locationService = new LocationService($geoPointRepository);
         $personService = new PersonService();
-        $this->vopisParser = new VopisParser($locationService);
+        $danceService = new DanceService($danceRepository);
+        $this->vopisParser = new VopisParser($locationService, $danceService);
         $this->fileManager = new FileManager($personService);
     }
 

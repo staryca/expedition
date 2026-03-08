@@ -19,21 +19,21 @@ use App\Entity\Type\UserRoleType;
 use App\Manager\ReportManager;
 use App\Parser\VopisNazinaParser;
 use App\Repository\ExpeditionRepository;
-use App\Repository\UserRepository;
 use App\Service\PersonService;
+use App\Service\UserService;
 use Carbon\CarbonImmutable;
 use League\Csv\Exception;
 use League\Csv\InvalidArgument;
 
 class VopisNazinaHandler
 {
-    private const int USER_LEADER_ID = 8; // 8 - Nazina
+    private const string USER_LEADER = 'Назіна';
 
     public function __construct(
         private readonly VopisNazinaParser $parser,
         private readonly ExpeditionRepository $expeditionRepository,
         private readonly PersonService $personService,
-        private readonly UserRepository $userRepository,
+        private readonly UserService $userService,
         private readonly ReportManager $reportManager,
     ) {
     }
@@ -58,7 +58,11 @@ class VopisNazinaHandler
      */
     public function createReportsData(array &$subjects): array
     {
-        $user = $this->userRepository->find(self::USER_LEADER_ID);
+        $userNazina = $this->userService->findByFullName(self::USER_LEADER);
+        if (!$userNazina) {
+            throw new \Exception('User "' . self::USER_LEADER . '" not found. Need add to database.');
+        }
+        $userCurrent = $userNazina;
 
         $hashReports = [];
         /** @var array<ReportDataDto> $reports */
@@ -68,13 +72,23 @@ class VopisNazinaHandler
         foreach ($subjects as $subject) {
             foreach ($subject->files as $file) {
                 foreach ($file->markers as $markerKey => $marker) {
+                    if (!empty($marker->userText)) {
+                        $user = $this->userService->findByFullName($marker->userText);
+                        if (!$user) {
+                            throw new \Exception('User "' . $marker->userText . '" not found. Need add to database.');
+                        }
+                        $userCurrent = $user;
+                    }
+
                     /* for Report */
                     if (count($hashReports) === 0 && $marker->isEmptyPlace()) {
                         throw new \Exception('First record without place!');
                     }
                     $hashReport = ($marker->dateAction?->format('Ymd'))
                         . '_'
-                        . ($marker->isEmptyPlace() ? $reports[$reportKey]->getPlaceHash() : $marker->getPlaceHash());
+                        . ($marker->isEmptyPlace() ? $reports[$reportKey]->getPlaceHash() : $marker->getPlaceHash())
+                        . '_'
+                        . ($userCurrent?->getId());
                     if (isset($hashReports[$hashReport])) {
                         $reportKey = $hashReports[$hashReport];
                         $blockKey = count($reports[$reportKey]->blocks) - 1;
@@ -89,9 +103,9 @@ class VopisNazinaHandler
                         $reports[$reportKey]->dateCreated = CarbonImmutable::now();
                         $reports[$reportKey]->dateAction = $marker->dateAction;
 
-                        if ($user) {
+                        if ($userCurrent) {
                             $userRole = new UserRolesDto();
-                            $userRole->user = $user;
+                            $userRole->user = $userCurrent;
                             $userRole->roles = [UserRoleType::ROLE_LEADER];
                             $reports[$reportKey]->userRoles[] = $userRole;
                         }
@@ -131,6 +145,8 @@ class VopisNazinaHandler
                     $marker->blockKey = $blockKey;
                 }
             }
+
+            $userCurrent = $userNazina;
         }
 
         return $reports;
