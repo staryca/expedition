@@ -20,6 +20,7 @@ class FileMarkerDto extends PlaceDto
 
     // To report
     public ?Carbon $dateAction = null;
+    public ?string $userText = null;
 
     // To informant
     public ?string $informantsText = null;

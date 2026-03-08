@@ -51,8 +51,8 @@ class LocationService
     public function getSearchDtoByFullPlace(string $fullPlace): GeoPointSearchDto
     {
         $fullPlace = str_replace(
-            ['р-н', 'раёна', 'сельсавет', 'вобл.', 'вобласці', '  ', ' - ', ' -', '- ', '[', ']'],
-            [self::DISTRICT, self::DISTRICT, self::SUBDISTRICT_SHORT, self::REGION, self::REGION, ' ', '-', '-', '-', '', ''],
+            ['р-н', 'раёна', 'сельсавет', 'вобл.', 'вобласці', '  ', ' - ', ' -', '- '],
+            [self::DISTRICT, self::DISTRICT, self::SUBDISTRICT_SHORT, self::REGION, self::REGION, ' ', '-', '-', '-'],
             TextHelper::replaceLetters($fullPlace)
         );
         $fullPlace = self::addComma($fullPlace, self::DISTRICT);
@@ -74,6 +74,7 @@ class LocationService
                 }
 
                 if (str_contains($part, self::DISTRICT)) {
+                    $part = str_replace('[', '', $part);
                     $district = TextHelper::letterToUpper(trim($part));
                 } elseif (str_contains($part, self::SUBDISTRICT_SHORT)) {
                     $subDistrict = trim($part);
@@ -393,6 +394,10 @@ class LocationService
 
             if (str_starts_with($note, 'з ')) {
                 $note = mb_substr($note, 2);
+            }
+
+            foreach (GeoPointSearchDto::PREFIXES as $search => $prefix) {
+                $note = str_replace($search, $prefix, $note);
             }
 
             $prefix = self::getPrefixForPlace($note);

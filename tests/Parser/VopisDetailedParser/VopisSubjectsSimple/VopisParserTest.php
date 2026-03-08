@@ -28,7 +28,7 @@ class VopisParserTest extends TestCase
         $locationService = new LocationService($geoPointRepository);
         $danceService = new DanceService($danceRepository);
         $categoryService = new CategoryService($danceService);
-        $this->parser = new VopisDetailedParser($locationService, $categoryService);
+        $this->parser = new VopisDetailedParser($locationService, $categoryService, $danceService);
     }
 
     public function testParse(): void

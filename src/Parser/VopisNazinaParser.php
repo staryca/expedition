@@ -22,6 +22,8 @@ use League\Csv\Reader;
 
 readonly class VopisNazinaParser
 {
+    private const string USER_NAZINA = 'Назіна';
+
     public function __construct(
         private LocationService $locationService,
         private CategoryService $categoryService,
@@ -69,23 +71,21 @@ readonly class VopisNazinaParser
         $header = $csv->getHeader();
         foreach ($csv->getRecords($header) as $key => $record) {
             $nameSubject = trim($record[VopisNazinaColumns::SUBJECT]);
-            if ($nameSubject !== '' && mb_strlen($nameSubject) < 3) {
-                continue;
-            }
             $side = trim($record[VopisNazinaColumns::SIDE]);
             $title = trim($record[VopisNazinaColumns::TITLE]);
-            if ($nameSubject === '' && $title === '' && $side === '') {
+            $sideNotes = TextHelper::replaceLetters($record[VopisNazinaColumns::NOTES]);
+            $informants = trim($record[VopisNazinaColumns::INFORMANTS]);
+            if ($nameSubject === '' && $title === '' && $side === '' && $sideNotes === '' && $informants === '') {
                 continue;
             }
 
             $dateText = trim($record[VopisNazinaColumns::YEAR]);
-
-            $sideNotes = TextHelper::replaceLetters($record[VopisNazinaColumns::NOTES]);
-            $informants = trim($record[VopisNazinaColumns::INFORMANTS]);
+            $userText = trim($record[VopisNazinaColumns::USER]);
+            $notes = trim($record[VopisNazinaColumns::ADDITIONAL]);
 
             if (
                 $keySubject < 0
-                || $title === ''
+                || ($title === '' && $notes === '')
             ) {
                 $date = DateHelper::getYear($dateText);
                 if (empty($date) && !empty($nameSubject)) {
@@ -121,12 +121,12 @@ readonly class VopisNazinaParser
                     }
                     if (!$isPrevFile) {
                         $keyFile++;
-                        $name = TextHelper::replaceLetters($nameSubject);
+                        $name = TextHelper::replaceLetters($side);
                         $subjects[$keySubject]->files[$keyFile] = new FileDto($name);
                         $subjects[$keySubject]->files[$keyFile]->type = FileType::TYPE_AUDIO;
                         $isPrevFile = true;
                     } else {
-                        $note = TextHelper::replaceLetters($nameSubject);
+                        $note = TextHelper::replaceLetters($side);
                         $notes = $subjects[$keySubject]->files[$keyFile]->notes;
                         $notes .= (empty($notes) ? '' : "\n") . $note;
                         $subjects[$keySubject]->files[$keyFile]->notes = $notes;
@@ -187,7 +187,6 @@ readonly class VopisNazinaParser
                     $marker->dateAction = $dateSubject;
                 }
 
-                $notes = trim($record[VopisNazinaColumns::ADDITIONAL]);
                 $title = TextHelper::removeFirstNumbers($title);
 
                 $category = $this->categoryService->detectCategory($title, $notes) ?? CategoryType::OTHER;
@@ -198,6 +197,8 @@ readonly class VopisNazinaParser
                 }
 
                 $marker->dance = $this->danceService->detectDance($title);
+
+                $marker->userText = $userText;
 
                 $locationText = '';
                 $marker->geoPoint = $this->locationService->parsePlace(

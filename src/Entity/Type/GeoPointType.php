@@ -6,34 +6,34 @@ namespace App\Entity\Type;
 
 class GeoPointType
 {
-    public const NAME = 'geo_point';
+    public const string NAME = 'geo_point';
 
-    public const BE_AGRO_CITY = 'аграгарадок';
-    public const BE_VILLAGE = 'вёска';
-    public const BE_OLD_VILLAGE = 'былая вёска';
-    public const BE_TOWN = 'горад';
-    public const BE_SETTLEMENT = 'пасёлак';
-    public const BE_URBAN_SETTLEMENT = 'гарадскі пасёлак';
-    public const BE_RESORT_SETTLEMENT = 'курортны пасёлак';
-    public const BE_WORKER_SETTLEMENT = 'рабочы пасёлак';
-    public const BE_SNP = 'снп';
-    public const BE_TRACT = 'урочышча';
-    public const BE_FOLWARK = 'фальварак';
-    public const BE_KHUTOR = 'хутар';
+    public const string BE_AGRO_CITY = 'аграгарадок';
+    public const string BE_VILLAGE = 'вёска';
+    public const string BE_OLD_VILLAGE = 'былая вёска';
+    public const string BE_TOWN = 'горад';
+    public const string BE_SETTLEMENT = 'пасёлак';
+    public const string BE_URBAN_SETTLEMENT = 'гарадскі пасёлак';
+    public const string BE_RESORT_SETTLEMENT = 'курортны пасёлак';
+    public const string BE_WORKER_SETTLEMENT = 'рабочы пасёлак';
+    public const string BE_SNP = 'снп';
+    public const string BE_TRACT = 'урочышча';
+    public const string BE_FOLWARK = 'фальварак';
+    public const string BE_KHUTOR = 'хутар';
 
-    public const BE_AGRO_CITY_SHORT = 'аг';
-    public const BE_VILLAGE_SHORT = 'в';
-    public const BE_OLD_VILLAGE_SHORT = 'в';
-    public const BE_TOWN_SHORT = 'г';
-    public const BE_SETTLEMENT_SHORT = 'п';
-    public const BE_URBAN_SETTLEMENT_SHORT = 'гп';
-    public const BE_RESORT_SETTLEMENT_SHORT = 'кп';
-    public const BE_WORKER_SETTLEMENT_SHORT = 'рп';
-    public const BE_TRACT_SHORT = 'ур';
-    public const BE_FOLWARK_SHORT = 'ф';
-    public const BE_KHUTOR_SHORT = 'х';
+    public const string BE_AGRO_CITY_SHORT = 'аг';
+    public const string BE_VILLAGE_SHORT = 'в';
+    public const string BE_OLD_VILLAGE_SHORT = 'в';
+    public const string BE_TOWN_SHORT = 'г';
+    public const string BE_SETTLEMENT_SHORT = 'п';
+    public const string BE_URBAN_SETTLEMENT_SHORT = 'гп';
+    public const string BE_RESORT_SETTLEMENT_SHORT = 'кп';
+    public const string BE_WORKER_SETTLEMENT_SHORT = 'рп';
+    public const string BE_TRACT_SHORT = 'ур';
+    public const string BE_FOLWARK_SHORT = 'ф';
+    public const string BE_KHUTOR_SHORT = 'х';
 
-    public const BE_SHORT_LONG = [
+    public const array BE_SHORT_LONG = [
         self::BE_AGRO_CITY_SHORT => self::BE_AGRO_CITY,
         self::BE_VILLAGE_SHORT => self::BE_VILLAGE,
         self::BE_TOWN_SHORT => self::BE_TOWN,
@@ -46,7 +46,7 @@ class GeoPointType
         self::BE_KHUTOR_SHORT => self::BE_KHUTOR,
     ];
 
-    public const BE_VILLAGE_LONGS = [
+    public const array BE_VILLAGE_LONGS = [
         self::BE_VILLAGE,
         self::BE_OLD_VILLAGE,
         self::BE_AGRO_CITY,
@@ -56,7 +56,7 @@ class GeoPointType
         self::BE_TOWN,
     ];
 
-    public const BE_SETTLEMENT_LONGS = [
+    public const array BE_SETTLEMENT_LONGS = [
         self::BE_SETTLEMENT,
         self::BE_URBAN_SETTLEMENT,
     ];

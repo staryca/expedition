@@ -703,6 +703,7 @@ class PersonService
             $parts = TextHelper::explodeWithBrackets([','], $partBase);
             $name = '';
             foreach ($parts as $part) {
+                $part = trim($part);
                 [$text] = TextHelper::getNotes($part);
                 $isLocation = LocationService::isLocation($part);
                 if (
@@ -800,6 +801,7 @@ class PersonService
                 $infNotes[] = $additionalNotes;
             }
             foreach ($parts as $part) {
+                $part = rtrim($part, ")");
                 if (!empty($part)) {
                     $infNotes[] = $part;
                 }
@@ -850,7 +852,7 @@ class PersonService
                 || str_contains($note, 'гадоў')
                 || str_contains($note, 'гады')
                 || str_contains($note, 'лет')
-                || (str_contains($note, 'г.') && !str_contains($note, 'г.н'))
+                || (str_contains($note, 'г.') && !str_contains($note, 'г.н') && !str_contains($note, 'г.п'))
             ) {
                 $age = (int) $note;
                 if ($age > $years['min'] && $age < $years['max']) {

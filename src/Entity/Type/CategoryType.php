@@ -126,7 +126,14 @@ class CategoryType
             'зьвесткі пра інфарматара',
         ],
         self::ABOUT_OTHER_INFORMANTS => ['зьвесткі пра іншых інфармантаў'],
-        self::CHANGE_INFORMANTS => ['змена інфарманта', 'зьмена інфарманта', 'зьмена інфармантаў', 'змена інфарматара'],
+        self::CHANGE_INFORMANTS => [
+            'змена інфарманта',
+            'зьмена інфарманта',
+            'зьмена інфармантаў',
+            'змена інфарматара',
+            'замена гарманіста',
+            'змена гарманіста',
+        ],
     ];
 
     private const array VARIANTS_OTHER = [
@@ -166,6 +173,7 @@ class CategoryType
             ['што', 'рабілі'],
             ['як', 'запрашалі'],
             ['калі', 'гралі'],
+            ['як', 'разводзяць'],
         ],
         self::ABOUT_DANCES => [
             ['як', 'танцавалі'],
@@ -331,6 +339,22 @@ class CategoryType
     {
         $text = mb_strtolower($text);
 
+        foreach (self::VARIANTS_GROUPED as $key => $variants) {
+            foreach ($variants as $words) {
+                $hasAll = true;
+                foreach ($words as $word) {
+                    if (false === mb_strstr($text, $word)) {
+                        $hasAll = false;
+                        break;
+                    }
+                }
+
+                if ($hasAll) {
+                    return $key;
+                }
+            }
+        }
+
         foreach (self::TYPES as $key => $name) {
             if ($text === $name) {
                 return $key;
@@ -352,22 +376,6 @@ class CategoryType
                     empty(preg_grep('/(' . $name . '([а-я]|і|ў)|([а-я]|і|ў)' . $name . ')/u', [$text]))
                     && empty(preg_grep('/( на ' . $name . ')|(пра ' . $name . ')/u', [$text])) // прапускаць, напрыклад, "на танец ..."
                 ) {
-                    return $key;
-                }
-            }
-        }
-
-        foreach (self::VARIANTS_GROUPED as $key => $variants) {
-            foreach ($variants as $words) {
-                $hasAll = true;
-                foreach ($words as $word) {
-                    if (false === mb_strstr($text, $word)) {
-                        $hasAll = false;
-                        break;
-                    }
-                }
-
-                if ($hasAll) {
                     return $key;
                 }
             }

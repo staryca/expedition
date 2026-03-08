@@ -6,7 +6,7 @@ namespace App\Dto;
 
 class FileDto extends FilePathDto
 {
-    public const NOTES_PART = 'бок ';
+    public const string NOTES_PART = 'бок ';
 
     public ?int $type = null;
 

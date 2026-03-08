@@ -41,4 +41,3 @@ class GetYearTest extends TestCase
         ];
     }
 }
-

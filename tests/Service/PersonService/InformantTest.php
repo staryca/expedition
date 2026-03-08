@@ -51,6 +51,23 @@ class InformantTest extends TestCase
         $this->assertEquals('х. Пакава', $informant->locations[0]);
     }
 
+    public function testInformantSimpleWithNotes(): void
+    {
+        $content = 'Іосіф Іванавіч Лычкоўскі, 1902 г.н., г.п. Чэрвень, (ражок)';
+
+        $informants = $this->personService->getInformants($content);
+
+        $this->assertCount(1, $informants);
+        $informant = $informants[0];
+        $this->assertEquals('Лычкоўскі Іосіф Іванавіч', $informant->name);
+        $this->assertEquals(1902, $informant->birth);
+        $this->assertNull($informant->died);
+        $this->assertEquals(GenderType::MALE, $informant->gender);
+        $this->assertEquals('ражок', $informant->notes);
+        $this->assertCount(1, $informant->locations);
+        $this->assertEquals('гп. Чэрвень', $informant->locations[0]);
+    }
+
     public function testInformantWithLastNotes(): void
     {
         $content = 'Лужанскі Барыс Іванавіч, 1961, Адзеская вобл. Украіна, зяць Трашчанка Я.У.';
@@ -754,6 +771,56 @@ class InformantTest extends TestCase
         $this->assertEquals('бубен', $informant->notes);
     }
 
+    public function testInformantWithEachLocations(): void
+    {
+        $content = 'Мікалай Данілаў, Гарадоцкі раён, в. Мехавое (гармонік); Іван Іўлёў, Гарадоцкі раён, в. Бычыха (гармонік)';
+
+        $informants = $this->personService->getInformants($content);
+        $this->assertCount(2, $informants);
+
+        $informant = $informants[0];
+        $this->assertEquals('Данілаў Мікалай', $informant->name);
+        $this->assertNull($informant->birth);
+        $this->assertNull($informant->died);
+        $this->assertEquals(GenderType::MALE, $informant->gender);
+        $this->assertEquals('гармонік', $informant->notes);
+        $this->assertCount(1, $informant->locations);
+        $this->assertEquals('Гарадоцкі раён, в.  Мехавое', $informant->locations[0]);
+
+        $informant = $informants[1];
+        $this->assertEquals('Іўлёў Іван', $informant->name);
+        $this->assertNull($informant->birth);
+        $this->assertNull($informant->died);
+        $this->assertEquals(GenderType::MALE, $informant->gender);
+        $this->assertEquals('гармонік', $informant->notes);
+        $this->assertCount(1, $informant->locations);
+        $this->assertEquals('Гарадоцкі раён, в.  Бычыха', $informant->locations[0]);
+    }
+
+    public function testInformantWithWife(): void
+    {
+        $content = 'Макар Фаміч Лук\'янцаў, 1917 г.н. (гармонік); Лук\'янцава Марыя Дзмітрыеўна, 1925 г.н.  (спеў, бубен, яго жонка)';
+
+        $informants = $this->personService->getInformants($content);
+        $this->assertCount(2, $informants);
+
+        $informant = $informants[0];
+        $this->assertEquals('Лук\'янцаў Макар Фаміч', $informant->name);
+        $this->assertEquals(1917, $informant->birth);
+        $this->assertNull($informant->died);
+        $this->assertEquals(GenderType::MALE, $informant->gender);
+        $this->assertEquals('гармонік', $informant->notes);
+        $this->assertCount(0, $informant->locations);
+
+        $informant = $informants[1];
+        $this->assertEquals('Лук\'янцава Марыя Дзмітрыеўна', $informant->name);
+        $this->assertEquals(1925, $informant->birth);
+        $this->assertNull($informant->died);
+        $this->assertEquals(GenderType::FEMALE, $informant->gender);
+        $this->assertEquals('спеў, бубен, яго жонка', $informant->notes);
+        $this->assertCount(0, $informant->locations);
+    }
+
     public function testInformantWithNotesAndYear(): void
     {
         $content = 'Булыга Васіль (1958 г.н.) - гармонік;
@@ -811,6 +878,22 @@ class InformantTest extends TestCase
         $this->assertNull($informant->died);
         $this->assertEquals(GenderType::FEMALE, $informant->gender);
         $this->assertEquals('4 класы адукацыі, беларуска, калгасніца', $informant->notes);
+        $this->assertCount(0, $informant->locations);
+    }
+
+    public function testInformantOnlyOneWithBrackets(): void
+    {
+        $content = 'Ф.Ул.Руслевіч (скрыпка)';
+
+        $informants = $this->personService->getInformants($content);
+        $this->assertCount(1, $informants);
+
+        $informant = $informants[0];
+        $this->assertEquals('Ф.Ул.Руслевіч', $informant->name);
+        $this->assertNull($informant->birth);
+        $this->assertNull($informant->died);
+        $this->assertEquals(GenderType::UNKNOWN, $informant->gender);
+        $this->assertEquals('скрыпка', $informant->notes);
         $this->assertCount(0, $informant->locations);
     }
 

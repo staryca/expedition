@@ -27,7 +27,7 @@ use League\Csv\InvalidArgument;
 
 class VopisDetailedHandler
 {
-    private const USER_LEADER_ID = 6; // 6 - Kozienka
+    private const int USER_LEADER_ID = 6; // 6 - Kozienka
 
     public function __construct(
         private readonly VopisDetailedParser $parser,
@@ -54,6 +54,7 @@ class VopisDetailedHandler
     /**
      * @param array<SubjectDto> $subjects
      * @return array<ReportDataDto>
+     * @throws \Exception
      */
     public function createReportsData(array &$subjects): array
     {

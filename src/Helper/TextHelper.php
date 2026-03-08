@@ -143,7 +143,7 @@ class TextHelper
         return count($parts) > 0;
     }
 
-    /* return true for A.B. */
+    /* return true for A.B. and Fv.Gh. */
     public static function isShortNames(string $name): bool
     {
         $name = trim($name);
@@ -155,7 +155,7 @@ class TextHelper
         unset($parts[2]);
 
         foreach ($parts as $part) {
-            if (mb_strlen($part) > 1 || mb_strtoupper($part) !== $part) {
+            if (mb_strlen($part) > 2 || self::letterToUpper($part) !== $part) {
                 return false;
             }
         }
