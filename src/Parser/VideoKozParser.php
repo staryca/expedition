@@ -125,7 +125,7 @@ readonly class VideoKozParser
             $organizationName = self::getValue($record, VideoKozColumns::ORGANIZATION);
             $videoDto->organizationName = empty($organizationName) ? null : $organizationName;
 
-            $videoDto->informantsText = self::getValue($record, VideoKozColumns::INFORMANTS);
+            $videoDto->informantsText = self::getValue($record, VideoKozColumns::INFORMANTS); // need for 'і іншыя'
             if (!empty($videoDto->informantsText)) {
                 $videoDto->informants = $this->personService->getInformants($videoDto->informantsText, '');
             }

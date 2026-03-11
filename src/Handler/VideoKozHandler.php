@@ -295,9 +295,12 @@ class VideoKozHandler
                 if (!empty($videoItem->tmkb)) {
                     $marker->additional[FileMarkerAdditional::TMKB] = $videoItem->tmkb;
                 }
-                // Temp
+                // Need for debug and 'і іншыя'
                 if (!empty($videoItem->informantsText)) {
                     $marker->additional[FileMarkerAdditional::INFORMANTS_TEXT] = $videoItem->informantsText;
+                    if (str_contains($videoItem->informantsText, 'і інш.') || str_contains($videoItem->informantsText, 'і іншыя')) {
+                        $marker->additional[FileMarkerAdditional::AND_OTHERS] = "1";
+                    }
                 }
 
                 $file->markers[] = $marker;

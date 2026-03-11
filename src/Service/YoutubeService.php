@@ -226,8 +226,13 @@ class YoutubeService
                 . (!empty($informant->getNotes()) ? ' (' . $informant->getNotes() . ')' : '');
         }
         if (!empty($persons)) {
-            $text = ($fileMarker->isCategoryStory() ? 'Расказва' : 'Выконва') . (count($persons) === 1 ? 'е' : 'юць');
+            $andOthers = $fileMarker->getAdditionalValue(FileMarkerAdditional::AND_OTHERS);
+            $isMany = count($persons) > 1 || (int) $andOthers > 0;
+            $text = ($fileMarker->isCategoryStory() ? 'Расказва' : 'Выконва') . ($isMany ? 'юць' : 'е');
             $personText = implode('; ', $persons);
+            if ((int) $andOthers > 0) {
+                $personText .= ' і іншыя';
+            }
             $warning = '';
 
             // For debug of informants list
