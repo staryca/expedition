@@ -18,8 +18,9 @@ class FileMarkerAdditional
     public const string DATE_ACTION_NOTES = 'dateActionNotes';
     public const string TMKB = 'tmkb';
     public const string NUMBER = 'number';
+    public const string AND_OTHERS = 'andOthers';
 
-    // Temp
+    // For debug and andOther
     public const string INFORMANTS_TEXT = 'informantsText';
 
     // Values
