@@ -57,6 +57,9 @@
                             {% endif %}
                         </td>
                         <td>
+                            {% if categories is defined %}
+                                {{ categories[marker.category] }}:
+                            {% endif %}
                             {{ marker.name }}
                             {% for tag in marker.tags %}
                                 <span class="badge text-bg-secondary">{{ tag.name }}</span>

@@ -609,7 +609,7 @@ class ToolsController extends AbstractController
 
         $markers = $this->fileMarkerRepository->findAll();
         foreach ($markers as $marker) {
-            if ($marker->isCategoryNotOther()) {
+            if (!$marker->isCategoryStory() && !CategoryType::isSystemType($marker->getCategory())) {
                 continue;
             }
 
@@ -618,8 +618,27 @@ class ToolsController extends AbstractController
                 continue;
             }
 
-            $newCategories = $this->markerService->detectCategories($marker);
-            $newCategory = count($newCategories) === 1 ? current($newCategories) : null;
+//            By tags
+//            $newCategories = $this->markerService->detectCategoriesByTags($marker);
+//            $newCategory = count($newCategories) === 1 ? current($newCategories) : null;
+
+            if (!$marker->getTags()->isEmpty()) {
+                continue;
+            }
+
+            $newCategories = [];
+            $newCategory = $this->categoryService->detectCategory($marker->getName(), $marker->getNotes());
+
+            if ($newCategory === $marker->getCategory() || $newCategory === null) {
+                continue;
+            }
+
+            if (
+                in_array($marker->getCategory(), [CategoryType::DANCE, CategoryType::DANCE_MOVEMENTS])
+                && $newCategory === CategoryType::MELODY
+            ) {
+                continue;
+            }
 
             $text = '';
             foreach ($newCategories as $category) {
@@ -643,7 +662,7 @@ class ToolsController extends AbstractController
             }
         }
 
-        $this->entityManager->flush();
+        //$this->entityManager->flush();
 
         return $this->render('import/show.table.result.html.twig', [
             'headers' => ['ID', 'Name', 'Notes', 'Tags', 'Катэгорыя', 'Новая'],
@@ -663,14 +682,23 @@ class ToolsController extends AbstractController
                 continue;
             }
 
-            if (empty($marker->getName())) {
+            if (empty($marker->getName()) || !in_array($marker->getCategory(), [
+                CategoryType::DANCE,
+                CategoryType::DANCE_MOVEMENTS,
+                CategoryType::STORY,
+                CategoryType::CHORUSES,
+                CategoryType::ABOUT_DANCES,
+                CategoryType::MELODY,
+            ])) {
                 continue;
             }
 
             $newDance = $this->danceService->detectDance($marker->getName());
-            if ($marker->getDance()?->getId() === $newDance?->getId()) {
+            if ($marker->isCategoryStory() && $marker->getDance()?->getId() === $newDance?->getId()) {
                 continue;
             }
+
+            $change = $newDance !== null && $marker->getDance()?->getId() !== $newDance->getId();
 
             $item = [
                 'id' => $marker->getId(),
@@ -679,15 +707,21 @@ class ToolsController extends AbstractController
                 'notes' => $marker->getNotes(),
                 'old' => $marker->getDance()?->getName(),
                 'new' => $newDance?->getName(),
+                'change' => $change,
             ];
 
-            $data[] = $item;
+            if ($change) {
+                array_unshift($data, $item);
+                $marker->setDance($newDance);
+            } else {
+                $data[] = $item;
+            }
         }
 
         //$this->entityManager->flush();
 
         return $this->render('import/show.table.result.html.twig', [
-            'headers' => ['ID', 'Катэгорыя', 'Name', 'Notes', 'Былы', 'Новы'],
+            'headers' => ['ID', 'Катэгорыя', 'Name', 'Notes', 'Былы', 'Новы', 'Зьмена'],
             'data' => $data,
         ]);
     }

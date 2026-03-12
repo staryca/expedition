@@ -74,9 +74,10 @@ class ContentController extends AbstractController
 
         return $this->render('content/markers.html.twig', [
             'markers' => $markers,
-            'title' => $dance->getName(),
+            'title' => CategoryType::getSingleName(CategoryType::DANCE) . ' ' . $dance->getName(),
             'all' => 'Усе танцы',
             'geoMapData' => $geoMapData,
+            'categories' => CategoryType::getSingleNames(),
         ]);
     }
 

@@ -133,7 +133,7 @@ readonly class MarkerService
         return $csv;
     }
 
-    public function detectCategories(FileMarker $marker): array
+    public function detectCategoriesByTags(FileMarker $marker): array
     {
         $categories = [];
 

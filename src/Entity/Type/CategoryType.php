@@ -161,28 +161,40 @@ class CategoryType
     ];
 
     private const array VARIANTS_GROUPED = [
+        self::KARAHOD => [
+            ['пра ', 'карагод'],
+        ],
         self::CHORUSES => [
             ['прыпеўка да '],
         ],
         self::STORY => [
-            ['што', 'такое'],
-            ['як', 'гралі'],
-            ['як', 'рабілі'],
-            ['як', 'святкавалі'],
-            ['як', 'спявалі'],
-            ['што', 'рабілі'],
-            ['як', 'запрашалі'],
+            ['што ', 'такое'],
+            ['як ', 'гралі'],
+            ['як ', 'рабілі'],
+            ['як ', 'святкавалі'],
+            ['як ', 'спявалі'],
+            ['што ', 'рабілі'],
+            ['як ', 'запрашалі'],
             ['калі', 'гралі'],
-            ['як', 'разводзяць'],
+            ['як ', 'разводзяць'],
+            ['як ', 'гулялі'], // many categories: game, dance ...
+            ['словы', 'пра '],
+            ['як ', 'спраўлялі'],
+            ['аповед '],
+            ['пра ', 'вяселле'],
+            ['як ', 'сьпявалі'],
+            ['зг.'],
         ],
         self::ABOUT_DANCES => [
-            ['як', 'танцавалі'],
-            ['пра', 'танцы'],
+            ['як ', 'танцавалі'],
+            ['пра ', 'танцы'],
+            ['пра ', 'кадрыль'],
+            ['пра ', 'кадрылі'],
             ['якія', 'былі', 'танцы'],
             ['якія', 'гулялі', 'танцы'],
         ],
         self::MELODY => [
-            ['на', 'язык'],
+            ['на ', 'язык'],
         ],
         self::SONGS => [
             ['узгадка', 'песні'],
@@ -305,6 +317,14 @@ class CategoryType
         return $types;
     }
 
+
+    public static function getSingleNames(): array
+    {
+        return array_map(function ($type) {
+            return mb_ucfirst($type);
+        }, self::TYPES);
+    }
+
     public static function getManyNames(bool $withSystem = true): array
     {
         $types = [];
@@ -325,9 +345,7 @@ class CategoryType
 
     public static function isSystemType(int $type): bool
     {
-        return in_array($type, [
-            self::ABOUT_RECORD, self::CHANGE_INFORMANTS, self::ABOUT_INFORMANT, self::ABOUT_OTHER_INFORMANTS
-        ], true);
+        return in_array($type, self::SYSTEM_TYPES, true);
     }
 
     public static function isImportantType(int $type): bool
@@ -335,6 +353,28 @@ class CategoryType
         return !in_array($type, self::NOT_IMPORTANT_TYPES, true);
     }
 
+    public static function findIdByVariants(string $text): ?int
+    {
+        $text = mb_strtolower($text);
+
+        foreach (self::VARIANTS_GROUPED as $key => $variants) {
+            foreach ($variants as $words) {
+                $hasAll = true;
+                foreach ($words as $word) {
+                    if (false === mb_strstr($text, $word)) {
+                        $hasAll = false;
+                        break;
+                    }
+                }
+
+                if ($hasAll) {
+                    return $key;
+                }
+            }
+        }
+
+        return null;
+    }
     public static function findId(string $text, string $textNext, bool $isAll = true): ?int
     {
         $text = mb_strtolower($text);
@@ -476,7 +516,13 @@ class CategoryType
 
     public static function detectCategory(string $content, ?string $notes = null, ?int $default = null): ?int
     {
-        $category = self::findId($content, '', true);
+        $category = self::findIdByVariants($content);
+        if ($category === null && !empty($notes)) {
+            $category = self::findIdByVariants($notes);
+        }
+        if ($category === null) {
+            $category = self::findId($content, '');
+        }
         if ($category === null && !empty($notes)) {
             $category = self::findId($notes, '') ?? $default;
         }
