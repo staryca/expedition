@@ -23,6 +23,9 @@ readonly class CategoryService
         $category = !empty($text) ? CategoryType::detectCategory($text, $notes) : null;
         if (!$category) {
             $category = CategoryType::detectCategory($textNotes, $notes);
+            if (empty($text) && $category === CategoryType::SONGS) {
+                $category = null;
+            }
         }
 
         $isDance = $category === CategoryType::QUADRILLE || $this->danceService->isDance($text);
