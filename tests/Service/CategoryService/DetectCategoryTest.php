@@ -77,6 +77,7 @@ class DetectCategoryTest extends TestCase
             ['Пра буську на Каляды', 'Як рабілі бусла на Каляды, як на такога бусла рэагавалі людзі', CategoryType::STORY],
             ['(Купальле)', '', null],
             ['Пра карагод "Ляцелі дзьве пцічкі"', '', CategoryType::KARAHOD],
+            ['Калядачкі, бліны-ладачкі', 'словы каляднай песьні - ', CategoryType::SONGS],
         ];
     }
 }

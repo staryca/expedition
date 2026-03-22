@@ -78,9 +78,7 @@ class VopisDetailedHandler
                         . ($marker->isEmptyPlace() ? $reports[$reportKey]->getPlaceHash() : $marker->getPlaceHash());
                     if (isset($hashReports[$hashReport])) {
                         $reportKey = $hashReports[$hashReport];
-                        if ($reportKey + 1 !== count($hashReports)) {
-                            $blockKey = count($reports[$reportKey]->blocks) - 1;
-                        }
+                        $blockKey = count($reports[$reportKey]->blocks) - 1;
                     } else {
                         $reportKey = count($hashReports);
                         $hashReports[$hashReport] = $reportKey;

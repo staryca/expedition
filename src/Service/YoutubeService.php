@@ -597,7 +597,7 @@ class YoutubeService
         $result['added_to_playlist'] = 0;
 
         try {
-            $list = $youtube->playlistItems->listPlaylistItems('snippet', ['playlistId' => $playlist]);
+            $list = $youtube->playlistItems->listPlaylistItems('snippet', ['playlistId' => $playlist, 'maxResults' => 50]);
         } catch (Exception $e) {
             $result['error'] = $e->getMessage();
             $result['error_playlist'] = $playlist;
