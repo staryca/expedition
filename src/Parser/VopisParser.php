@@ -87,7 +87,7 @@ class VopisParser
                     }
                     if (!$category) {
                         $category = $name !== self::NAME_GROUP
-                            ? (CategoryType::findId($notes, '') ?? CategoryType::OTHER)
+                            ? CategoryType::detectCategory($name, $notes, CategoryType::OTHER)
                             : CategoryType::OTHER;
                     }
                     $marker->category = $category;

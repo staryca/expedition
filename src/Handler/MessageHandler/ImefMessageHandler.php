@@ -22,6 +22,8 @@ class ImefMessageHandler
 
     public function __invoke(ImefMessage $message): void
     {
+        $this->logger->info(sprintf('Folder %s', $message->getFolder()));
+
         $dtos = $this->handler->parsingOneFolder($this->previousDateDayMonth, $message->getFolder());
 
         $this->logger->info(sprintf('For %s count dto: %d', $message->getFolder(), count($dtos)));

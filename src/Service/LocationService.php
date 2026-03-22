@@ -51,8 +51,13 @@ class LocationService
     public function getSearchDtoByFullPlace(string $fullPlace): GeoPointSearchDto
     {
         $fullPlace = str_replace(
-            ['р-н', 'раёна', 'сельсавет', 'вобл.', 'вобласці', '  ', ' - ', ' -', '- '],
-            [self::DISTRICT, self::DISTRICT, self::SUBDISTRICT_SHORT, self::REGION, self::REGION, ' ', '-', '-', '-'],
+            ['р-н', 'раёна', 'вобл.', 'вобласці', '  ', ' - ', ' -', '- '],
+            [self::DISTRICT, self::DISTRICT, self::REGION, self::REGION, ' ', '-', '-', '-'],
+            TextHelper::replaceLetters($fullPlace)
+        );
+        $fullPlace = str_replace(
+            ['с\савет', 'с/савет', 'сельсавет'],
+            self::SUBDISTRICT_SHORT,
             TextHelper::replaceLetters($fullPlace)
         );
         $fullPlace = self::addComma($fullPlace, self::DISTRICT);
@@ -83,7 +88,7 @@ class LocationService
                 } elseif (str_contains($part, 'Беларусь')) {
                     continue;
                 } else {
-                    $place = trim($part, " `\t\n\r\0\x0B");
+                    $place = trim($part, " `.\t\n\r\0\x0B");
                     if (!empty($place)) {
                         $places[] = $place;
                     }

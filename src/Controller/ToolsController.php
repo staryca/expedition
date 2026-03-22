@@ -682,14 +682,17 @@ class ToolsController extends AbstractController
                 continue;
             }
 
-            if (empty($marker->getName()) || !in_array($marker->getCategory(), [
-                CategoryType::DANCE,
-                CategoryType::DANCE_MOVEMENTS,
-                CategoryType::STORY,
-                CategoryType::CHORUSES,
-                CategoryType::ABOUT_DANCES,
-                CategoryType::MELODY,
-            ])) {
+            if (
+                empty($marker->getName())
+                || !in_array($marker->getCategory(), [
+                    CategoryType::DANCE,
+                    CategoryType::DANCE_MOVEMENTS,
+                    CategoryType::STORY,
+                    CategoryType::CHORUSES,
+                    CategoryType::ABOUT_DANCES,
+                    CategoryType::MELODY,
+                ])
+            ) {
                 continue;
             }
 

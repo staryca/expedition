@@ -167,6 +167,24 @@ class CategoryType
         self::CHORUSES => [
             ['прыпеўка да '],
         ],
+        self::ABOUT_DANCES => [
+            ['як ', 'танцавалі'],
+            ['пра ', 'танцы'],
+            ['пра ', 'кадрыль'],
+            ['пра ', 'кадрылі'],
+            ['якія', 'былі', 'танцы'],
+            ['якія', 'гулялі', 'танцы'],
+        ],
+        self::MELODY => [
+            ['на ', 'язык'],
+        ],
+        self::SONGS => [
+            ['узгадка', 'песні'],
+            ['словы', 'песьні'],
+        ],
+        self::OTHER => [
+            ['праверка', 'апаратуры'],
+        ],
         self::STORY => [
             ['што ', 'такое'],
             ['як ', 'гралі'],
@@ -183,24 +201,7 @@ class CategoryType
             ['аповед '],
             ['пра ', 'вяселле'],
             ['як ', 'сьпявалі'],
-            ['зг.'],
-        ],
-        self::ABOUT_DANCES => [
-            ['як ', 'танцавалі'],
-            ['пра ', 'танцы'],
-            ['пра ', 'кадрыль'],
-            ['пра ', 'кадрылі'],
-            ['якія', 'былі', 'танцы'],
-            ['якія', 'гулялі', 'танцы'],
-        ],
-        self::MELODY => [
-            ['на ', 'язык'],
-        ],
-        self::SONGS => [
-            ['узгадка', 'песні'],
-        ],
-        self::OTHER => [
-            ['праверка', 'апаратуры'],
+            ['зг.'],  // must be last in array !
         ],
     ];
 
@@ -524,10 +525,10 @@ class CategoryType
             $category = self::findId($content, '');
         }
         if ($category === null && !empty($notes)) {
-            $category = self::findId($notes, '') ?? $default;
+            $category = self::findId($notes, '');
         }
 
-        return $category;
+        return $category ?? $default;
     }
 
     public static function detectCategoryByName(string $content): ?int
