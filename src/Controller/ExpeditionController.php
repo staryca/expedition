@@ -241,4 +241,57 @@ class ExpeditionController extends AbstractController
             'organizations' => $organizations,
         ]);
     }
+
+    #[Route('/expedition/{id}/districts', name: 'expedition_districts', methods: ['GET'])]
+    public function districts(int $id): Response
+    {
+        /** @var Expedition|null $expedition */
+        $expedition = $this->expeditionRepository->find($id);
+        if (!$expedition) {
+            throw $this->createNotFoundException('The expedition does not exist');
+        }
+
+        $amountLocations = [];
+        $amountInformants = [];
+        foreach ($expedition->getReports() as $report) {
+            $geoPoint = $report->getGeoPoint();
+            if (!$geoPoint) {
+                continue;
+            }
+
+            $district = $geoPoint->getDistrict();
+            $amountLocations[$district][$geoPoint->getName()] = 1;
+
+            foreach ($report->getBlocks() as $block) {
+                foreach ($block->getInformants() as $informant) {
+                    $amountInformants[$district][$informant->getId()] = 1;
+                }
+            }
+        }
+
+        $data = [];
+        $totalLocations = 0;
+        $totalInformants = 0;
+        foreach ($amountLocations as $district => $locations) {
+            $data[] = [
+                'district' => $district,
+                'locations' => count($locations),
+                'informants' => count($amountInformants[$district] ?? []),
+            ];
+
+            $totalLocations += count($locations);
+            $totalInformants += count($amountInformants[$district] ?? []);
+        }
+
+        $data[] = [
+            'district' => 'Усяго:',
+            'locations' => $totalLocations,
+            'informants' => $totalInformants,
+        ];
+
+        return $this->render('import/show.table.result.html.twig', [
+            'headers' => ['Раён', 'Вёсак', 'Інфармантаў'],
+            'data' => $data,
+        ]);
+    }
 }
