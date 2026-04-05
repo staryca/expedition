@@ -103,7 +103,17 @@ class InformantDto extends StudentDto
         $gender = $data[KoboInformantColumns::SEX] ?? null;
         $dto->gender = GenderType::getType($gender);
         if ($data[KoboInformantColumns::CONFESSION] === 'іншае') {
-            $dto->confession = $data[KoboInformantColumns::CONFESSION_OTHER] ?? null;
+            $confession = $data[KoboInformantColumns::CONFESSION_OTHER] ?? null;
+            if (mb_strlen($confession) > 50) {
+                $parts = explode(',', $confession);
+                if (count($parts) >= 2) {
+                    $confession = $parts[0];
+                    unset($parts[0]);
+                    $notes = implode(',', $parts);
+                    $dto->notes .= (empty($dto->notes) ? '' : '; ') . trim($notes);
+                }
+            }
+            $dto->confession = $confession;
         } elseif ($data[KoboInformantColumns::CONFESSION] !== 'не ўказана') {
             $dto->confession = $data[KoboInformantColumns::CONFESSION] ?? null;
         }

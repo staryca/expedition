@@ -15,4 +15,15 @@ class UserDto
     {
         $this->name = $name;
     }
+
+    public function getHash(): string
+    {
+        $hash = $this->name;
+
+        foreach ($this->roles as $role) {
+            $hash = $hash . $role;
+        }
+
+        return $hash;
+    }
 }

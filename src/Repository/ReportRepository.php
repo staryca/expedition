@@ -98,7 +98,7 @@ class ReportRepository extends ServiceEntityRepository
             ->where('r.geoPoint IS NULL')
             ->andWhere('r.geoNotes <> :empty')
             ->setParameter('empty', '')
-            ->orderBy('r.geoNotes', 'ASC')
+            ->orderBy('r.dateCreated', 'DESC')
             ->getQuery()
             ->getResult();
     }

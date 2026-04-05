@@ -79,10 +79,14 @@ class FileMarker
         $this->tags = new ArrayCollection();
     }
 
-    public static function makeFromEpisode(EpisodeDto $episode): FileMarker
+    public static function makeFromEpisode(EpisodeDto $episode, bool $textAsNotes = true): FileMarker
     {
         $fileMarker = new self();
-        $fileMarker->setName($episode->getText());
+        if ($textAsNotes) {
+            $fileMarker->setNotes($episode->getText());
+        } else {
+            $fileMarker->setName($episode->getText());
+        }
         $fileMarker->setCategory($episode->getCategory());
         $fileMarker->setRitual($episode->ritual);
 
