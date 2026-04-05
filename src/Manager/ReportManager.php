@@ -11,6 +11,7 @@ use App\Dto\InformantDto;
 use App\Dto\OrganizationDto;
 use App\Dto\ReportDataDto;
 use App\Dto\SubjectDto;
+use App\Dto\UserRolesDto;
 use App\Dto\YearsDto;
 use App\Entity\Expedition;
 use App\Entity\File;
@@ -29,9 +30,11 @@ use App\Entity\Type\OrganizationType;
 use App\Entity\Type\ReportBlockType;
 use App\Entity\Type\TaskStatus;
 use App\Entity\UserReport;
+use App\Helper\TextHelper;
 use App\Repository\TagRepository;
 use App\Service\LocationService;
 use App\Service\SubjectService;
+use App\Service\UserService;
 use Carbon\Carbon;
 use Carbon\CarbonImmutable;
 use Doctrine\DBAL\Exception;
@@ -44,6 +47,7 @@ class ReportManager
         private readonly TagRepository $tagRepository,
         private readonly LocationService $locationService,
         private readonly SubjectService $subjectService,
+        private readonly UserService $userService,
     ) {
     }
 
@@ -83,23 +87,21 @@ class ReportManager
     }
 
     /**
-     * @param Expedition $expedition
      * @param array<ReportDataDto> $reports
      * @param array<ContentDto> $contents
      * @param array<OrganizationDto> $organizations
      * @param array<InformantDto> $informants
      * @param array<int, array<string>> $tags
-     * @return void
-     * @throws Exception
+     * @return array<ReportDataDto>
+     * @throws \Exception
      */
-    public function saveKoboReports(
-        Expedition $expedition,
+    public function uniteKoboReports(
         array $reports,
         array $contents,
         array $organizations,
         array $informants,
         array $tags,
-    ): void {
+    ): array {
 
         foreach ($contents as $contentIndex => $content) {
             if (isset($reports[$content->reportIndex])) {
@@ -135,9 +137,55 @@ class ReportManager
             $organization->codeReports = [];
         }
 
+        $newUsers = [];
+        $unitedReports = [];
+        foreach ($reports as $report) {
+            $hashReport = ($report->dateAction?->format('Ymd'))
+                . '_'
+                . $report->getPlaceHash()
+                . '_'
+                . $report->getUserHash();
+
+            if (!isset($unitedReports[$hashReport])) {
+                $unitedReports[$hashReport] = $report;
+            } else {
+                $index = count($unitedReports[$hashReport]->blocks);
+                $unitedReports[$hashReport]->blocks[$index] = $report->blocks[0];
+            }
+
+            foreach ($report->users as $userDto) {
+                if (!isset($newUsers[$userDto->name])) {
+                    $user = $this->userService->createUser(TextHelper::letterToUpper($userDto->name));
+                    $this->entityManager->persist($user);
+                    $newUsers[$userDto->name] = $user;
+                } else {
+                    $user = $newUsers[$userDto->name];
+                }
+                $userRoles = new UserRolesDto();
+                $userRoles->user = $user;
+                $userRoles->roles = $userDto->roles;
+                $report->userRoles[] = $userRoles;
+            }
+            $report->users = [];
+        }
+
+        return $unitedReports;
+    }
+
+    /**
+     * @param Expedition $expedition
+     * @param array<ReportDataDto> $reports
+     * @return void
+     * @throws Exception
+     */
+    public function saveKoboReports(
+        Expedition $expedition,
+        array $reports,
+    ): void {
+
         $this->entityManager->getConnection()->beginTransaction();
         try {
-            $this->createReports($expedition, $reports, [], []);
+            $this->createReports($expedition, $reports, [], [], true);
 
             $this->entityManager->flush();
             $this->entityManager->getConnection()->commit();
@@ -352,7 +400,7 @@ class ReportManager
     ): void {
         $this->entityManager->getConnection()->beginTransaction();
         try {
-            $reports = $this->createReports($expedition, $reportsData, [], []);
+            $reports = $this->createReports($expedition, $reportsData, [], [], false);
 
             $reportBlocks = [];
             foreach ($reports as $reportKey => $report) {
@@ -380,6 +428,7 @@ class ReportManager
      * @param array<ReportDataDto> $reportsData
      * @param array<Informant> $informantsDb
      * @param array<Organization> $organizationsDb
+     * @param bool $episodesAsNotes
      * @return array<Report>
      * @throws \Exception
      */
@@ -388,6 +437,7 @@ class ReportManager
         array $reportsData,
         array $informantsDb,
         array $organizationsDb,
+        bool $episodesAsNotes = true,
     ): array {
         $allTags = $this->getTagsFromEpisodes($reportsData);
 
@@ -460,7 +510,7 @@ class ReportManager
                     $this->entityManager->persist($file);
 
                     foreach ($block->getEpisodes() as $episode) {
-                        $fileMarker = FileMarker::makeFromEpisode($episode);
+                        $fileMarker = FileMarker::makeFromEpisode($episode, $episodesAsNotes);
 
                         foreach ($episode->tags as $tag) {
                             $tag = mb_strtolower($tag);
@@ -731,7 +781,7 @@ class ReportManager
         try {
             $informantsDb = $this->saveInformants($informants, [], []);
             $organizationsDb = $this->saveOrganizations($organizations, $informantsDb, []);
-            $reports = $this->createReports($expedition, $reportsData, $informantsDb, $organizationsDb);
+            $reports = $this->createReports($expedition, $reportsData, $informantsDb, $organizationsDb, false);
 
             $reportBlocks = [];
             foreach ($reports as $reportKey => $report) {

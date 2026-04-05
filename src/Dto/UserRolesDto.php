@@ -11,4 +11,15 @@ class UserRolesDto
     public ?User $user = null;
     /** @var array<string> $roles */
     public array $roles = [];
+
+    public function getHash(): string
+    {
+        $hash = $this->user?->getHash();
+
+        foreach ($this->roles as $role) {
+            $hash = $hash . $role;
+        }
+
+        return $hash;
+    }
 }

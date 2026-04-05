@@ -119,19 +119,25 @@ class ReportDataDto extends PlaceDto
     private function addUsersByNames(string $names, string $role): void
     {
         $names = str_replace('other', '', $names);
-        $parts = explode(' ', trim($names));
-        $name = '';
+        $parts = explode(',', $names);
         foreach ($parts as $part) {
-            if ('' === $name) {
-                $name = $part;
-            } else {
-                $name .= ' ' . $part;
-                $this->addUser($name, $role);
+            $names2 = trim($part);
+            if ('' !== $names2 && '-' !== $names2) {
+                $parts = explode(' ', $names2);
                 $name = '';
+                foreach ($parts as $part2) {
+                    if ('' === $name) {
+                        $name = $part2;
+                    } else {
+                        $name .= ' ' . $part2;
+                        $this->addUser($name, $role);
+                        $name = '';
+                    }
+                }
+                if ('' !== $name) {
+                    $this->addUser($name, $role);
+                }
             }
-        }
-        if ('' !== $name) {
-            $this->addUser($name, $role);
         }
     }
 
@@ -151,5 +157,20 @@ class ReportDataDto extends PlaceDto
             $userDto->roles[] = $role;
             $this->users[] = $userDto;
         }
+    }
+
+    public function getUserHash(): string
+    {
+        $hash = '';
+
+        foreach ($this->users as $user) {
+            $hash .= $user->getHash();
+        }
+
+        foreach ($this->userRoles as $userRole) {
+            $hash .= $userRole->getHash();
+        }
+
+        return $hash;
     }
 }

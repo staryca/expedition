@@ -6,6 +6,7 @@ namespace App\Service;
 
 use App\Dto\NameGenderDto;
 use App\Dto\UserRolesDto;
+use App\Entity\Type\GenderType;
 use App\Entity\Type\UserRoleType;
 use App\Entity\User;
 use App\Helper\TextHelper;
@@ -137,6 +138,11 @@ readonly class UserService
         [$lastName, $firstName, $secondName] = explode(' ', $dto->getName() . '  ');
         if (!empty($secondName)) {
             $firstName .= ' ' . $secondName;
+        }
+
+        if (empty($firstName) && GenderType::getGender($lastName) !== GenderType::UNKNOWN) {
+            $firstName = $lastName;
+            $lastName = '';
         }
 
         return [$lastName, $firstName];

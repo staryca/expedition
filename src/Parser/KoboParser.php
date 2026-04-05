@@ -10,6 +10,7 @@ use App\Dto\OrganizationDto;
 use App\Dto\ReportBlockDataDto;
 use App\Dto\ReportDataDto;
 use App\Dto\UserRolesDto;
+use App\Helper\TextHelper;
 use App\Parser\Columns\KoboInformantColumns;
 use App\Parser\Columns\KoboOrganizationColumns;
 use App\Parser\Columns\KoboReportColumns;
@@ -101,7 +102,8 @@ readonly class KoboParser
             }
 
             foreach ($reportDto->users as $key => $userDto) {
-                $user = $this->userService->findByFullName($userDto->name);
+                $userName = TextHelper::replaceLetters($userDto->name);
+                $user = $this->userService->findByFullName($userName);
                 if (null !== $user) {
                     $userRole = new UserRolesDto();
                     $userRole->user = $user;

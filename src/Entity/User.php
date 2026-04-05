@@ -215,4 +215,9 @@ class User implements OAuthAwareUserProviderInterface, UserInterface
     {
         return in_array(UserRoles::ROLE_ADMIN, $this->getRoles(), true);
     }
+
+    public function getHash(): string
+    {
+        return sprintf('%s-%s-%s', $this->id, $this->firstName, $this->lastName);
+    }
 }
