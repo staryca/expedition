@@ -28,6 +28,7 @@ use App\Repository\PackRepository;
 use App\Repository\ReportRepository;
 use App\Repository\RitualRepository;
 use App\Repository\TraditionRepository;
+use App\Service\ExpeditionSaveService;
 use App\Service\MarkerService;
 use App\Service\PlaylistService;
 use App\Service\YoutubeService;
@@ -41,6 +42,7 @@ use Symfony\Component\Routing\Attribute\Route;
 class ImportVideoKozController extends AbstractController
 {
     private const int EXPEDITION_ID = 9; // 9
+    private const int USER_ID = 6; // 6 - Kozenka
     private const string FILENAME = '../var/data/video_koz/br-01.csv';
 
     public function __construct(
@@ -59,6 +61,7 @@ class ImportVideoKozController extends AbstractController
         private readonly RitualRepository $ritualRepository,
         private readonly MarkerService $markerService,
         private readonly PlaylistService $playlistService,
+        private readonly ExpeditionSaveService $expeditionSaveService,
     ) {
     }
 
@@ -121,7 +124,7 @@ class ImportVideoKozController extends AbstractController
         }
         $data['newInformants_must_empty'] = $newInformants;
 
-        $reportsData = $this->videoKozHandler->createReportsData($files);
+        $reportsData = $this->videoKozHandler->createReportsData($files, self::USER_ID);
         $data['reports'] = $reportsData;
 
         $this->videoKozHandler->convertVideoItemsToFileMarkers($files);
@@ -137,6 +140,8 @@ class ImportVideoKozController extends AbstractController
 
         $data['save'] = $this->generateUrl('app_import_video_koz_save', [], UrlGeneratorInterface::ABS_URL);
 
+        $data += $this->expeditionSaveService->getLastIds();
+
         return $this->render('import/show.json.result.html.twig', [
             'data' => $data,
         ]);
@@ -151,7 +156,7 @@ class ImportVideoKozController extends AbstractController
             return new Response($exception->getMessage(), Response::HTTP_NOT_FOUND);
         }
 
-        $reports = $this->videoKozHandler->saveFiles(self::EXPEDITION_ID, $files);
+        $reports = $this->videoKozHandler->saveFiles(self::EXPEDITION_ID, $files, self::USER_ID);
 
         return $this->render('import/show.json.result.html.twig', [
             'data' => $reports,

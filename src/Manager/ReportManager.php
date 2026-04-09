@@ -155,7 +155,7 @@ class ReportManager
 
             foreach ($report->users as $userDto) {
                 if (!isset($newUsers[$userDto->name])) {
-                    $user = $this->userService->createUser(TextHelper::letterToUpper($userDto->name));
+                    $user = $this->userService->createUser(TextHelper::lettersToUpper($userDto->name));
                     $this->entityManager->persist($user);
                     $newUsers[$userDto->name] = $user;
                 } else {
