@@ -135,7 +135,7 @@ class VideoKozHandlerTest extends TestCase
         $this->assertEquals('Фальклорны калектыў Беразлянскага СДК', $org->name);
         $this->assertCount(7, $org->informantKeys);
 
-        $reports = $this->handler->createReportsData($files);
+        $reports = $this->handler->createReportsData($files, 0);
         $this->assertCount(1, $reports);
         $report = $reports[0];
         $this->assertEquals('Беразляны, Іванаўскі раён', $report->place);

@@ -166,9 +166,9 @@ class VideoKozHandler
      * @param array<FileDto> $files
      * @return array<ReportDataDto>
      */
-    public function createReportsData(array &$files): array
+    public function createReportsData(array &$files, int $userId): array
     {
-        $user = $this->userRepository->find(UserRepository::USER_KOZENKA_ID);
+        $user = $this->userRepository->find($userId);
 
         /** @var array<ReportDataDto> $reports */
         $reports = [];
@@ -312,10 +312,11 @@ class VideoKozHandler
     /**
      * @param int $expeditionId
      * @param array<FileDto> $files
+     * @param int $userId
      * @return array<Report>
      * @throws \Doctrine\DBAL\Exception
      */
-    public function saveFiles(int $expeditionId, array $files): array
+    public function saveFiles(int $expeditionId, array $files, int $userId): array
     {
         /** @var Expedition|null $expedition */
         $expedition = $this->expeditionRepository->find($expeditionId);
@@ -325,7 +326,7 @@ class VideoKozHandler
 
         $informants = $this->getInformants($files);
         $organizations = $this->getOrganizations($files);
-        $reportsData = $this->createReportsData($files);
+        $reportsData = $this->createReportsData($files, $userId);
 
         $this->convertVideoItemsToFileMarkers($files);
 
