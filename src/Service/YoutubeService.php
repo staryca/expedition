@@ -6,6 +6,7 @@ namespace App\Service;
 
 use App\Entity\Additional\FileMarkerAdditional;
 use App\Entity\FileMarker;
+use App\Entity\Informant;
 use App\Entity\Type\CategoryType;
 use App\Helper\TextHelper;
 use App\Repository\FileMarkerRepository;
@@ -221,8 +222,9 @@ class YoutubeService
         $informants = $fileMarker->getReportBlock()->getInformantsWithoutMusicians();
         $persons = [];
         foreach ($informants as $informant) {
+            $yearsLife = $informant->getLifeYears();
             $persons[] = $informant->getFirstName()
-                . (null !== $informant->getYearBirth() ? ', ' . $informant->getYearBirth() . ' г.н.' : '')
+                . (null !== $yearsLife ? ', ' . $yearsLife : '')
                 . (!empty($informant->getNotes()) ? ' (' . $informant->getNotes() . ')' : '');
         }
         if (!empty($persons)) {
@@ -248,8 +250,10 @@ class YoutubeService
         $informants = $fileMarker->getReportBlock()->getMusicians();
         $persons = [];
         foreach ($informants as $informant) {
+            /** @var Informant $informant */
+            $yearsLife = $informant->getLifeYears();
             $persons[] = $informant->getFirstName()
-                . (null !== $informant->getYearBirth() ? ', ' . $informant->getYearBirth() . ' г.н.' : '')
+                . (null !== $yearsLife ? ', ' . $yearsLife : '')
                 . (!empty($informant->getNotes()) ? ' (' . $informant->getNotes() . ')' : '');
         }
         if (!empty($persons)) {

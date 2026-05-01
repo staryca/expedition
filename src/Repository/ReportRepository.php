@@ -102,4 +102,29 @@ class ReportRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * @return array<Report>
+     */
+    public function findSameReports(Report $report): array
+    {
+        $qb = $this->createQueryBuilder('r')
+            ->where('r.expedition <> :expedition')
+            ->setParameter('expedition', $report->getExpedition())
+            ->orderBy('r.dateAction', 'ASC')
+            ->addOrderBy('r.geoPoint', 'ASC')
+            ->setMaxResults(ReportService::MAX_REPORTS_FOR_VIEW);
+
+        if ($report->getGeoPoint()) {
+            $qb->andWhere('r.geoPoint = :point')
+                ->setParameter('point', $report->getGeoPoint());
+        } elseif (!empty($report->getGeoNotes())) {
+            $qb->andWhere('r.geoNotes = :place')
+                ->setParameter('place', $report->getGeoNotes());
+        } else {
+            $qb->andWhere('1 = 0');
+        }
+
+        return $qb->getQuery()->getResult();
+    }
 }

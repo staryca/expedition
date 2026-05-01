@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Repository;
 
+use App\Entity\Expedition;
 use App\Entity\Informant;
+use App\Entity\Organization;
 use App\Entity\ReportBlock;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -78,13 +80,49 @@ class ReportBlockRepository extends ServiceEntityRepository
     /**
      * @return array<ReportBlock>
      */
-    public function findByInformant(Informant $informant): array
+    public function findByInformant(Informant $informant, ?Expedition $exceptExpedition = null): array
+    {
+        $qb = $this->createQueryBuilder('rb')
+            ->where(':informant MEMBER OF rb.informants')
+            ->setParameter('informant', $informant);
+
+        if ($exceptExpedition) {
+            $qb->join('rb.report', 'r')
+                ->andWhere('r.expedition <> :expedition')
+                ->setParameter('expedition', $exceptExpedition);
+        }
+
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
+     * @return array<ReportBlock>
+     */
+    public function findByExpedition(Expedition $expedition): array
     {
         return $this->createQueryBuilder('rb')
-            ->where(':informant MEMBER OF rb.informants')
-            ->setParameter('informant', $informant)
+            ->join('rb.report', 'r')
+            ->where('r.expedition = :expedition')
+            ->setParameter('expedition', $expedition)
             ->getQuery()
-            ->getResult()
-        ;
+            ->getResult();
+    }
+
+    /**
+     * @return array<ReportBlock>
+     */
+    public function findByOrganization(Organization $organization, ?Expedition $exceptExpedition = null): array
+    {
+        $qb = $this->createQueryBuilder('rb')
+            ->where('rb.organization = :organization')
+            ->setParameter('organization', $organization);
+
+        if ($exceptExpedition) {
+            $qb->join('rb.report', 'r')
+                ->andWhere('r.expedition <> :expedition')
+                ->setParameter('expedition', $exceptExpedition);
+        }
+
+        return $qb->getQuery()->getResult();
     }
 }
