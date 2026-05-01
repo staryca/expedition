@@ -1,0 +1,92 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+    Супадзеньні для {{ expedition.name }}
+{% endblock %}
+
+{% block body %}
+    <div class="container-fluid">
+        <h1 class="h2">Супадзеньні: {{ expedition.name }}</h1>
+        <div class="row">
+            <p class="text-end d-print-none"><small><a href="{{ path('expedition_show', {id: expedition.id}) }}">Справаздачы</a></small></p>
+
+            <h4>Па інфармантам</h4>
+            <table class="table table-striped table-hover">
+                <tbody>
+                {% for sameByInformantDto in sameByInformants %}
+                    <tr>
+                        <td>
+                            {% set informant = sameByInformantDto.getInformant() %}
+                            <b>{{ informant.firstName }}</b>
+                            {% if informant.yearBirth %}{{ informant.yearBirth }} г.н.{% endif %}
+                        </td>
+                    </tr>
+                    {% for reportBlock in sameByInformantDto.getSameReportBlocks() %}
+                        <tr>
+                            <td>
+                                {{ reportBlock.report.expedition.name }}:
+                                {{ reportBlock.report.getTextDateAction() }}
+                                <a href="{{ path('report_show', {id: reportBlock.report.id}) }}" class=""><i class="bi bi-box-arrow-in-right"></i></a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% endfor %}
+                </tbody>
+            </table>
+            <hr>
+
+            <h4>Па арганізацыям</h4>
+            <table class="table table-striped table-hover">
+                <tbody>
+                {% for sameByOrganizationDto in sameByOrganizations %}
+                    <tr>
+                        <td>
+                            {% set organization = sameByOrganizationDto.getOrganization() %}
+                            <b>{{ organization.name }}</b>
+                        </td>
+                    </tr>
+                    {% for reportBlock in sameByOrganizationDto.getSameReportBlocks() %}
+                        <tr>
+                            <td>
+                                {{ reportBlock.report.expedition.name }}:
+                                {{ reportBlock.report.getTextDateAction() }}
+                                <a href="{{ path('report_show', {id: reportBlock.report.id}) }}" class=""><i class="bi bi-box-arrow-in-right"></i></a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% endfor %}
+                </tbody>
+            </table>
+            <hr>
+
+            <h4>Па лакацыі</h4>
+            <table class="table table-striped table-hover">
+                <tbody>
+                {% for sameReportsDto in sameByReports %}
+                    <tr>
+                        <td>
+                            {% set report = sameReportsDto.getReport() %}
+                            {% if report.geoPoint %}
+                                <b>{{ report.geoPoint.getLongBeName() }}</b>
+                            {% else %}
+                                <b>{{ report.geoNotes }}</b>
+                            {% endif %}
+                            <a href="{{ path('report_show', {id: report.id}) }}" class=""><i class="bi bi-box-arrow-in-right"></i></a>
+                        </td>
+                    </tr>
+                    {% for sameReport in sameReportsDto.getSameReports() %}
+                        <tr>
+                            <td>
+                                {{ sameReport.expedition.name }}:
+                                {{ sameReport.getTextDateAction() }}
+                                <a href="{{ path('report_show', {id: sameReport.id}) }}" class=""><i class="bi bi-box-arrow-in-right"></i></a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% endfor %}
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+{% endblock %}

@@ -294,4 +294,25 @@ class ExpeditionController extends AbstractController
             'data' => $data,
         ]);
     }
+
+    #[Route('/expedition/{id}/same', name: 'expedition_same', methods: ['GET'])]
+    public function same(int $id): Response
+    {
+        /** @var Expedition|null $expedition */
+        $expedition = $this->expeditionRepository->find($id);
+        if (!$expedition) {
+            throw $this->createNotFoundException('The expedition does not exist');
+        }
+
+        $sameByReportDtos = $this->expeditionHandler->getSameReports($expedition);
+        $sameByInformants = $this->expeditionHandler->getSameByInformants($expedition);
+        $sameByOrganizations = $this->expeditionHandler->getSameByOrganization($expedition);
+
+        return $this->render('expedition/same.html.twig', [
+            'expedition' => $expedition,
+            'sameByReports' => $sameByReportDtos,
+            'sameByInformants' => $sameByInformants,
+            'sameByOrganizations' => $sameByOrganizations,
+        ]);
+    }
 }

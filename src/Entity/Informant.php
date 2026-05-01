@@ -195,6 +195,18 @@ class Informant
         return str_replace('died', $this->getDiedText(), $result);
     }
 
+    public function getLifeYears(): ?string
+    {
+        $from = $this->dayBirth ? (int) $this->dayBirth->format('Y') : $this->yearBirth;
+        $to = $this->yearDied;
+
+        if ($from) {
+            return $to ? ($from . '-' . $to . ' гг.') : ($from . ' г.н.');
+        }
+
+        return null;
+    }
+
     public function getDiedText(): string
     {
         return 'пам' . ($this->gender !== GenderType::FEMALE ? 'ё' : 'е')

@@ -106,7 +106,7 @@
                         {% if marker.isCategoryStory() %}Расказваюць{% else %}Выконваюць{% endif %}:<br>
                         {% for informant in informants %}
                             <b>{{ informant.firstName }}</b>
-                            {% if informant.yearBirth %}{{ informant.yearBirth }} г.н.{% endif %}
+                            {{ informant.getLifeYears() }}
                             {% if informant.getBirthPlaceBe() %}з <i>{{ informant.getBirthPlaceBe() }}</i>{% endif %}
                             {% if informant.getFullNotes() is not empty %} ({{ informant.getFullNotes() }}){% endif %}
                             {% if informant.urlPhoto %}
@@ -124,7 +124,7 @@
                         Музы́кі:<br>
                         {% for informant in informants %}
                             <b>{{ informant.firstName }}</b>
-                            {% if informant.yearBirth %}{{ informant.yearBirth }} г.н.{% endif %}
+                            {{ informant.getLifeYears() }}
                             {% if informant.getBirthPlaceBe() %}з <i>{{ informant.getBirthPlaceBe() }}</i>{% endif %}
                             {% if informant.getFullNotes() is not empty %} ({{ informant.getFullNotes() }}){% endif %}
                             {% if informant.urlPhoto %}
