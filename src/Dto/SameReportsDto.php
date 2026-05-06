@@ -10,7 +10,7 @@ readonly class SameReportsDto
 {
     public function __construct(
         private Report $report,
-        private array  $sameReports,
+        private array $sameReports,
     ) {
     }
 

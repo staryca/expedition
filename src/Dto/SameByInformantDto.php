@@ -10,7 +10,7 @@ readonly class SameByInformantDto
 {
     public function __construct(
         private Informant $informant,
-        private array     $sameReportBlocks,
+        private array $sameReportBlocks,
     ) {
     }
 
