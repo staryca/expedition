@@ -10,7 +10,7 @@ readonly class SameByOrganizationDto
 {
     public function __construct(
         private Organization $organization,
-        private array        $sameReportBlocks,
+        private array $sameReportBlocks,
     ) {
     }
 
