@@ -42,7 +42,7 @@ class ReportController extends AbstractController
             throw $this->createNotFoundException('The report does not exist');
         }
 
-        $geoMapData = $this->geoMapManager->getGeoMapDataForReport($report);
+        $geoMapData = $this->geoMapManager->getGeoMapDataForReport($report, 300);
 
         return $this->render('report/show.html.twig', [
             'report' => $report,

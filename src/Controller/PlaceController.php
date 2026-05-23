@@ -123,7 +123,7 @@ class PlaceController extends AbstractController
 
         $markerGroups = $this->markerService->getGroupedMarkersInLocation($geoPoint);
 
-        $geoMapData = $this->geoMapManager->getGeoMapDataForGeoPoint($geoPoint);
+        $geoMapData = $this->geoMapManager->getGeoMapDataForGeoPoint($geoPoint, 300);
 
         return $this->render('place/item.near.show.html.twig', [
             'title' => 'Уся інфармацыя вакол гэтага населенага пункта (каля '

@@ -23,6 +23,8 @@ class GeoMapDto
     ];
 
     public int $zoom = 14;
+    /* Height of map */
+    public int $height;
     public ?LatLonDto $center = null;
     /** @var array<LatLonDto> $points */
     public array $points = [];
@@ -32,6 +34,11 @@ class GeoMapDto
     public array $types = [];
     /** @var array<string> $colors */
     public array $colors = [];
+
+    public function __construct(int $height)
+    {
+        $this->height = $height;
+    }
 
     public function addLatLon(LatLonDto $latLon, string $popup, ?int $type, ?string $color = null): void
     {
@@ -59,13 +66,13 @@ class GeoMapDto
                 }
             }
             if ($diff > 0.01) {
-                $this->zoom = 10;
+                $this->zoom = $this->height < 300 ? 6 : (int) (4 * $this->height / 300) + 2; // 600-10  300-6
             } elseif ($diff < 0.003) {
-                $this->zoom = 11;
+                $this->zoom = $this->height < 300 ? 8 : (int) (3 * $this->height / 300) + 5; // 600-11  300-8
             } elseif ($diff < 0.001) {
-                $this->zoom = 12;
+                $this->zoom = $this->height < 300 ? 10 : (int) (2 * $this->height / 300) + 8; // 600-12  300-10
             } else {
-                $this->zoom = 13;
+                $this->zoom = $this->height < 300 ? 12 : (int) ($this->height / 300) + 11; // 600-13  300-12
             }
         }
     }

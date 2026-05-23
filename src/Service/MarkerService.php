@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Service;
 
-use App\Entity\Category;
+use App\Dto\MarkerFiltersDto;
 use App\Entity\Expedition;
 use App\Entity\FileMarker;
 use App\Entity\GeoPoint;
@@ -153,5 +153,55 @@ readonly class MarkerService
         }
 
         return array_keys($categories);
+    }
+
+    /**
+     * @param array<FileMarker> $markers
+     * @param array $selected
+     * @return MarkerFiltersDto
+     */
+    public function getFilters(array $markers, array $selected = []): MarkerFiltersDto
+    {
+        $markerFilters = new MarkerFiltersDto(count($markers));
+
+        foreach ($markers as $marker) {
+            $category = $marker->getCategory();
+            $markerFilters->incCategory($category);
+
+            $ritual = $marker->getRitual();
+            if (null !== $ritual) {
+                $markerFilters->incRitual($ritual);
+            }
+
+            $dance = $marker->getDance();
+            if (null !== $dance) {
+                $markerFilters->incDance($dance);
+            }
+
+            $geoPoint = $marker->getReport()?->getGeoPoint();
+            if (null !== $geoPoint) {
+                $markerFilters->incGeoPoint($geoPoint);
+            }
+
+            $pack = $marker->getAdditionalPack();
+            if (!empty($pack)) {
+                $markerFilters->incPack($pack);
+            }
+
+            $improvisation = $marker->getAdditionalImprovisation();
+            if (!empty($improvisation)) {
+                $markerFilters->incImprovisation($improvisation);
+            }
+
+            foreach ($marker->getTags() as $tag) {
+                $markerFilters->incTag($tag);
+            }
+        }
+
+        if (!empty($selected)) {
+            $markerFilters->setSelected($selected);
+        }
+
+        return $markerFilters;
     }
 }

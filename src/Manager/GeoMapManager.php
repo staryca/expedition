@@ -29,9 +29,9 @@ readonly class GeoMapManager
     ) {
     }
 
-    public function getGeoMapDataForExpedition(Expedition $expedition): GeoMapDto
+    public function getGeoMapDataForExpedition(Expedition $expedition, int $height): GeoMapDto
     {
-        $geoMapData = new GeoMapDto();
+        $geoMapData = new GeoMapDto($height);
 
         $latLon = $expedition->getGeoPoint()?->getLatLonDto();
         if ($latLon) {
@@ -116,9 +116,9 @@ readonly class GeoMapManager
         return $geoMapData;
     }
 
-    public function getGeoMapDataForReport(Report $report): GeoMapDto
+    public function getGeoMapDataForReport(Report $report, int $height): GeoMapDto
     {
-        $geoMapData = new GeoMapDto();
+        $geoMapData = new GeoMapDto($height);
 
         $reportPoint = $report->getGeoPoint();
         if (!$reportPoint && !empty($report->getGeoPlace())) {
@@ -212,9 +212,9 @@ readonly class GeoMapManager
         return $geoMapData;
     }
 
-    public function getGeoMapDataForGeoPoint(GeoPoint $geoPoint): GeoMapDto
+    public function getGeoMapDataForGeoPoint(GeoPoint $geoPoint, int $height): GeoMapDto
     {
-        $geoMapData = new GeoMapDto();
+        $geoMapData = new GeoMapDto($height);
 
         $latLonPoint = $geoPoint->getLatLonDto();
         if ($latLonPoint) {
@@ -292,9 +292,9 @@ readonly class GeoMapManager
         return $geoMapData;
     }
 
-    public function getGeoMapDataForExpeditionMarkers(Expedition $expedition): GeoMapDto
+    public function getGeoMapDataForExpeditionMarkers(Expedition $expedition, int $height): GeoMapDto
     {
-        $geoMapData = new GeoMapDto();
+        $geoMapData = new GeoMapDto($height);
 
         foreach ($expedition->getReports() as $report) {
             $latLon = $report->getLatLon();
@@ -316,9 +316,9 @@ readonly class GeoMapManager
         return $geoMapData;
     }
 
-    public function getGeoMapDataForOrganizations(Expedition $expedition): GeoMapDto
+    public function getGeoMapDataForOrganizations(Expedition $expedition, int $height): GeoMapDto
     {
-        $geoMapData = new GeoMapDto();
+        $geoMapData = new GeoMapDto($height);
 
         foreach ($expedition->getReports() as $report) {
             $latLon = $report->getLatLon();
@@ -341,11 +341,12 @@ readonly class GeoMapManager
 
     /**
      * @param array<FileMarker> $markers
+     * @param int $height
      * @return GeoMapDto
      */
-    public function getGeoMapDataForMarkers(array $markers): GeoMapDto
+    public function getGeoMapDataForMarkers(array $markers, int $height): GeoMapDto
     {
-        $geoMapData = new GeoMapDto();
+        $geoMapData = new GeoMapDto($height);
 
         $reports = [];
         foreach ($markers as $marker) {
