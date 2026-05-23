@@ -6,7 +6,7 @@
 
 {% block stylesheets %}
     <style>
-        #map { height: 300px; }
+        #map { height: {{ geoMapData.height }}px; }
     </style>
 {% endblock %}
 
@@ -18,7 +18,148 @@
     <div class="container py-5">
         <h1 class="h2">{{ title }}</h1>
         <div class="row">
-            <p><a href="{{ path('content_lists') }}">{{ all }}</a>.</p>
+            <div class="p-2">
+                <a href="{{ path('content_lists') }}">{{ all }}</a><br>
+                Знойдзена {{ markers|length }} з {{ filters.getAmountItems() }} запісаў,
+                <a data-bs-toggle="collapse" href="#collapseFilter" role="button" aria-expanded="false" aria-controls="collapseFilter">фільтр</a>
+                <div class="collapse" id="collapseFilter">
+                    <div class="card card-body">
+                        <form method="post" action="#">
+
+                        {% set filterCategories = filters.getCategories() %}
+                        {% if filterCategories is not empty %}
+                            <p class="h6">Тыпы:</p>
+                            <div class="row">
+                                {% set selected = filters.getSelectedCategories() %}
+                                {% for category, count in filterCategories %}
+                                    <div class="col-md-3">
+                                        <input type="checkbox" class="form-check-input"
+                                               id="f_ca_{{ category }}" name="f[categories][{{ category }}]"
+                                               {% if category in selected %}checked{% endif %}>
+                                        <label for="f_ca_{{ category }}" class="form-check-label">
+                                            {{ categories[category] }} ({{ count }})
+                                        </label>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <br>
+
+                        {% set filterRituals = filters.getRituals() %}
+                        {% if filterRituals is not empty %}
+                            <p class="h6">Катэгорыі:</p>
+                            <div class="row">
+                                {% for amountDto in filterRituals %}
+                                    <div class="col-md-3">
+                                        <input type="checkbox" class="form-check-input" id="f_ri_{{ amountDto.getId() }}" name="f[rituals][{{ amountDto.getId() }}]">
+                                        <label for="f_ri_{{ amountDto.getId() }}" class="form-check-label">
+                                            {{ amountDto.getName() }} ({{ amountDto.getAmount() }})
+                                        </label>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <br>
+
+                        {% set filterDances = filters.getDances() %}
+                        {% if filterDances is not empty %}
+                            <p class="h6">Танцы:</p>
+                            <div class="row">
+                                {% set selected = filters.getSelectedDances() %}
+                                {% for amountDto in filterDances %}
+                                    <div class="col-md-3">
+                                        <input type="checkbox" class="form-check-input"
+                                               id="f_da_{{ amountDto.getId() }}" name="f[dances][{{ amountDto.getId() }}]"
+                                               {% if amountDto.getId() in selected %}checked{% endif %}>
+                                        <label for="f_da_{{ amountDto.getId() }}" class="form-check-label">
+                                            {{ amountDto.getName() }} ({{ amountDto.getAmount() }})
+                                        </label>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <br>
+
+                        {% set filterGeo = filters.getGeoAmounts() %}
+                        {% set regions = filterGeo.getRegions() %}
+                        {% if regions is not empty %}
+                            <p class="h6">Вобласці:</p>
+                            <div class="row">
+                                {% for amountDto in regions %}
+                                    <div class="col-md-3">
+                                        <input type="checkbox" class="form-check-input" id="f_re_{{ amountDto.getId() }}" name="f[re][{{ amountDto.getId() }}]">
+                                        <label for="f_re_{{ amountDto.getId() }}" class="form-check-label">
+                                            {{ amountDto.getName() }} ({{ amountDto.getAmount() }})
+                                        </label>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <br>
+
+                        {% set districts = filterGeo.getDistricts() %}
+                        {% if districts is not empty %}
+                            <p class="h6">Раёны:</p>
+                            <div class="row">
+                                {% for amountDto in districts %}
+                                    <div class="col-md-3">
+                                        <input type="checkbox" class="form-check-input" id="f_di_{{ amountDto.getId() }}" name="f[di][{{ amountDto.getId() }}]">
+                                        <label for="f_di_{{ amountDto.getId() }}" class="form-check-label">
+                                            {{ amountDto.getName() }} ({{ amountDto.getAmount() }})
+                                        </label>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <br>
+
+                        {% set places = filterGeo.getPlaces() %}
+                        {% if places is not empty %}
+                            <p class="h6">Населеныя пункты:</p>
+                            <div class="row">
+                                {% for amountDto in places %}
+                                    <div class="col-md-3">
+                                        <input type="checkbox" class="form-check-input" id="f_pl_{{ amountDto.getId() }}" name="f[pl][{{ amountDto.getId() }}]">
+                                        <label for="f_pl_{{ amountDto.getId() }}" class="form-check-label">
+                                            {{ amountDto.getName() }} ({{ amountDto.getAmount() }})
+                                        </label>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <br>
+
+                        {% set packs = filters.getPacks() %}
+                        {% if packs is not empty %}
+                            <b>Колькасць танцораў</b>:
+                            {% for name, amount in packs %}
+                                {{ name }} ({{ amount }}){% if not loop.last %},{% endif %}
+                            {% endfor %}
+                        {% endif %}
+                        <br>
+
+                        {% set improvisations = filters.getImprovisations() %}
+                        {% if improvisations is not empty %}
+                            <b>Тыпы танцаў</b>:
+                            {% for name, amount in improvisations %}
+                                {{ name }} ({{ amount }}){% if not loop.last %},{% endif %}
+                            {% endfor %}
+                        {% endif %}
+                        <br>
+
+                        {% set tags = filters.getTags() %}
+                        {% if tags is not empty %}
+                            <b>Тэгі</b>:
+                            {% for amountDto in tags %}
+                                {{ amountDto.getName() }} ({{ amountDto.getAmount() }}){% if not loop.last %},{% endif %}
+                            {% endfor %}
+                        {% endif %}
+
+                            <button type="submit" class="btn btn-primary">Фільтраваць</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
 
             {% if geoMapData.center %}
                 <div id="map"></div>
@@ -29,7 +170,7 @@
                 <tr>
                     <th scope="col">Год і месца</th>
                     <th scope="col">Назва</th>
-                    <th scope="col">Заўвагі</th>
+                    <th scope="col"><span class="d-none d-md-block">Заўвагі</span></th>
                     <th scope="col">Відэа</th>
                 </tr>
                 </thead>
@@ -57,9 +198,7 @@
                             {% endif %}
                         </td>
                         <td>
-                            {% if categories is defined %}
-                                {{ categories[marker.category] }}:
-                            {% endif %}
+                            {{ categories[marker.category] }}:
                             {{ marker.name }}
                             {% for tag in marker.tags %}
                                 <span class="badge text-bg-secondary">{{ tag.name }}</span>
@@ -77,7 +216,7 @@
                                 {% if marker.notes is not empty %}-----<br />{% endif %}
                             {% endif %}
 
-                            {{ marker.notes }}
+                            <div class="d-none d-md-block">{{ marker.notes }}</div>
 
                             {% if marker.decoding %}
                                 <button title="Расшыфроўка" class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ marker.id }}" aria-expanded="false" aria-controls="collapse{{ marker.id }}">
@@ -94,6 +233,7 @@
                             {% set youtube = marker.getAdditionalYoutube() %}
                             {% if youtube is not empty %}
                                 {% if marker.isPublished() %}
+                                    <img src="https://i.ytimg.com/vi/{{ youtube }}/default.jpg" />
                                     <a target="_blank" href="{{ marker.getAdditionalYoutubeLink() }}">Глядзець</a>
                                 {% else %}
                                     <p>Будзе апублікавана {{ marker.getPublishDateText() }}</p>

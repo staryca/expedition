@@ -51,7 +51,7 @@ class ExpeditionController extends AbstractController
 
         $reports = $this->reportRepository->findByExpedition($expedition);
 
-        $geoMapData = $this->geoMapManager->getGeoMapDataForExpedition($expedition);
+        $geoMapData = $this->geoMapManager->getGeoMapDataForExpedition($expedition, 300);
 
         $statistics = $this->fileMarkerRepository->getStatisticsByCategory($expedition);
 
@@ -73,7 +73,7 @@ class ExpeditionController extends AbstractController
             throw $this->createNotFoundException('The expedition does not exist');
         }
 
-        $geoMapData = $this->geoMapManager->getGeoMapDataForExpeditionMarkers($expedition);
+        $geoMapData = $this->geoMapManager->getGeoMapDataForExpeditionMarkers($expedition, 900);
 
         return $this->render('expedition/map.html.twig', [
             'expedition' => $expedition,
@@ -92,7 +92,7 @@ class ExpeditionController extends AbstractController
 
         $tips = $this->expeditionHandler->getTips($expedition);
 
-        $geoMapData = $this->geoMapManager->getGeoMapDataForExpedition($expedition);
+        $geoMapData = $this->geoMapManager->getGeoMapDataForExpedition($expedition, 300);
 
         return $this->render('expedition/tips.html.twig', [
             'expedition' => $expedition,
@@ -114,7 +114,7 @@ class ExpeditionController extends AbstractController
 
         $markerGroups = $this->markerService->getGroupedMarkersByExpedition($expedition);
 
-        $geoMapData = $this->geoMapManager->getGeoMapDataForExpedition($expedition);
+        $geoMapData = $this->geoMapManager->getGeoMapDataForExpedition($expedition, 300);
 
         return $this->render('expedition/report.html.twig', [
             'expedition' => $expedition,
@@ -232,7 +232,7 @@ class ExpeditionController extends AbstractController
         }
         unset($markerGroups);
 
-        $geoMapData = $this->geoMapManager->getGeoMapDataForOrganizations($expedition);
+        $geoMapData = $this->geoMapManager->getGeoMapDataForOrganizations($expedition, 300);
 
         return $this->render('expedition/organizations.html.twig', [
             'expedition' => $expedition,
