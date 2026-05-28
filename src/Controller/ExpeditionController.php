@@ -30,7 +30,7 @@ class ExpeditionController extends AbstractController
     ) {
     }
 
-    #[Route('/', name: 'expedition_list', methods: ['GET'])]
+    #[Route('/expedition/', name: 'expedition_list', methods: ['GET'])]
     public function list(): Response
     {
         $expeditions = $this->expeditionRepository->findBy([], ['id' => 'ASC']);

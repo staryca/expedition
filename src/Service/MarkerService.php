@@ -10,7 +10,10 @@ use App\Entity\FileMarker;
 use App\Entity\GeoPoint;
 use App\Entity\Type\CategoryType;
 use App\Helper\TextHelper;
+use App\Repository\DistrictRepository;
 use App\Repository\FileMarkerRepository;
+use App\Repository\PackRepository;
+use App\Repository\RegionRepository;
 use League\Csv\CannotInsertRecord;
 use League\Csv\Exception;
 use League\Csv\Writer;
@@ -19,6 +22,9 @@ readonly class MarkerService
 {
     public function __construct(
         private FileMarkerRepository $fileMarkerRepository,
+        private RegionRepository $regionRepository,
+        private DistrictRepository $districtRepository,
+        private PackRepository $packRepository,
     ) {
     }
 
@@ -201,6 +207,15 @@ readonly class MarkerService
         if (!empty($selected)) {
             $markerFilters->setSelected($selected);
         }
+
+        $regions = $this->regionRepository->getAllRegions();
+        $markerFilters->setRegionKeys($regions);
+
+        $districts = $this->districtRepository->getAllDistricts();
+        $markerFilters->setDistrictKeys($districts);
+
+        $packs = $this->packRepository->getAllPacks();
+        $markerFilters->setPackKeys($packs);
 
         return $markerFilters;
     }

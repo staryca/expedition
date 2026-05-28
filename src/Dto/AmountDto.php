@@ -6,7 +6,7 @@ namespace App\Dto;
 
 class AmountDto
 {
-    private readonly int $id;
+    private int $id;
     private readonly string $name;
     private int $amount = 0;
 
@@ -19,6 +19,11 @@ class AmountDto
     public function getId(): int
     {
         return $this->id;
+    }
+
+    public function updateId(int $id): void
+    {
+        $this->id = $id;
     }
 
     public function getName(): string
@@ -34,5 +39,10 @@ class AmountDto
     public function getAmount(): int
     {
         return $this->amount;
+    }
+
+    public function setAmount(int $amount): void
+    {
+        $this->amount = $amount;
     }
 }

@@ -13,6 +13,10 @@ class GeoAmountDto
 
     /** @var array<int, array<AmountDto>> $districts */
     private array $districts = [];
+
+    /** @var array<int, string> $districtKeys */
+    private array $districtKeys = [];
+
     private int $districtAmount = 0;
 
     /** @var array<int, array<string, PointAmountDto>> $places */
@@ -71,18 +75,91 @@ class GeoAmountDto
         }
     }
 
-    public function getRegions(): array
+    /**
+     * @return AmountDto[]
+     */
+    public function getRegionAmounts(): array
     {
         return $this->regions;
     }
 
+    /**
+     * @param array<int> $regionKeys
+     * @return array<int, string>
+     */
+    public function getSomeRegions(array $regionKeys): array
+    {
+        $regions = [];
+
+        foreach ($this->regions as $amountDto) {
+            if (in_array($amountDto->getId(), $regionKeys)) {
+                $regions[$amountDto->getId()] = $amountDto->getName();
+            }
+        }
+
+        return $regions;
+    }
+
+    /**
+     * @return array<int, AmountDto>
+     */
     public function getDistricts(): array
     {
-        return array_merge(...$this->districts);
+        $districts = [];
+
+        foreach ($this->districts as $districtsInRegion) {
+            foreach ($districtsInRegion as $amountDto) {
+                $key = array_search($amountDto->getName(), $this->districtKeys, true);
+                if ($key !== false) {
+                    $amountDto->updateId($key);
+                    $districts[$key] = $amountDto;
+                }
+            }
+        }
+
+        return $districts;
+    }
+
+    /**
+     * @param array<int> $districtKeys
+     * @return array<string>
+     */
+    public function getSomeDistricts(array $districtKeys): array
+    {
+        $selected = array_filter(
+            $this->getDistricts(),
+            function ($districtKey) use ($districtKeys): bool {
+                return in_array($districtKey, $districtKeys);
+            },
+            ARRAY_FILTER_USE_KEY
+        );
+
+        return array_map(function ($district) {
+            return $district->getName();
+        }, $selected);
     }
 
     public function getPlaces(): array
     {
         return array_merge(...$this->places);
+    }
+
+    /**
+     * @param array<int, string> $regions
+     * @return void
+     */
+    public function setRegionKeys(array $regions): void
+    {
+        foreach ($this->regions as $amountDto) {
+            $key = array_search($amountDto->getName(), $regions, true);
+            if (false !== $key) {
+                $amountDto->updateId($key);
+            }
+        }
+    }
+
+    public function setDistrictKeys(array $districts): void
+    {
+        $this->districtKeys = $districts;
     }
 }

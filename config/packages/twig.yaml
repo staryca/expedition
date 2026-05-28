@@ -3,6 +3,7 @@ twig:
     form_themes: ['bootstrap_5_layout.html.twig']
     globals:
         imef_url: '%imef_url%'
+        app_view: '%app_view%'
 
 when@test:
     twig:

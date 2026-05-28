@@ -31,4 +31,18 @@ class PackRepository extends ServiceEntityRepository
             ->getOneOrNullResult()
         ;
     }
+
+    /**
+     * @return array<int, string>
+     */
+    public function getAllPacks(): array
+    {
+        $packs = [];
+
+        foreach ($this->findAll() as $pack) {
+            $packs[$pack->getId()] = $pack->getName();
+        }
+
+        return $packs;
+    }
 }

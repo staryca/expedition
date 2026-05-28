@@ -15,6 +15,7 @@ use App\Repository\InformantRepository;
 use App\Repository\ReportRepository;
 use App\Repository\TaskRepository;
 use App\Service\LocationService;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Twig\Environment;
 
 readonly class GeoMapManager
@@ -25,6 +26,7 @@ readonly class GeoMapManager
         private ReportRepository $reportRepository,
         private InformantRepository $informantRepository,
         private LocationService $locationService,
+        private UrlGeneratorInterface $urlGenerator,
         private Environment $twig,
     ) {
     }
@@ -342,9 +344,10 @@ readonly class GeoMapManager
     /**
      * @param array<FileMarker> $markers
      * @param int $height
+     * @param bool $withLink
      * @return GeoMapDto
      */
-    public function getGeoMapDataForMarkers(array $markers, int $height): GeoMapDto
+    public function getGeoMapDataForMarkers(array $markers, int $height, bool $withLink = false): GeoMapDto
     {
         $geoMapData = new GeoMapDto($height);
 
@@ -363,7 +366,12 @@ readonly class GeoMapManager
 
         foreach ($reports as $report) {
             $latLon = $report->getLatLon();
-            $popup = $report->getShortGeoPlace(true);
+            $place = $report->getShortGeoPlace(true);
+            $geoPoint = $report->getGeoPoint();
+            $link = $geoPoint ? $this->urlGenerator->generate('content_place', ['id' => $geoPoint->getId()]) : null;
+            $popup = $withLink && $link
+                ? '<a href="' . $link . '">' . $place . '</a>'
+                : $place;
             $type = GeoMapDto::TYPE_LOCATION;
             $geoMapData->addLatLon($latLon, $popup, $type);
         }
