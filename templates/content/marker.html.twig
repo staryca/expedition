@@ -39,7 +39,7 @@
                     {% if reportPlace %}
                         {{ reportPlace }}
                         {% if report.geoPoint %}
-                            (усе запісы адсюль <a href="{{ path('place_item', {id: report.geoPoint.id}) }}">
+                            (усе запісы адсюль <a href="{{ path('content_place', {id: report.geoPoint.id}) }}">
                                 <i class="bi bi-box-arrow-in-right"></i>
                             </a>)
                         {% endif %}
@@ -57,11 +57,11 @@
                     {% endif %}
                     <br>
 
-                    {% if report.getUserReports() %}
-                        Зьбіральнікі:
-                        {% for userReport in report.getUserReports() %}
-                            {{ userReport.participant.lastName }} {{ userReport.participant.firstName }}
-                            ({{ userReport.getRoleName()|lower }}){% if not loop.last %},{% endif %}
+                    {% set userReports = report.getUserReports() %}
+                    {% if userReports %}
+                        Зьбіральнік{% if userReports|length > 1 %}і{% endif %}:
+                        {% for userReport in userReports %}
+                            {{ userReport.participant.lastName }} {{ userReport.participant.firstName }}{% if not loop.last %},{% endif %}
                         {% endfor %}
                         <br>
                     {% endif %}

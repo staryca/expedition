@@ -17,4 +17,18 @@ class RegionRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Region::class);
     }
+
+    /**
+     * @return array<int, string>
+     */
+    public function getAllRegions(): array
+    {
+        $regions = [];
+
+        foreach ($this->findAll() as $region) {
+            $regions[$region->getId()] = $region->getName();
+        }
+
+        return $regions;
+    }
 }

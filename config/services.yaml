@@ -9,6 +9,7 @@ parameters:
     google_credentials: '%kernel.project_dir%/%env(string:GOOGLE_APPLICATION_CREDENTIALS)%'
     google_api_key: '%env(string:GOOGLE_API_KEY)%'
     imef_url: '%env(string:IMEF_URL)%'
+    app_view: '%env(string:APP_VIEW)%'
 
 services:
     # default configuration for services in *this* file

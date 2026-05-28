@@ -26,7 +26,7 @@ security:
                 provider: google.user.provider
             logout:
                 path: /logout
-                target: expedition_list
+                target: main
 
             # activate different ways to authenticate
             # https://symfony.com/doc/current/security.html#the-firewall

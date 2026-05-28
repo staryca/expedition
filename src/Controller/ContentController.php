@@ -9,6 +9,7 @@ use App\Entity\Type\CategoryType;
 use App\Manager\GeoMapManager;
 use App\Repository\DanceRepository;
 use App\Repository\FileMarkerRepository;
+use App\Repository\GeoPointRepository;
 use App\Service\DanceService;
 use App\Service\MarkerService;
 use App\Service\YoutubeService;
@@ -22,6 +23,7 @@ class ContentController extends AbstractController
     public function __construct(
         private readonly FileMarkerRepository $fileMarkerRepository,
         private readonly DanceRepository $danceRepository,
+        private readonly GeoPointRepository $geoPointRepository,
         private readonly YoutubeService $youtubeService,
         private readonly DanceService $danceService,
         private readonly MarkerService $markerService,
@@ -29,15 +31,26 @@ class ContentController extends AbstractController
     ) {
     }
 
+    #[Route('/', name: 'main', methods: ['GET'])]
+    public function main(): Response
+    {
+        $view = $this->getParameter('app_view');
+        if ($view === 'expedition') {
+            return $this->redirectToRoute('expedition_list');
+        }
+
+        return $this->content(true);
+    }
+
     #[Route('/content', name: 'content_lists', methods: ['GET'])]
-    public function content(): Response
+    public function content(bool $isAll = false): Response
     {
         $statisticsCategory = $this->fileMarkerRepository->getStatisticsByCategory();
         $statisticsDance = $this->fileMarkerRepository->getStatisticsByDance();
 
         $markers = $this->fileMarkerRepository->getMarkersByPublish(true, 1);
         $marker = current($markers);
-        $future = $marker ? $this->youtubeService->getTitle($marker) : null;
+        $future = $marker && $isAll ? $this->youtubeService->getTitle($marker) : null;
 
         return $this->render('content/lists.html.twig', [
             'statisticsCategory' => $statisticsCategory,
@@ -51,12 +64,14 @@ class ContentController extends AbstractController
     #[Route('/content/category/{category}', name: 'content_category', methods: ['GET', 'POST'])]
     public function category(int $category, Request $request): Response
     {
-        $markers = $this->fileMarkerRepository->getMarkersInLocation(null, null, $category);
+        $markersForFilter = $this->fileMarkerRepository->getMarkersInLocation(null, null, $category);
 
         $data = $request->request->all();
         $formData = $data['f'] ?? [];
-        $filters = $this->markerService->getFilters($markers, $formData);
+        $filters = $this->markerService->getFilters($markersForFilter, $formData);
         $filters->selectCategory($category);
+
+        $markers = $this->fileMarkerRepository->getMarkersByFilters($filters);
 
         $geoMapData = $this->geoMapManager->getGeoMapDataForMarkers($markers, 300);
 
@@ -78,12 +93,14 @@ class ContentController extends AbstractController
             throw $this->createNotFoundException('Dance not found');
         }
 
-        $markers = $this->fileMarkerRepository->getMarkersInLocation(null, null, null, $dance);
+        $markersForFilter = $this->fileMarkerRepository->getMarkersInLocation(null, null, null, $dance);
 
         $data = $request->request->all();
         $formData = $data['f'] ?? [];
-        $filters = $this->markerService->getFilters($markers, $formData);
+        $filters = $this->markerService->getFilters($markersForFilter, $formData);
         $filters->selectDance($id);
+
+        $markers = $this->fileMarkerRepository->getMarkersByFilters($filters);
 
         $geoMapData = $this->geoMapManager->getGeoMapDataForMarkers($markers, 300);
 
@@ -133,6 +150,39 @@ class ContentController extends AbstractController
             'titles' => $titles,
             'descriptions' => $descriptions,
             'isAll' => count($markers) !== $amount,
+        ]);
+    }
+
+    #[Route('/content/map', name: 'content_map', methods: ['GET'])]
+    public function map(): Response
+    {
+        $markers = $this->fileMarkerRepository->getAllWithFullObjects();
+        $geoMapData = $this->geoMapManager->getGeoMapDataForMarkers($markers, 900, true);
+
+        return $this->render('content/map.html.twig', [
+            'geoMapData' => $geoMapData,
+        ]);
+    }
+
+    #[Route('/content/place/{id}', name: 'content_place', methods: ['GET'])]
+    public function place(int $id): Response
+    {
+        $geoPoint = $this->geoPointRepository->find($id);
+        if (!$geoPoint) {
+            throw $this->createNotFoundException('The place does not exist');
+        }
+
+        $markerGroups = $this->markerService->getGroupedMarkersByGeoPoint($geoPoint);
+
+        return $this->render('content/place.html.twig', [
+            'geoPoint' => $geoPoint,
+            'reports' => [],
+            'informants' => [],
+            'organizations' => [],
+            'subjects' => [],
+            'tasks' => [],
+            'markerGroups' => $markerGroups,
+            'categories' => CategoryType::getManyNames(false),
         ]);
     }
 }

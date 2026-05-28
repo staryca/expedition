@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Repository;
 
 use App\Dto\LatLonDto;
+use App\Dto\MarkerFiltersDto;
+use App\Entity\Additional\FileMarkerAdditional;
 use App\Entity\Dance;
 use App\Entity\Expedition;
 use App\Entity\FileMarker;
@@ -113,6 +115,27 @@ class FileMarkerRepository extends ServiceEntityRepository
         }
 
         return $qb
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function getAllWithFullObjects(): array
+    {
+        return $this->createQueryBuilder('fm')
+            ->addSelect('f')
+            ->addSelect('rb')
+            ->addSelect('rb2')
+            ->addSelect('r')
+            ->addSelect('r2')
+            ->addSelect('gp')
+            ->addSelect('gp2')
+            ->leftJoin('fm.reportBlock', 'rb')
+            ->leftJoin('fm.file', 'f')
+            ->leftJoin('f.reportBlock', 'rb2')
+            ->leftJoin('rb.report', 'r')
+            ->leftJoin('rb2.report', 'r2')
+            ->leftJoin('r.geoPoint', 'gp')
+            ->leftJoin('r2.geoPoint', 'gp2')
             ->getQuery()
             ->getResult();
     }
@@ -264,6 +287,72 @@ class FileMarkerRepository extends ServiceEntityRepository
         if ($dance) {
             $qb->andWhere('fm.dance = :dance')
                 ->setParameter('dance', $dance);
+        }
+
+        return $qb
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * @param MarkerFiltersDto $markerFiltersDto
+     * @return array<FileMarker>
+     */
+    public function getMarkersByFilters(MarkerFiltersDto $markerFiltersDto): array
+    {
+        $qb = $this->createQueryBuilder('fm');
+
+        $qb
+            ->leftJoin('fm.reportBlock', 'rb')
+            ->leftJoin('fm.file', 'f')
+            ->leftJoin('f.reportBlock', 'rb2')
+            ->leftJoin('rb.report', 'r')
+            ->leftJoin('rb2.report', 'r2')
+            ->leftJoin('r.geoPoint', 'gp')
+            ->leftJoin('r2.geoPoint', 'gp2')
+            ->orderBy('fm.category', 'ASC')
+            ->addOrderBy('fm.name', 'ASC');
+
+        $categories = $markerFiltersDto->getSelectedCategories();
+        if (!empty($categories)) {
+            $qb->andWhere('fm.category IN (:categories)')
+                ->setParameter('categories', $categories);
+        }
+
+        $dances = $markerFiltersDto->getSelectedDances();
+        if (!empty($dances)) {
+            $qb->andWhere('fm.dance IN (:dances)')
+                ->setParameter('dances', $dances);
+        }
+
+        $rituals = $markerFiltersDto->getSelectedRituals();
+        if (!empty($rituals)) {
+            $qb->andWhere('fm.ritual IN (:rituals)')
+                ->setParameter('rituals', $rituals);
+        }
+
+        $regions = $markerFiltersDto->getSelectedRegions();
+        if (!empty($regions)) {
+            $qb->andWhere($qb->expr()->orX('gp.region IN (:regions)', 'gp2.region IN (:regions)'))
+                ->setParameter('regions', $regions);
+        }
+
+        $districts = $markerFiltersDto->getSelectedDistricts();
+        if (!empty($districts)) {
+            $qb->andWhere($qb->expr()->orX('gp.district IN (:districts)', 'gp2.district IN (:districts)'))
+                ->setParameter('districts', $districts);
+        }
+
+        $places = $markerFiltersDto->getSelectedPlaces();
+        if (!empty($places)) {
+            $qb->andWhere($qb->expr()->orX('gp.id IN (:places)', 'gp2.id IN (:places)'))
+                ->setParameter('places', $places);
+        }
+
+        $packs = $markerFiltersDto->getSelectedPackNames();
+        if (!empty($packs)) {
+            $qb->andWhere("JSON_GET_FIELD_AS_TEXT(fm.additional, '" . FileMarkerAdditional::DANCE_TYPE . "') IN (:packs)")
+                ->setParameter('packs', $packs);
         }
 
         return $qb

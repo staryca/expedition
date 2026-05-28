@@ -32,7 +32,7 @@
                 </button>
                 <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvas" aria-labelledby="offcanvasLabel">
                     <div class="offcanvas-header">
-                        <h5 class="offcanvas-title" id="offcanvasLabel">Экспедыцыі</h5>
+                        <h5 class="offcanvas-title" id="offcanvasLabel">Прагляд</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
                     </div>
                     <div class="offcanvas-body">
@@ -40,16 +40,18 @@
                             <li class="nav-item"><a class="nav-link" href="{{ path('content_lists') }}">
                                     <i class="bi bi-file-earmark-text"></i> Прагляд</a>
                             </li>
-                            <li class="nav-item"><a class="nav-link" href="{{ path('expedition_list') }}">
-                                    <i class="bi bi-music-player"></i> Экспедыцыі</a>
+                            {% if app.user and app.user.isAdmin() %}
+                                <li class="nav-item"><a class="nav-link" href="{{ path('expedition_list') }}">
+                                        <i class="bi bi-music-player"></i> Экспедыцыі</a>
+                                </li>
+                            {% endif %}
+                            <li class="nav-item"><a class="nav-link" href="{{ path('content_map') }}">
+                                    <i class="bi bi-geo-alt"></i> Мапа</a>
                             </li>
-                            <li class="nav-item"><a class="nav-link" href="{{ path('place_list') }}">
-                                    <i class="bi bi-geo-alt"></i> Лакацыі</a>
-                            </li>
-                            <li class="nav-item"><a class="nav-link" href="{{ path('app_search') }}">
-                                    <i class="bi bi-search"></i> Пошук</a>
-                            </li>
-                            {% if is_granted('ROLE_USER') %}
+                            {% if app.user and app.user.isAdmin() %}
+                                <li class="nav-item"><a class="nav-link" href="{{ path('app_search') }}">
+                                        <i class="bi bi-search"></i> Пошук</a>
+                                </li>
                                 <li class="nav-item"><a class="nav-link" href="{{ path('report_new_for_active_expedition') }}">
                                      <i class="bi bi-file-earmark-plus"></i> Дадаць справаздачу</a>
                                 </li>

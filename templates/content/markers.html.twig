@@ -49,9 +49,12 @@
                         {% if filterRituals is not empty %}
                             <p class="h6">Катэгорыі:</p>
                             <div class="row">
+                                {% set selected = filters.getSelectedRituals() %}
                                 {% for amountDto in filterRituals %}
                                     <div class="col-md-3">
-                                        <input type="checkbox" class="form-check-input" id="f_ri_{{ amountDto.getId() }}" name="f[rituals][{{ amountDto.getId() }}]">
+                                        <input type="checkbox" class="form-check-input"
+                                               id="f_ri_{{ amountDto.getId() }}" name="f[rituals][{{ amountDto.getId() }}]"
+                                               {% if amountDto.getId() in selected %}checked{% endif %}>
                                         <label for="f_ri_{{ amountDto.getId() }}" class="form-check-label">
                                             {{ amountDto.getName() }} ({{ amountDto.getAmount() }})
                                         </label>
@@ -81,13 +84,17 @@
                         <br>
 
                         {% set filterGeo = filters.getGeoAmounts() %}
-                        {% set regions = filterGeo.getRegions() %}
+
+                        {% set regions = filterGeo.getRegionAmounts() %}
                         {% if regions is not empty %}
                             <p class="h6">Вобласці:</p>
                             <div class="row">
+                                {% set selected = filters.getSelectedRegions() %}
                                 {% for amountDto in regions %}
                                     <div class="col-md-3">
-                                        <input type="checkbox" class="form-check-input" id="f_re_{{ amountDto.getId() }}" name="f[re][{{ amountDto.getId() }}]">
+                                        <input type="checkbox" class="form-check-input"
+                                               id="f_re_{{ amountDto.getId() }}" name="f[regions][{{ amountDto.getId() }}]"
+                                               {% if amountDto.getName() in selected %}checked{% endif %}>
                                         <label for="f_re_{{ amountDto.getId() }}" class="form-check-label">
                                             {{ amountDto.getName() }} ({{ amountDto.getAmount() }})
                                         </label>
@@ -101,9 +108,12 @@
                         {% if districts is not empty %}
                             <p class="h6">Раёны:</p>
                             <div class="row">
+                                {% set selected = filters.getSelectedDistricts() %}
                                 {% for amountDto in districts %}
                                     <div class="col-md-3">
-                                        <input type="checkbox" class="form-check-input" id="f_di_{{ amountDto.getId() }}" name="f[di][{{ amountDto.getId() }}]">
+                                        <input type="checkbox" class="form-check-input"
+                                               id="f_di_{{ amountDto.getId() }}" name="f[districts][{{ amountDto.getId() }}]"
+                                               {% if amountDto.getName() in selected %}checked{% endif %}>
                                         <label for="f_di_{{ amountDto.getId() }}" class="form-check-label">
                                             {{ amountDto.getName() }} ({{ amountDto.getAmount() }})
                                         </label>
@@ -117,9 +127,12 @@
                         {% if places is not empty %}
                             <p class="h6">Населеныя пункты:</p>
                             <div class="row">
+                                {% set selected = filters.getSelectedPlaces() %}
                                 {% for amountDto in places %}
                                     <div class="col-md-3">
-                                        <input type="checkbox" class="form-check-input" id="f_pl_{{ amountDto.getId() }}" name="f[pl][{{ amountDto.getId() }}]">
+                                        <input type="checkbox" class="form-check-input"
+                                               id="f_pl_{{ amountDto.getId() }}" name="f[places][{{ amountDto.getId() }}]"
+                                               {% if amountDto.getId() in selected %}checked{% endif %}>
                                         <label for="f_pl_{{ amountDto.getId() }}" class="form-check-label">
                                             {{ amountDto.getName() }} ({{ amountDto.getAmount() }})
                                         </label>
@@ -129,12 +142,22 @@
                         {% endif %}
                         <br>
 
-                        {% set packs = filters.getPacks() %}
+                        {% set packs = filters.getPackAmounts() %}
                         {% if packs is not empty %}
-                            <b>Колькасць танцораў</b>:
-                            {% for name, amount in packs %}
-                                {{ name }} ({{ amount }}){% if not loop.last %},{% endif %}
-                            {% endfor %}
+                            <p class="h6">Колькасць танцораў:</p>
+                            <div class="row">
+                                {% set selected = filters.getSelectedPacks() %}
+                                {% for amountDto in packs %}
+                                    <div class="col-md-3">
+                                        <input type="checkbox" class="form-check-input"
+                                               id="f_pl_{{ amountDto.getId() }}" name="f[packs][{{ amountDto.getId() }}]"
+                                               {% if amountDto.getId() in selected %}checked{% endif %}>
+                                        <label for="f_pl_{{ amountDto.getId() }}" class="form-check-label">
+                                            {{ amountDto.getName() }} ({{ amountDto.getAmount() }})
+                                        </label>
+                                    </div>
+                                {% endfor %}
+                            </div>
                         {% endif %}
                         <br>
 
@@ -188,6 +211,7 @@
                                 {%- if report.geoPoint.district %},
                                     {{ report.geoPoint.district }}
                                 {% endif %}
+                                <a href="{{ path('content_place', {id: report.geoPoint.id}) }}"><i class="bi bi-arrow-right-circle"></i></a>
                             {% else %}
                                 {% set reportPlace = report.getGeoPlace() %}
                                 {% if reportPlace %}
@@ -198,7 +222,7 @@
                             {% endif %}
                         </td>
                         <td>
-                            {{ categories[marker.category] }}:
+                            {{ marker.getCategoryName() }}:
                             {{ marker.name }}
                             {% for tag in marker.tags %}
                                 <span class="badge text-bg-secondary">{{ tag.name }}</span>

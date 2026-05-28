@@ -14,8 +14,8 @@
         <div class="row">
             {% set all = 0 %}
             {% for category, count in statisticsCategory %}
-                <div class="card" style="width: 18rem;">
-                    <div class="card-body">
+                <div class="card border-light" style="width: 15rem;">
+                    <div class="card-body" style="padding: 1px;">
                         {% set link = path('content_category', {category: category}) %}
                         <a href="{{ link }}">{{ categories[category]|capitalize }}</a> ({{ count }})
                         {% set all = all + count %}
@@ -23,7 +23,7 @@
                 </div>
             {% endfor %}
             {% if all > 0 %}
-                <p>Усяго: {{ all }} запісаў</p>
+                <p class="fst-italic">Усяго: {{ all }} запісаў</p>
             {% endif %}
         </div>
 
@@ -31,8 +31,8 @@
         <div class="row">
             {% set all = 0 %}
             {% for danceId, count in statisticsDance %}
-                <div class="card" style="width: 18rem;">
-                    <div class="card-body">
+                <div class="card border-light" style="width: 15rem;">
+                    <div class="card-body" style="padding: 1px;">
                         {% set link = path('content_dance', {id: danceId}) %}
                         <a href="{{ link }}">{{ dances[danceId]|capitalize }}</a> ({{ count }})
                         {% set all = all + count %}
@@ -40,7 +40,7 @@
                 </div>
             {% endfor %}
             {% if all > 0 %}
-                <p>Усяго: {{ all }} запісаў</p>
+                <p class="fst-italic">Усяго: {{ all }} запісаў</p>
             {% endif %}
         </div>
     </div>

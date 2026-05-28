@@ -1,7 +1,15 @@
-{% extends 'base.html.twig' %}
+{% if app_view == 'content' %}
+    {% set name = 'карыстальніка' %}
+    {% set file = 'base.content.html.twig' %}
+{% else %}
+    {% set name = 'даследчыка' %}
+    {% set file = 'base.html.twig' %}
+{% endif %}
+
+{% extends file %}
 
 {% block title %}
-    Профіль даследчыка
+    Профіль {{ name }}
 {% endblock %}
 
 {% block body %}
@@ -9,7 +17,7 @@
         <section class="py-5 text-center container">
             <div class="row py-lg-5">
                 <div class="col-lg-6 col-md-8 mx-auto">
-                    <h1 class="fw-light">Профіль даследчыка</h1>
+                    <h1 class="fw-light">Профіль {{ name }}</h1>
                     <p class="lead text-body-secondary">
                         {{ app.user.gelFullName() }}
                         <br>

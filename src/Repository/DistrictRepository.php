@@ -16,28 +16,17 @@ class DistrictRepository extends ServiceEntityRepository
         parent::__construct($registry, District::class);
     }
 
-    //    /**
-    //     * @return District[] Returns an array of District objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('d')
-    //            ->andWhere('d.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('d.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    /**
+     * @return array<int, string>
+     */
+    public function getAllDistricts(): array
+    {
+        $districts = [];
 
-    //    public function findOneBySomeField($value): ?District
-    //    {
-    //        return $this->createQueryBuilder('d')
-    //            ->andWhere('d.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+        foreach ($this->findAll() as $district) {
+            $districts[$district->getId()] = $district->getName();
+        }
+
+        return $districts;
+    }
 }
