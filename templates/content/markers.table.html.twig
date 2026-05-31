@@ -188,59 +188,89 @@
                 <div id="map"></div>
             {% endif %}
 
-        </div>
-    </div>
+            <table class="table">
+                <thead>
+                <tr>
+                    <th scope="col">Год і месца</th>
+                    <th scope="col">Назва</th>
+                    <th scope="col"><span class="d-none d-md-block">Заўвагі</span></th>
+                    <th scope="col">Відэа</th>
+                </tr>
+                </thead>
 
-    <div class="container">
-        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
-            {% for marker in markers %}
-            <div class="col">
-                {% set report = marker.getReport() %}
-                <div class="card">
-                    {% set youtube = marker.getAdditionalYoutube() %}
-                    {% if youtube is not empty %}
-                        {% if marker.isPublished() %}
-                            <a target="_blank" href="{{ marker.getAdditionalYoutubeLink() }}">
-                                <img src="https://i.ytimg.com/vi/{{ youtube }}/0.jpg" class="card-img-top" alt="">
-                                {# default.jpg #}
-                            </a>
-                        {% else %}
-                            <svg aria-label="" class="bd-placeholder-img card-img-top" height="270" preserveAspectRatio="xMidYMid slice" role="img" width="100%" xmlns="http://www.w3.org/2000/svg">
-                                <rect width="100%" height="100%" fill="#55595c"></rect>
-                                <text x="20%" y="50%" fill="#eceeef" dy=".3em">Відэа будзе апублікавана {{ marker.getPublishDateText() }}</text>
-                            </svg>
-                        {% endif %}
-                    {% endif %}
+                <tbody>
+                {% for marker in markers %}
+                    <tr>
+                        <td>
+                            {% set report = marker.getReport() %}
+                            {% set year = report.getDateActionYear() %}
+                            {% if year %}{{ year }},{% endif %}
 
-                    <div class="card-body">
-                        <h5 class="card-title">
-                            <a href="{{ path('content_marker', {id: marker.id}) }}">
-                                {{ marker.getCategoryName() }}:
-                                {{ marker.name }}
-                            </a>
-                        </h5>
-                        <p class="card-text">
-                            <small class="text-body-secondary">
-                                {% if report.geoPoint %}
-                                    <b>{{ report.geoPoint.getMiddleBeName() }}</b>
-                                    {%- if report.geoPoint.district %},
-                                        {{ report.geoPoint.district }}
-                                    {% endif %}
-                                    <a href="{{ path('content_place', {id: report.geoPoint.id}) }}"><i class="bi bi-arrow-right-circle"></i></a>
-                                {% else %}
-                                    {% set reportPlace = report.getGeoPlace() %}
-                                    {% if reportPlace %}
-                                        {{ reportPlace }}
-                                    {% else %}
-                                        [невядомае месца]
-                                    {% endif %}
+                            {% if report.geoPoint %}
+                                <b>{{ report.geoPoint.getMiddleBeName() }}</b>
+                                {%- if report.geoPoint.district %},
+                                    {{ report.geoPoint.district }}
                                 {% endif %}
-                            </small>
-                        </p>
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
+                                <a href="{{ path('content_place', {id: report.geoPoint.id}) }}"><i class="bi bi-arrow-right-circle"></i></a>
+                            {% else %}
+                                {% set reportPlace = report.getGeoPlace() %}
+                                {% if reportPlace %}
+                                    {{ reportPlace }}
+                                {% else %}
+                                    [невядомае месца]
+                                {% endif %}
+                            {% endif %}
+                        </td>
+                        <td>
+                            {{ marker.getCategoryName() }}:
+                            {{ marker.name }}
+                            {% for tag in marker.tags %}
+                                <span class="badge text-bg-secondary">{{ tag.name }}</span>
+                            {% endfor %}
+                            <a href="{{ path('content_marker', {id: marker.id}) }}"><i class="bi bi-arrow-right-circle"></i></a>
+                        </td>
+                        <td>
+                            {% if marker.ritual %}
+                                {% for ritual in marker.ritual.getRitualList() %}
+                                    {{- ritual.name -}}
+                                    {% if not loop.last %}<i class="bi bi-arrow-right"></i>{% endif %}
+                                {%- endfor -%}.
+
+                                <br />
+                                {% if marker.notes is not empty %}-----<br />{% endif %}
+                            {% endif %}
+
+                            <div class="d-none d-md-block">{{ marker.notes }}</div>
+
+                            {% if marker.decoding %}
+                                <button title="Расшыфроўка" class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ marker.id }}" aria-expanded="false" aria-controls="collapse{{ marker.id }}">
+                                    <i class="bi bi-arrow-down-square-fill"></i>
+                                </button>
+                                <div class="collapse" id="collapse{{ marker.id }}">
+                                    <div class="card card-body">
+                                        {{ marker.decoding|nl2br }}
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% set youtube = marker.getAdditionalYoutube() %}
+                            {% if youtube is not empty %}
+                                {% if marker.isPublished() %}
+                                    <img src="https://i.ytimg.com/vi/{{ youtube }}/default.jpg" />
+                                    <a target="_blank" href="{{ marker.getAdditionalYoutubeLink() }}">Глядзець</a>
+                                {% else %}
+                                    <p>Будзе апублікавана {{ marker.getPublishDateText() }}</p>
+                                {% endif %}
+                            {% endif %}
+
+                        </td>
+                    </tr>
+                {% endfor %}
+
+                </tbody>
+            </table>
+
         </div>
     </div>
 {% endblock %}

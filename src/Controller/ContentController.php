@@ -72,8 +72,9 @@ class ContentController extends AbstractController
         $filters->selectCategory($category);
 
         $markers = $this->fileMarkerRepository->getMarkersByFilters($filters);
+        $this->sortMarkers($markers);
 
-        $geoMapData = $this->geoMapManager->getGeoMapDataForMarkers($markers, 300);
+        $geoMapData = $this->geoMapManager->getGeoMapDataForMarkers($markers, 300, true);
 
         return $this->render('content/markers.html.twig', [
             'markers' => $markers,
@@ -101,8 +102,9 @@ class ContentController extends AbstractController
         $filters->selectDance($id);
 
         $markers = $this->fileMarkerRepository->getMarkersByFilters($filters);
+        $this->sortMarkers($markers);
 
-        $geoMapData = $this->geoMapManager->getGeoMapDataForMarkers($markers, 300);
+        $geoMapData = $this->geoMapManager->getGeoMapDataForMarkers($markers, 300, true);
 
         return $this->render('content/markers.html.twig', [
             'markers' => $markers,
@@ -112,6 +114,16 @@ class ContentController extends AbstractController
             'geoMapData' => $geoMapData,
             'categories' => CategoryType::getSingleNames(),
         ]);
+    }
+
+    private function sortMarkers(array &$markers): void
+    {
+        foreach ($markers as $key => $marker) {
+            if ($marker->getAdditionalYoutube()) {
+                unset($markers[$key]);
+                array_unshift($markers, $marker);
+            }
+        }
     }
 
     #[Route('/content/marker/{id}', name: 'content_marker', methods: ['GET'])]

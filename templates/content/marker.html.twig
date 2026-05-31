@@ -12,9 +12,18 @@
         <h1 class="h2">
             {{ description }}
         </h1>
+        <div class="row" style="width: 560px;">
+            {% set youtube = marker.getAdditionalYoutube() %}
+            {% if youtube is not empty %}
+                {% if marker.isPublished() %}
+                    <iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/{{ youtube }}" title="{{ description }}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                {% else %}
+                    <p><b>Відэа будзе апублікавана {{ marker.getPublishDateText() }}</b>.</p>
+                {% endif %}
+            {% endif %}
+        </div>
         <div class="row">
             <p>
-
                 {% for tag in marker.tags %}
                     <span class="badge text-bg-secondary">{{ tag.name }}</span>
                 {% endfor %}
@@ -70,20 +79,6 @@
                     {% if folder is not empty %}
                         <a target="_blank" href="{{ imef_url }}{{ folder }}">Крыніца</a>.<br>
                     {% endif %}
-                {% endif %}
-
-                {% set file = marker.getFile() %}
-                {% if file and not file.isVirtualContent() %}
-                    <br>
-                    Файл: {{ file.filename }}
-                    {% if file.sizeText %}
-                        - {{ file.sizeText }}
-                    {% endif %}
-
-                    {% if file.comment %}
-                        ({{ file.comment }})
-                    {% endif %}
-                    <br>
                 {% endif %}
 
                 {% if marker.startTime %}
@@ -152,16 +147,6 @@
                     <br>
                 {% endif %}
             </p>
-        </div>
-        <div class="row" style="width: 560px;">
-            {% set youtube = marker.getAdditionalYoutube() %}
-            {% if youtube is not empty %}
-                {% if marker.isPublished() %}
-                    <iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/{{ youtube }}" title="{{ description }}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
-                {% else %}
-                    <p><b>Відэа будзе апублікавана {{ marker.getPublishDateText() }}</b>.</p>
-                {% endif %}
-            {% endif %}
         </div>
     </div>
 {% endblock %}
