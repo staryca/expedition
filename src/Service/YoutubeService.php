@@ -46,7 +46,7 @@ class YoutubeService
     ) {
     }
 
-    public function getTitle(FileMarker $fileMarker, int $shortener = 0): string
+    public function getTitle(FileMarker $fileMarker, bool $withStress = true, int $shortener = 0): string
     {
         $localName = $fileMarker->getAdditionalLocalName();
         $baseName = $fileMarker->getAdditionalDance();
@@ -130,10 +130,14 @@ class YoutubeService
 
         $title = trim(preg_replace('!\s+!', ' ', $title));
 
+        if (!$withStress) {
+            $title = TextHelper::replaceLetters($title);
+        }
+
         if (mb_strlen($title) > self::MAX_LENGTH_TITLE) {
             $step = $shortener < self::SHORTENER_TRUNCATE ? 1 : mb_strlen($title) - self::MAX_LENGTH_TITLE;
 
-            return $this->getTitle($fileMarker, $shortener + $step);
+            return $this->getTitle($fileMarker, $withStress, $shortener + $step);
         }
 
         return $title;
@@ -243,7 +247,8 @@ class YoutubeService
 //                ? '<br><i class="bi bi-exclamation-diamond-fill text-danger"></i>Origin:' . (mb_strlen($personTextOrigin) - mb_strlen($personText)) . ':: ' . $personTextOrigin
 //                : '';
 
-            $partPersons[] = $text . ': ' . $personText . '.' . $warning;
+
+            $partPersons[] = $text . ': ' . trim($personText, '.') . '.' . $warning;
         }
 
         // Musicians
@@ -434,7 +439,7 @@ class YoutubeService
         $video = $listResponse->getItems()[0];
         $snippet = $video->getSnippet();
 
-        $title = $this->getTitle($fileMarker);
+        $title = $this->getTitle($fileMarker, false);
         $snippet->setTitle($title);
         $snippet->setDefaultAudioLanguage(self::LANG_BE);
 
