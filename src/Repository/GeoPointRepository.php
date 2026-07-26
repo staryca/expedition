@@ -68,6 +68,13 @@ class GeoPointRepository extends ServiceEntityRepository
                 ->setParameter('region', $geoPointSearchDto->region);
         }
 
+        // Skip location without region and district
+        if (null !== $geoPointSearchDto->district && null !== $geoPointSearchDto->region) {
+            $qb->andWhere(
+                $qb->expr()->orX('LENGTH(gp.region) > 0', 'LENGTH(gp.district) > 0')
+            );
+        }
+
         if (null !== $geoPointSearchDto->limit) {
             $qb->setMaxResults($geoPointSearchDto->limit);
         }

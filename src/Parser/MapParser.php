@@ -52,10 +52,12 @@ readonly class MapParser
             $marker->category = CategoryType::OTHER;
 
             $subDistrict = self::getValue($record, MapColumns::SOVIET);
+            $region = self::getValue($record, MapColumns::REGION);
             $location = $this->locationService->detectLocation(
                 self::getValue($record, MapColumns::VILLAGE),
                 self::getValue($record, MapColumns::DISTINCT) . ' ' . LocationService::DISTRICT,
-                empty($subDistrict) ? null : $subDistrict . ' ' . LocationService::SUBDISTRICT
+                empty($subDistrict) ? null : $subDistrict . ' ' . LocationService::SUBDISTRICT,
+                empty($region) ? null : $region . ' ' . LocationService::REGION,
             );
             $geoPointId = self::getValue($record, MapColumns::MAP_INDEX);
             if ($location && (!$geoPointId || $location->getId() === $geoPointId)) {

@@ -466,9 +466,13 @@ class LocationService
         return null;
     }
 
-    public function detectLocation(string $place, ?string $district = null, ?string $subDistrict = null): ?GeoPoint
-    {
-        $dto = $this->getSearchDto($place, $district, $subDistrict);
+    public function detectLocation(
+        string $place,
+        ?string $district = null,
+        ?string $subDistrict = null,
+        ?string $region = null
+    ): ?GeoPoint {
+        $dto = $this->getSearchDto($place, $district, $subDistrict, $region);
 
         return $this->detectLocationBySearchDto($dto);
     }
@@ -492,6 +496,8 @@ class LocationService
         // todo: Log for count more 1
         if (count($points) === 1) {
             return $points[0];
+        } else {
+            // throw new \Exception(var_export($points, true));
         }
 
         return null;
