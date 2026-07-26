@@ -372,7 +372,7 @@ class VideoKozHandler
         $errors = 0;
         $keyWarningDesc = $keyWarningTitle = $keyOk = 1;
         foreach ($markers as $fileMarker) {
-            $title = $this->youtubeService->getTitle($fileMarker);
+            $title = $this->youtubeService->getTitle($fileMarker, false);
             $titleNotes = mb_strlen($title) > YoutubeService::MAX_LENGTH_TITLE
                 ? '<i class="bi bi-exclamation-diamond-fill text-danger" title="' . mb_strlen($title) . ' charters"></i> '
                 : ''

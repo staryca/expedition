@@ -148,7 +148,7 @@ class GeoMapDto
                 if (count($colors) > 1) {
                     $type = self::TYPE_COMPLEX;
                 } else {
-                    $color = current($colors);
+                    $color = key($colors);
                 }
             }
 
